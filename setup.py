@@ -47,7 +47,7 @@ setup(
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension('_mssql', ['helperlib.c', '_mssql.pyx'],
+    ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,

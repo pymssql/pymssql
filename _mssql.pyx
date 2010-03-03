@@ -513,12 +513,8 @@ cdef class MSSQLConnection:
 
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
-
-            len = rmv_lcl(buf, buf, NUMERIC_BUF_SZ)
-
-            if not len:
-                raise MSSQLDriverException('Could not remove locale formatting')
-            return decimal.Decimal(str(buf))
+            
+            return decimal.Decmial(_remove_locale(buf))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
@@ -1209,6 +1205,23 @@ cdef int get_api_coltype(int coltype):
         return STRING
     else:
         return BINARY
+
+cdef _remove_locale(str value):
+    cdef int last_sep = -1, i
+    for i, c in enumerate(value):
+        if c in (',', '.'):
+            last_sep = i
+
+    stripped = ''
+    for i, c in enumerate(value):
+        if (c >= '0' and c <= '9') or c in ('+', '-'):
+            stripped += c
+        elif i == last_sep:
+            stripped += c
+    return stripped
+
+def remove_locale(str value):
+    return _remove_locale(value)
 
 #######################
 ## Quoting Functions ##
