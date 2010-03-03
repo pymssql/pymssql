@@ -38,8 +38,6 @@ from stdio cimport fprintf, sprintf, FILE
 from stdlib cimport strlen, strcpy
 from python_mem cimport PyMem_Malloc, PyMem_Free
 
-cdef extern int rmv_lcl(char *, char *, size_t)
-
 cdef extern from "stdio.h" nogil:
     cdef FILE *stderr
 
