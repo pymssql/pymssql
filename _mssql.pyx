@@ -603,10 +603,12 @@ cdef class MSSQLConnection:
             strcpy(strValue, value)
             return <BYTE *>strValue
 
-        if dbtype[0] in (SQLBINARY, SQLIMAGE):
+        if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
             if type(value) is not str:
                 raise TypeError()
-            return <BYTE *><char *>value
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            strcpy(strValue, value)
+            return <BYTE *>strValue
 
         # No conversion was possible so just return NULL
         return NULL
@@ -1064,7 +1066,7 @@ cdef class MSSQLStoredProcedure:
         # We may need to set the data length depending on the type being
         # passed to the server here.
         if dbtype in (SQLVARCHAR, SQLCHAR, SQLTEXT, SQLBINARY,
-                SQLIMAGE):
+            SQLVARBINARY, SQLIMAGE):
             if null or data == NULL:
                 length = 0
                 if not output:
