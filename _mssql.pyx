@@ -4,6 +4,7 @@ This is an effort to convert the pymssql low-level C module to Cython.
 
 DEF PYMSSQL_DEBUG = 0
 
+import uuid
 import decimal
 import datetime
 from sqlfront cimport *
@@ -67,6 +68,7 @@ cdef enum:
     SQLTEXT = SYBTEXT
     SQLVARBINARY = SYBVARBINARY
     SQLVARCHAR = SYBVARCHAR
+    SQLUUID = 36
 
 #######################
 ## Exception classes ##
@@ -195,8 +197,6 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 
 cdef class MSSQLRowIterator:
     
-    cdef MSSQLConnection conn
-    
     def __init__(self, connection):
         self.conn = connection
     
@@ -210,23 +210,6 @@ cdef class MSSQLRowIterator:
 
 cdef class MSSQLConnection:
 
-    # Used by properties
-    cdef bint _connected
-    cdef int _rows_affected
-    cdef char *_charset
-    
-    # Used internally
-    cdef DBPROCESS *dbproc
-    cdef int last_msg_no
-    cdef int last_msg_severity
-    cdef int last_msg_state
-    cdef int last_dbresults
-    cdef int num_columns
-    cdef int debug_queries
-    cdef char *last_msg_str
-    cdef tuple column_names
-    cdef tuple column_types
-    
     property charset:
         """
         The current encoding in use.
@@ -303,7 +286,9 @@ cdef class MSSQLConnection:
         
         # Connect to the server
         self.dbproc = dbopen(login, server)
-        dbloginfree(login) # Frees the login record, can be called immediately after dbopen.
+
+        # Frees the login record, can be called immediately after dbopen.
+        dbloginfree(login)
         
         if self.dbproc == NULL:
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
@@ -383,7 +368,6 @@ cdef class MSSQLConnection:
     
     cdef convert_db_value(self, BYTE *data, int type, int length):
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
-        cdef double ddata
         cdef int len
         cdef long prevPrecision
         cdef BYTE precision
@@ -423,7 +407,7 @@ cdef class MSSQLConnection:
             prevPrecision = _decimal_context.prec
             _decimal_context.prec = precision
 
-            length = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
+            len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
             len = rmv_lcl(buf, buf, NUMERIC_BUF_SZ)
@@ -446,11 +430,11 @@ cdef class MSSQLConnection:
 
         elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if self.charset:
-                return str(<char *>data)[:length].decode(self.charset)
+                return (<char *>data)[:length].decode(self.charset)
             else:
-                return str(<char *>data)[:length]
+                return (<char *>data)[:length]
         else:
-            return str(<char *>data)[:length]
+            return (<char *>data)[:length]
 
     def execute_non_query(self, query_string, params=None):
         """
@@ -690,6 +674,11 @@ cdef class MSSQLConnection:
             if data == NULL:
                 record += (None,)
                 continue
+
+            IF PYMSSQL_DEBUG == 1:
+                fprintf(stderr, 'Processing row %d, column %d,' \
+                    'Got data=%x, coltype=%d, len=%d\n', row_info, col,
+                    data, col_type, len)
             
             record += (self.convert_db_value(data, col_type, len),)
         return record
@@ -817,15 +806,17 @@ cdef void assert_connected(MSSQLConnection conn):
     if not conn.connected:
         raise MSSQLDriverException("Not connected to any MS SQL server")
 
-cdef BYTE *get_data(DBPROCESS *dbproc, int row_info, int col) nogil:
-    return dbdata(dbproc, col) if row_info == REG_ROW else dbadata(dbproc, row_info, col)
+cdef inline BYTE *get_data(DBPROCESS *dbproc, int row_info, int col) nogil:
+    return dbdata(dbproc, col) if row_info == REG_ROW else \
+        dbadata(dbproc, row_info, col)
 
-cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
-    return dbcoltype(dbproc, col) if row_info == REG_ROW else dbalttype(dbproc, row_info, col)
+cdef inline int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
+    return dbcoltype(dbproc, col) if row_info == REG_ROW else \
+        dbalttype(dbproc, row_info, col)
 
-cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
-    return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
-
+cdef inline int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
+    return dbdatlen(dbproc, col) if row_info == REG_ROW else \
+        dbadlen(dbproc, row_info, col)
 
 ######################
 ## Helper Functions ##
