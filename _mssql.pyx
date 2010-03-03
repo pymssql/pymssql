@@ -690,13 +690,13 @@ cdef char *get_last_msg_str(MSSQLConnection conn):
     return conn.last_msg_str if conn != None else _mssql_last_msg_str
     
 cdef int get_last_msg_no(MSSQLConnection conn):
-    return conn != None and conn.last_msg_no or _mssql_last_msg_no
+    return conn.last_msg_no if conn != None else _mssql_last_msg_no
 
 cdef int get_last_msg_severity(MSSQLConnection conn):
-    return conn != None and conn.last_msg_severity or _mssql_last_msg_severity
+    return conn.last_msg_severity if conn != None else _mssql_last_msg_severity
 
 cdef int get_last_msg_state(MSSQLConnection conn):
-    return conn != None and conn.last_msg_state or _mssql_last_msg_state
+    return conn.last_msg_state if conn != None else _mssql_last_msg_state
 
 cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn):
     
