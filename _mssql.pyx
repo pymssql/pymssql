@@ -9,9 +9,15 @@ cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef char *_mssql_last_msg_str = ""
 
-cdef connection_list = []
+# Unfortunately we are unable to store the connections in a simple [] as this
+# loses all the C properties (I think, least it starts to have attribute errors).
+#ctypedef struct _mssql_connection_list_node:
+#    _mssql_connection_list_node *next
+#    void *obj
+#cdef _mssql_connection_list_node *connection_object_list
+#connection_object_list = NULL
 
-include "ftds_sqlfront.pyx"
+include "ftds_sqlfront.pxd"
 
 cdef extern from "pyerrors.h":
     ctypedef class __builtin__.Exception [object PyBaseExceptionObject]:
@@ -62,21 +68,9 @@ cdef class MSSQLDriverException(MSSQLException):
 
 cdef class MSSQLDatabaseException(MSSQLException):
     
-    cdef int _number
-    cdef int _severity
-    cdef int _state
-    
-    property number:
-        def __get__(self):
-            return self._number
-    
-    property severity:
-        def __get__(self):
-            return self._severity
-    
-    property state:
-        def __get__(self):
-            return self._state
+    cdef readonly int number
+    cdef readonly int severity
+    cdef readonly int state
     
 login_timeout = 60
 
@@ -85,7 +79,7 @@ min_error_severity = 6
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
     
-    """cdef char *mssql_lastmsgstr = _mssql_last_msg_str
+    cdef char *mssql_lastmsgstr = _mssql_last_msg_str
     cdef int *mssql_lastmsgno = &_mssql_last_msg_no
     cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
     cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
@@ -93,12 +87,14 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     if severity < min_error_severity:
         return INT_CANCEL
 
+    """print connection_list
     for conn in connection_list:
-        if conn.dbproc == dbproc:
+        print dir(conn)
+        if dbproc == <DBPROCESS *>conn.dbproc:
             mssql_lastmsgstr = conn.last_msg_str
-            mssql_lastmsgno = &conn.last_msg_no
-            mssql_lastmsgseverity = &conn.last_msg_severity
-            mssql_lastmsgstate = &conn.last_msg_state
+            mssql_lastmsgno = <int *>conn.last_msg_no
+            mssql_lastmsgseverity = <int *>conn.last_msg_severity
+            mssql_lastmsgstate = <int *>conn.last_msg_state
             break
     
     if severity < <int *>mssql_lastmsgseverity:
@@ -135,8 +131,9 @@ cdef class MSSQLRowIterator:
 cdef class MSSQLConnection:
 
     # Used by properties
-    cdef int _connected, _rows_affected
-    cdef char *_charset
+    cdef bint _connected
+    cdef int _rows_affected
+    cdef char *charset
     
     # Used internally
     cdef DBPROCESS *dbproc
@@ -164,7 +161,7 @@ cdef class MSSQLConnection:
         """
         
         def __get__(self):
-            return bool(self._connected)
+            return self._connected
     
     property identity:
         """
@@ -192,6 +189,11 @@ cdef class MSSQLConnection:
     
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0, charset="", database="masterdb", max_conn=25):
+    
+        cdef LOGINREC *login
+        cdef RETCODE rtc
+        #cdef _mssql_connection_list_node *n
+    
         if max_conn <= 0:
             raise MSSQLDriverException("max_conn value must be greater than 0.")
         
@@ -200,11 +202,10 @@ cdef class MSSQLConnection:
         
         self.column_names = ()
         self.column_types = ()
-
-        cdef LOGINREC *login
-        cdef RETCODE rtc
         
         login = dblogin()
+        if login == NULL:
+            raise MSSQLDriverException("Out of memory")
     
         DBSETLUSER(login, user)
         DBSETLPWD(login, password)
@@ -214,8 +215,14 @@ cdef class MSSQLConnection:
         # Set the connection limit
         dbsetmaxprocs(max_conn)
         
-        # TODO: complete the other connection stuff here
-        connection_list.append(self)
+        #n = <_mssql_connection_list_node *>PyMem_Malloc(sizeof(_mssql_connection_list_node))
+        #if n == NULL:
+        #    dbloginfree(login)
+        #    raise MSSQLDriverException("Out of memory")
+        #    
+        #n.next = connection_object_list
+        #n.obj = <void *>self
+        #connection_object_list = n
         
         # Set the login timeout
         dbsetlogintime(login_timeout)
@@ -225,7 +232,7 @@ cdef class MSSQLConnection:
         dbloginfree(login) # Frees the login record, can be called immediately after dbopen.
         
         if self.dbproc == NULL:
-            raise MSSQLDriverException("Error connecting")
+            raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
             return
         
         self._connected = 1
@@ -288,6 +295,17 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
+        if self == None:
+            return None
+        
+        if not self._connected:
+            return None
+        
+        with nogil:
+            dbclose(self.dbproc)
+            self.dbproc = NULL
+        
+        self._connected = 0
     
     cdef convert_db_value(self, BYTE *data, int type, int length):
         #cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
@@ -464,7 +482,7 @@ cdef class MSSQLConnection:
         dbcmd(self.dbproc, query_string)
         
         # Execute the query
-        rtc = dbsqlexec(self.dbproc)
+        rtc = db_sqlexec(self.dbproc)
         check_cancel_and_raise(rtc, self)
     
     def get_header(self):
