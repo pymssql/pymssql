@@ -401,8 +401,8 @@ def connect(dsn = None, user = 'sa', password = '', host = '.',
     :type charset: string
     :param as_dict: whether rows should be returned as dictionaries instead of tuples.
     :type as_dict: boolean
-    :param max_conn: how many simulataneous connections to allow; default 25
-    :type max_conn: int
+    :param tds_ver: the TDS version to use for the connection; default 7
+    :type tds_ver: float
     """
 
     # first try to get the params from the DSN
