@@ -3,10 +3,10 @@ import _mssql
 
 server = 'localhost'
 username = 'sa'
-password = 'passsword'
+password = ''
 database = 'tempdb'
 
-class MssqlTestCase(unittest.TestCase):
+class MSSQLTestCase(unittest.TestCase):
     def setUp(self):
         self.mssql = _mssql.connect(server, username, password)
         self.mssql.select_db(database)
