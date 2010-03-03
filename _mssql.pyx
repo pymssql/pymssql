@@ -433,6 +433,10 @@ cdef class MSSQLConnection:
                 return (<char *>data)[:length].decode(self.charset)
             else:
                 return (<char *>data)[:length]
+
+        elif type == SQLUUID:
+            return uuid.UUID(bytes_le=(<char *>data)[:length])
+
         else:
             return (<char *>data)[:length]
 
