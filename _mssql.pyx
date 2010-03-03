@@ -30,6 +30,8 @@ cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+IF PYMSSQL_DEBUG == 1:
+    cdef int _row_count = 0
 
 cdef _decimal_context
 
@@ -810,6 +812,10 @@ cdef class MSSQLConnection:
         cdef int col_type
         cdef int len
         cdef BYTE *data
+
+        if PYMSSQL_DEBUG == 1:
+            global _row_count
+            _row_count += 1
         
         record = tuple()
         
@@ -824,8 +830,9 @@ cdef class MSSQLConnection:
                 continue
 
             IF PYMSSQL_DEBUG == 1:
+                global _row_count
                 fprintf(stderr, 'Processing row %d, column %d,' \
-                    'Got data=%x, coltype=%d, len=%d\n', row_info, col,
+                    'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
                     data, col_type, len)
             
             record += (self.convert_db_value(data, col_type, len),)
