@@ -131,7 +131,7 @@ class clean(_clean):
 
 setup(
     name  = 'pymssql',
-    version = '1.9.903',
+    version = '1.9.904',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',

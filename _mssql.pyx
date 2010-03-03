@@ -521,7 +521,7 @@ cdef class MSSQLConnection:
             return int(<int>(<DBINT *>data)[0])
 
         elif type == SQLINT8:
-            return long(<long>(<long *>data)[0])
+            return long(<PY_LONG_LONG>(<PY_LONG_LONG *>data)[0])
 
         elif type == SQLFLT4:
             return float(<float>(<DBREAL *>data)[0])
