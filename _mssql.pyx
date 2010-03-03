@@ -9,6 +9,8 @@ cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef char *_mssql_last_msg_str = ""
 
+cdef connection_list = []
+
 include "ftds_sqlfront.pyx"
 
 cdef extern from "pyerrors.h":
@@ -82,7 +84,27 @@ min_error_severity = 6
 
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
+    
+    """cdef char *mssql_lastmsgstr = _mssql_last_msg_str
+    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
+    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
+    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
+    
+    if severity < min_error_severity:
+        return INT_CANCEL
 
+    for conn in connection_list:
+        if conn.dbproc == dbproc:
+            mssql_lastmsgstr = conn.last_msg_str
+            mssql_lastmsgno = &conn.last_msg_no
+            mssql_lastmsgseverity = &conn.last_msg_severity
+            mssql_lastmsgstate = &conn.last_msg_state
+            break
+    
+    if severity < <int *>mssql_lastmsgseverity:
+        mssql_lastmsgseverity = <int *>severity"""
+        
+    
     return INT_CANCEL
 
 cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate, int severity,
@@ -191,6 +213,9 @@ cdef class MSSQLConnection:
         
         # Set the connection limit
         dbsetmaxprocs(max_conn)
+        
+        # TODO: complete the other connection stuff here
+        connection_list.append(self)
         
         # Set the login timeout
         dbsetlogintime(login_timeout)
@@ -621,10 +646,7 @@ cdef void check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn):
         maybe_raise_MSSQLDatabaseException(conn)
 
 cdef char *get_last_msg_str(MSSQLConnection conn):
-    if conn != None:
-        return conn.last_msg_str
-    else:
-        return _mssql_last_msg_str
+    return conn.last_msg_str if conn != None else _mssql_last_msg_str
     
 cdef int get_last_msg_no(MSSQLConnection conn):
     return conn != None and conn.last_msg_no or _mssql_last_msg_no
@@ -640,29 +662,38 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn):
     if get_last_msg_severity(conn) < min_error_severity:
         return 0
     
-    error_msg = get_last_msg_str(conn) or "Unknown error"
+    error_msg = get_last_msg_str(conn)
+    if len(error_msg) == 0:
+        error_msg = "Unknown error"
+
     ex = MSSQLDatabaseException(error_msg)
     ex._number = get_last_msg_no(conn)
     ex._severity = get_last_msg_severity(conn)
     ex._state = get_last_msg_state(conn)
-    raise ex
-    
     db_cancel(conn)
     clr_err(conn)
-    return 1    
+    raise ex
 
 cdef void assert_connected(MSSQLConnection conn):
     if not conn.connected:
         raise MSSQLDriverException("Not connected to any MS SQL server")
 
 cdef BYTE *get_data(DBPROCESS *dbproc, int row_info, int col) nogil:
-    if row_info == REG_ROW:
-        return dbdata(dbproc, col)
-    else:
-        dbadata(dbproc, row_info, col)
+    return dbdata(dbproc, col) if row_info == REG_ROW else dbadata(dbproc, row_info, col)
 
 cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
-    return (row_info == REG_ROW and dbcoltype(dbproc, col) or dbalttype(dbproc, row_info, col))
+    return dbcoltype(dbproc, col) if row_info == REG_ROW else dbalttype(dbproc, row_info, col)
 
 cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
-    return (row_info == REG_ROW and dbdatlen(dbproc, col) or dbadlen(dbproc, row_info, col))
+    return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
+    
+cdef void init_mssql():
+    cdef RETCODE rtc
+    rtc = dbinit()
+    if rtc == FAIL:
+        raise MSSQLDriverException("Could not initialize communication layer")
+    
+    dberrhandle(err_handler)
+    dbmsghandle(msg_handler)
+
+init_mssql()
