@@ -2,6 +2,8 @@
 This is an effort to convert the pymssql low-level C module to Cython.
 """
 
+import datetime
+
 # Forward declare some types and variables
 cdef class MSSQLConnection
 cdef int _mssql_last_msg_no = 0
@@ -725,6 +727,38 @@ cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
 
 cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
     return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
+
+cdef _quote_simple_value(value):
+    
+    if value == None:
+        return 'NULL'
+    
+    if type(value) is bool:
+        return 1 if value else 0
+    
+    if type(value) in (int, long, float):
+        return value
+    
+    if type(value) is unicode:
+        return "N'" + value.encode('utf8').replace("'", "''") + "'"
+    
+    if type(value) is str:
+        return "'" + value.replace("'", "''") + "'"
+    
+    if type(value) is datetime.datetime:
+        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
+            value.year, value.month, value.day,
+            value.hour, value.minute, value.second, value.microsecond / 1000)
+    
+    if type(value) is datetime.date:
+        return "{d '%04d-%02d-%02d'} " % (value.year, value.month, value.day)
+    
+    return None
+
+# We'll add this method to the module to allow for unit testing of the
+# underlying C method.
+def quote_simple_value(value):
+    return _quote_simple_value(value)
     
 cdef void init_mssql():
     cdef RETCODE rtc
