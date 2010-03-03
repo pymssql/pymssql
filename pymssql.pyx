@@ -1,7 +1,9 @@
 """DB-SIG compliant module for communicating with MS SQL servers"""
-# pymssql.py
+# pymssql.pyx
 #
-#   Copyright (C) Damien Churchill <damoxc@gmail.com> 2009
+#   Copyright (C) 2003 Joon-cheol Park <jooncheol@gmail.com>
+#                 2008 Andrzej Kukula <akukula@gmail.com>
+#                 2009 Damien Churchill <damoxc@gmail.com>
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
