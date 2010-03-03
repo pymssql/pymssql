@@ -1,0 +1,56 @@
+Building
+========
+
+	Windows
+	=======
+	
+	To build pymssql on Windows you firstly must have:
+
+		* Visual C++ >= 2005 (or some equivalent compiler)
+		* Python >= 2.5
+		* Cython >= 0.12
+	
+	and then you can simple run:
+		
+		python setup.py build
+	
+	which will build pymssql in the normal python fashion.
+
+	Unix
+	====
+
+	To build on Unix you must have:
+	
+		* gcc
+		* python-dev >= 2.5
+		* Cython >= 0.12
+		* FreeTDS >= 0.82
+	
+Testing
+=======
+
+To run the tests simply go to the "tests" folder and execute:
+
+	python all.py
+
+Which will go through and run all the tests with the default server
+settings. If you wish to change these settings you can create a 'tests.cfg'
+file in the tests folder that gets read for server settings. This file
+should have the format:
+
+[DEFAULT]
+server = hostname
+username = username
+password = password
+database = database
+
+[SomeServer]
+server = someserver
+username = someuser
+password = somepass
+database = somedb
+
+When this file exists you can run any test specifying a server as the first argument to the command such as:
+
+	python all.py SomeServer
+
