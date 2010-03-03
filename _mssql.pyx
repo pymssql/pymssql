@@ -37,6 +37,7 @@ from sqlfront cimport *
 from stdio cimport fprintf, sprintf, FILE
 from stdlib cimport strlen, strcpy
 from python_mem cimport PyMem_Malloc, PyMem_Free
+from python_long cimport PY_LONG_LONG
 
 cdef extern from "stdio.h" nogil:
     cdef FILE *stderr
@@ -506,7 +507,7 @@ cdef class MSSQLConnection:
         cdef DBDATEREC di
         cdef DBDATETIME dt
         cdef DBCOL dbcol
-        
+
         if type == SQLBIT:
             return bool(<int>(<DBBIT *>data)[0])
 
@@ -572,7 +573,7 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.convert_python_value()")
         cdef int *intValue
         cdef double *dblValue
-        cdef long *longValue
+        cdef PY_LONG_LONG *longValue
         cdef char *strValue
 
         if value is None:
@@ -594,8 +595,8 @@ cdef class MSSQLConnection:
                 return <BYTE *><DBINT *>intValue
 
         if dbtype[0] == SQLINT8:
-            longValue = <long *>PyMem_Malloc(sizeof(long))
-            longValue[0] = <long>value
+            longValue = <PY_LONG_LONG *>PyMem_Malloc(sizeof(PY_LONG_LONG))
+            longValue[0] = <PY_LONG_LONG>value
             return <BYTE *>longValue
 
         if dbtype[0] in (SQLFLT4, SQLFLT8):
