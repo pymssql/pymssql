@@ -156,7 +156,7 @@ cdef class MSSQLConnection:
     # Used by properties
     cdef bint _connected
     cdef int _rows_affected
-    cdef char *charset
+    cdef char *_charset
     
     # Used internally
     cdef DBPROCESS *dbproc
