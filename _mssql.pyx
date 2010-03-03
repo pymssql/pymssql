@@ -1169,9 +1169,9 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
         error_msg = "Unknown error"
 
     ex = MSSQLDatabaseException(error_msg)
-    ex._number = get_last_msg_no(conn)
-    ex._severity = get_last_msg_severity(conn)
-    ex._state = get_last_msg_state(conn)
+    (<MSSQLDatabaseException>ex).number = get_last_msg_no(conn)
+    (<MSSQLDatabaseException>ex).severity = get_last_msg_severity(conn)
+    (<MSSQLDatabaseException>ex).state = get_last_msg_state(conn)
     db_cancel(conn)
     clr_err(conn)
     raise ex
