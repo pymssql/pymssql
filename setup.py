@@ -70,7 +70,7 @@ setup(
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
                              libraries = libraries),
-                   Extension('pymssql', ['pymssql.pyx']
+                   Extension('pymssql', ['pymssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
