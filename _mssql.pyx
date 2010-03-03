@@ -759,7 +759,29 @@ cdef _quote_simple_value(value):
 # underlying C method.
 def quote_simple_value(value):
     return _quote_simple_value(value)
+
+cdef _quote_or_flatten(data):
+    result = _quote_simple_value(data)
     
+    if result is not None:
+        return result
+    
+    if type(data) not in (list, tuple):
+        raise ValueError('expected a simple type, a tuple or a list')
+    
+    string = ''
+    for value in data:
+        value = _quote_simple_value(value)
+        
+        if value is None:
+            raise ValueError('found an unsupported type')
+        
+        string += '%s,' % value
+    return string[:-1]
+
+def quote_or_flatten(data):
+    return _quote_or_flatten(data)
+
 cdef void init_mssql():
     cdef RETCODE rtc
     rtc = dbinit()
