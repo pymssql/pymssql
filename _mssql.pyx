@@ -2,9 +2,15 @@
 This is an effort to convert the pymssql low-level C module to Cython.
 """
 
+DEF PYMSSQL_DEBUG = 0
+
 import sys
 import datetime
 from sqlfront cimport *
+from stdio cimport fprintf, sprintf, FILE
+
+cdef extern from "stdio.h" nogil:
+    cdef FILE *stderr
 
 # Forward declare some types and variables
 cdef class MSSQLConnection
@@ -97,38 +103,62 @@ cdef int NUMERIC_BUF_SZ = 45
 ###################
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
-    
+
     cdef char *mssql_lastmsgstr = _mssql_last_msg_str
-    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
-    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
-    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
+    cdef int mssql_lastmsgno = _mssql_last_msg_no
+    cdef int mssql_lastmsgseverity = _mssql_last_msg_severity
+    cdef int mssql_lastmsgstate = _mssql_last_msg_state
+    cdef int _min_error_severity = min_error_severity
+
+    IF PYMSSQL_DEBUG == 1:
+        fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
+            "dberr = %d, oserr = %d, dberrstr = '%s',  oserrstr = '%s'); " \
+            "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
+            oserr, dberrstr, oserrstr, DBDEAD(dbproc));
+        fprintf(stderr, "*** previous max severity = %d\n\n",
+            _mssql_last_msg_severity);
     
-    if severity < min_error_severity:
+    if severity < _min_error_severity:
         return INT_CANCEL
 
     for conn in connection_object_list:
         if dbproc == (<MSSQLConnection>conn).dbproc:
             mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+            mssql_lastmsgno = (<MSSQLConnection>conn).last_msg_no
+            mssql_lastmsgseverity = (<MSSQLConnection>conn).last_msg_severity
+            mssql_lastmsgstate = (<MSSQLConnection>conn).last_msg_state
             break
     
-    if &severity > mssql_lastmsgseverity:
-        mssql_lastmsgseverity = &severity
-        mssql_lastmsgno = &dberr
-        mssql_lastmsgstate = &oserr
-    
+    if severity > mssql_lastmsgseverity:
+        mssql_lastmsgseverity = severity
+        mssql_lastmsgno = dberr
+        mssql_lastmsgstate = oserr
+
+    message = 'DB-Lib error message %d, severity %d:\n%s\n' % (dberr,
+            severity, dberrstr)
+
     if oserr != DBNOERR and oserr != 0:
         pass
+
     
     return INT_CANCEL
 
 #####################
 ## Message Handler ##
 #####################
-cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate, int severity,
-        char *msgtext, char *srvname, char *procname, LINE_T line):
+cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
+        int severity, char *msgtext, char *srvname, char *procname,
+        LINE_T line):
+
+    IF PYMSSQL_DEBUG == 1:
+        fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
+            "msgstate = %d, severity = %d, msgtext = '%s', " \
+            "srvname = '%s', procname = '%s', line = %d)\n",
+            <void *>dbproc, msgno, msgstate, severity, msgtext, srvname,
+            procname, line);
+        fprintf(stderr, "+++ previous max severity = %d\n\n",
+            _mssql_last_msg_severity);
+
     return 0
 
 cdef int db_sqlexec(DBPROCESS *dbproc):
@@ -234,7 +264,7 @@ cdef class MSSQLConnection:
     
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
-            charset="", database="masterdb", max_conn=25):
+            charset="", database="master", max_conn=25):
     
         cdef LOGINREC *login
         cdef RETCODE rtc
@@ -245,8 +275,8 @@ cdef class MSSQLConnection:
         self._connected = 0
         self._charset = charset
         
-        #self.column_names = tuple()
-        #self.column_types = tuple()
+        self.column_names = None
+        self.column_types = None
         
         login = dblogin()
         if login == NULL:
@@ -320,7 +350,7 @@ cdef class MSSQLConnection:
         rtc = db_cancel(self)
         check_and_raise(rtc, self)
     
-    cdef clear_metadata(self):
+    cdef void clear_metadata(self):
         self.column_names = None
         self.column_types = None
         self.num_columns = 0
@@ -469,7 +499,7 @@ cdef class MSSQLConnection:
     cdef fetch_next_row_dict(self, int throw):
         cdef RETCODE rtc
         cdef int col
-        
+
         if self.last_dbresults == NO_MORE_RESULTS:
             self.clear_metadata()
             if throw:
@@ -479,7 +509,7 @@ cdef class MSSQLConnection:
             rtc = dbnextrow(self.dbproc)
         
         check_cancel_and_raise(rtc, self)
-        
+
         if rtc == NO_MORE_ROWS:
             self.clear_metadata()
             
@@ -553,15 +583,15 @@ cdef class MSSQLConnection:
             return None
         
         self.clear_metadata()
-    
+
         # Since python doesn't have a do/while loop do it this way
         while True:
             with nogil:
                 self.last_dbresults = dbresults(self.dbproc)
             self.num_columns = dbnumcols(self.dbproc)
-            if self.last_dbresults != SUCCEED and self.num_columns > 0:
+            if self.last_dbresults != SUCCEED or self.num_columns > 0:
                 break
-        
+
         check_cancel_and_raise(self.last_dbresults, self)
         
         if self.last_dbresults == NO_MORE_RESULTS:
@@ -569,14 +599,11 @@ cdef class MSSQLConnection:
         
         self._rows_affected = dbcount(self.dbproc)
         self.num_columns = dbnumcols(self.dbproc)
-        
-        self.column_names = tuple()
-        self.column_types = tuple()
 
         column_names = list()
         column_types = list()
         
-        for col in xrange(1, self.num_columns):
+        for col in xrange(1, self.num_columns + 1):
             column_names.append(dbcolname(self.dbproc, col))
             coltype = dbcoltype(self.dbproc, col)
             column_types.append(get_api_coltype(coltype))
