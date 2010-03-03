@@ -1,6 +1,11 @@
 Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
-	* _mssql.pyx: add support for varbinary types
-	* pymssql.pyx: add DSN support that was missing
+	* _mssql.pyx:
+		+ feature: add support for varbinary types
+		+ bugfix: rename MSSQLConnection.next_result to MSSQLConnection.nextresult as before
+	* pymssql.pyx:
+		+ feature: add DSN support that was missing
+	* tests:
+		+ feature: add test for multiple results
 	* setup.py: fix building on windows
 	* version 1.9.903
 

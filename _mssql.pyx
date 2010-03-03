@@ -911,7 +911,7 @@ cdef class MSSQLConnection:
         """
         return MSSQLStoredProcedure(procname, self)
 
-    def next_result(self):
+    def nextresult(self):
         """
         nextresult() -- move to the next result, skipping all pending rows.
         

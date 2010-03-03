@@ -79,26 +79,39 @@ class QueryTests(mssqltests.MSSQLTestCase):
     def test01SimpleSelect(self):
         query = 'SELECT getdate() as cur_date_info'
         self.mssql.execute_query(query)
-        rows = list(self.mssql)
+        rows = tuple(self.mssql)
         self.assertTrue(isinstance(rows[0]['cur_date_info'], datetime))
 
     def test02EmptySelect(self):
         query = 'SELECT * FROM pymssql'
         self.mssql.execute_query(query)
-        rows = list(self.mssql)
-        self.assertEquals(rows, [])
+        rows = tuple(self.mssql)
+        self.assertEquals(rows, ())
 
     def test03InsertSelect(self):
         self.insertSampleData()
         self.mssql.execute_query('SELECT * FROM pymssql')
 
         # check row count
-        rows = list(self.mssql)
+        rows = tuple(self.mssql)
         self.assertEquals(10, len(rows))
 
         # check col count
         cols = [k for k in rows[0] if type(k) is int]
         self.assertEquals(self.testTableColCount, len(cols))
+
+    def test19MultipleResults(self):
+        self.mssql.execute_query("SELECT 'ret1'; SELECT 'ret2'; SELECT 'ret3'")
+        rows = tuple(self.mssql)
+        self.assertEquals(rows[0][0], 'ret1')
+        self.mssql.nextresult()
+
+        rows = tuple(self.mssql)
+        self.assertEquals(rows[0][0], 'ret2')
+        self.mssql.nextresult()
+
+        rows = tuple(self.mssql)
+        self.assertEquals(rows[0][0], 'ret3')
 
 suite = unittest.TestSuite()
 suite.addTest(unittest.makeSuite(QueryTests))
