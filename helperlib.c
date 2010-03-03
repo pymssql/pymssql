@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 int rmv_lcl(char *s, char *buf, size_t buflen) {
