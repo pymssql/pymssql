@@ -436,7 +436,7 @@ def connect(dsn=None, user='sa', password='', host='.',
 
     try:
         conn = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset,
-            dbbase, tds_ver)
+            dbbase)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])
