@@ -554,7 +554,7 @@ cdef extern from "sqlfront.h":
     DBINT dbcolutype(DBPROCESS *, int)
     DBINT stat_xact(DBPROCESS *, DBINT)
     RETCODE dbaltbind(DBPROCESS *, int, int, int, DBINT, BYTE *)
-    RETCODE dbcancel(DBPROCESS *)
+    RETCODE dbcancel(DBPROCESS *) nogil
     RETCODE dbreglist(DBPROCESS *)
     int bcp_getbatchsize(DBPROCESS *)
     float __builtin_tanhf(float)

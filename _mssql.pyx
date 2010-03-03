@@ -242,8 +242,12 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 
     if conn.dbproc == NULL:
         return SUCCEED
+    
+    with nogil:
+        rtc = dbcancel(conn.dbproc);
 
-    rtc = dbcancel(conn.dbproc);
+    conn.clear_metadata()
+    return rtc
 
 ##############################
 ## MSSQL Row Iterator Class ##
@@ -689,6 +693,22 @@ cdef class MSSQLConnection:
         Remaining rows, if any, can still be iterated after calling this
         method.
         """
+        cdef RETCODE rtc
+
+        self.format_and_run_query(query_string, params)
+        self.get_result()
+
+        with nogil:
+            rtc = dbnextrow(self.dbproc)
+
+        self._rows_affected = dbcount(self.dbproc)
+
+        if rtc == NO_MORE_ROWS:
+            self.clear_metadata()
+            self.last_dbresults = 0
+            return None
+
+        return self.get_row(rtc)[0]
     
     cdef fetch_next_row_dict(self, int throw):
         cdef RETCODE rtc
@@ -740,8 +760,10 @@ cdef class MSSQLConnection:
         if params:
             query_string = self.format_sql_command(query_string, params)
         
+        # Cancel any pending results
         db_cancel(self)
         
+        # Prepare the query buffer
         dbcmd(self.dbproc, query_string)
         
         # Execute the query
