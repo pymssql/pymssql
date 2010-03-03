@@ -728,6 +728,10 @@ cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
 cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
     return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
 
+####################################
+## Quoting & Formatting Functions ##
+####################################
+
 cdef _quote_simple_value(value):
     
     if value == None:
@@ -781,6 +785,29 @@ cdef _quote_or_flatten(data):
 
 def quote_or_flatten(data):
     return _quote_or_flatten(data)
+
+cdef _quote_data(data):
+    result = _quote_simple_value(data)
+    
+    if result is not None:
+        return result
+    
+    if type(data) is dict:
+        result = {}
+        for k, v in data.iteritems():
+            result[k] = _quote_or_flatten(v)
+        return result
+    
+    if type(data) is tuple:
+        result = []
+        for v in data:
+            result.append(_quote_or_flatten(v))
+        return tuple(result)
+    
+    raise ValueError('expected a simple type, a tuple or a dictionary.')
+
+def quote_data(data):
+    return _quote_data(data)
 
 cdef void init_mssql():
     cdef RETCODE rtc
