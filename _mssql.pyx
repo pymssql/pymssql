@@ -362,7 +362,7 @@ cdef class MSSQLConnection:
 
     property tds_version:
         """
-        Returns what tds version the connection is using.
+        Returns what TDS version the connection is using.
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
@@ -389,6 +389,16 @@ cdef class MSSQLConnection:
     
         cdef LOGINREC *login
         cdef RETCODE rtc
+
+        # support MS methods of connecting locally
+        instance = ""
+        if "\\" in server:
+            server, instance = server.split("\\")
+
+        if server in (".", "(local)"):
+            server = "localhost"
+
+        server = server + "\\" + instance if instance else server
     
         login = dblogin()
         if login == NULL:
