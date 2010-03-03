@@ -69,8 +69,41 @@ cdef extern from "sqlfront.h":
         SYBTEXT
         SYBVARBINARY
         SYBVARCHAR
+    
+    ## Primary functions ##
+    # Get address of compute column data. 
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     computeid of COMPUTE clause to which we're referring. 
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     pointer to columns' data buffer.
+    #
+    #   Return values:
+    #     NULL no such compute id or column.
+    BYTE * dbadata(DBPROCESS *, int, int) nogil
+    
+    # Get address of compute column data. 
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     computeid of COMPUTE clause to which we're referring. 
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     size of the data, in bytes
+    #
+    #   Return values:
+    #     -1 no such column or computeid.
+    #      0 data is NULL.
+    DBINT dbadlen(DBPROCESS *, int, int) nogil
+    ## End Primary functions ##
 
-    ## Remote Procedure functions
+    ## Remote Procedure functions ##
     # Determine if query generated a return status number
     #
     #   Parameters:
@@ -191,6 +224,7 @@ cdef extern from "sqlfront.h":
     #     SUCCEED   normal
     #     FAIL      on error
     RETCODE dbrpcsend(DBPROCESS *)
+    ## End Remote Procedure functions ##
     
     float __builtin_logf(float)
     
@@ -250,7 +284,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbregdrop(DBPROCESS *, DBCHAR *, DBSMALLINT)
 #	complex double __builtin_cexp(complex double)
     DBINT dbvarylen(DBPROCESS *, int)
-    BYTE * dbadata(DBPROCESS *, int, int) nogil
     int dbgetpacket(DBPROCESS *)
     bool __builtin_islessequal()
 #	double __builtin_carg(complex double)
@@ -464,7 +497,6 @@ cdef extern from "sqlfront.h":
 #	complex double __builtin_csqrt(complex double)
 #	complex double __builtin_cpow(complex double, complex double)
 #	double __builtin_cabs(complex double)
-    DBINT dbadlen(DBPROCESS *, int, int) nogil
     RETCODE dbtsput(DBPROCESS *, DBBINARY *, int, int, char *)
     int dbaltcolid(DBPROCESS *, int, int)
     long int __builtin_expect(long int, long int)
@@ -632,7 +664,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbuse(DBPROCESS *, char *)
 
 ctypedef int LINE_T
-
 
 cdef void clr_err(MSSQLConnection conn):
     if conn != None:
