@@ -221,7 +221,7 @@ cdef class Cursor:
 
     property rowcount:
         def __get__(self):
-            return None
+            return self._rownumber
 
     property rownumber:
         def __get__(self):

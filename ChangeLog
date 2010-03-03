@@ -6,6 +6,7 @@ Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 		+ bugfix: set the charset upon login
 	* pymssql.pyx:
 		+ feature: add DSN support that was missing
+		+ bugfix: fix rowcount property
 	* sqlfront.pxd:
 		add DBSETLCHARSET
 	* tests:
