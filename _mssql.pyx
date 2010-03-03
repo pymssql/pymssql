@@ -541,7 +541,7 @@ cdef class MSSQLConnection:
         else:
             return (<char *>data)[:length]
 
-    cdef BYTE *convert_python_value(self, value, int *dbtype, int *length) except NULL:
+    cdef BYTE *convert_python_value(self, value, int *dbtype, int *length) except <BYTE *>NULL:
         cdef int *intValue
         cdef double *dblValue
         cdef long *longValue
@@ -597,7 +597,7 @@ cdef class MSSQLConnection:
             if type(value) not in (str, unicode):
                 raise TypeError
 
-            if self._charset and type(value) is unicode:
+            if strlen(self._charset) > 0 and type(value) is unicode:
                 value = value.encode(self._charset)
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
