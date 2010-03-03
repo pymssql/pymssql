@@ -376,9 +376,9 @@ cdef class Cursor:
         """
         pass
 
-def connect(dsn = None, user = 'sa', password = '', host = '.', 
-        database = '', timeout = 0, login_timeout = 60, trusted = False,
-        charset = None, as_dict = False, tds_ver = 7):
+def connect(dsn=None, user='sa', password='', host='.', 
+        database='', timeout=0, login_timeout=60, trusted=False,
+        charset=None, as_dict=False, tds_ver=7):
     """
     Constructor for creating a connection to the database. Returns a
     connection object.
