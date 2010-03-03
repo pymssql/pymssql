@@ -46,12 +46,12 @@ setup(
     author_email = 'damoxc@gmail.com',
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
-    py_modules = ['pymssql'],
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension('_mssql', ['helperlib.c', '_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
-                             libraries = libraries)],
+                             libraries = libraries),
+                   Extension('pymssql', ['pymssql.pyx'])],
     data_files = data_files
 )
