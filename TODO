@@ -4,10 +4,10 @@ Complete
  * Connecting to the server
  * Selecting a database
  * Executing straight text
- 
-TODO
-====
-
  * Quote and flatten parameters
  * Returning data
+
+Partially Complete
+==================
+
  * Stored Procedures
