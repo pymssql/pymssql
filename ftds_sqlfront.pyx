@@ -487,7 +487,7 @@ cdef extern from "sqlfront.h":
 	float __builtin_frexpf(float, int *)
 	long double __builtin_frexpl(long double, int *)
 	RETCODE dbfcmd(DBPROCESS *, char *)
-	DBINT dbcount(DBPROCESS *)
+	DBINT dbcount(DBPROCESS *) nogil
 	RETCODE dbsprline(DBPROCESS *, char *, DBINT, DBCHAR)
 	bool __builtin_va_arg_pack()
 	int dbstrcmp(DBPROCESS *, char *, int, char *, int, DBSORTORDER *)
