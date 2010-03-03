@@ -157,6 +157,7 @@ setup(
     data_files = [
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
+    setup_requires=["Cython>=0.12"],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
