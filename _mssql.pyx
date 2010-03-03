@@ -820,7 +820,7 @@ cdef class MSSQLConnection:
         """
         cdef int col
         self.get_result()
-        
+
         if self.num_columns == 0:
             return None
         
@@ -1324,6 +1324,24 @@ def connect(*args, **kwargs):
 MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
 MssqlConnection = MSSQLConnection
+
+#####################
+## Max Connections ##
+#####################
+def get_max_connections():
+    """
+    Get maximum simultaneous connections db-lib will open to the server. 
+    """
+    return dbgetmaxprocs()
+
+def set_max_connections(int limit):
+    """
+    Set maximum simultaneous connections db-lib will open to the server.
+
+    :param limit: the connection limit
+    :type limit: int
+    """
+    dbsetmaxprocs(limit)
 
 cdef void init_mssql():
     global _decimal_context
