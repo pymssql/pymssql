@@ -42,4 +42,4 @@ cdef class MSSQLStoredProcedure:
     cdef dict params
     cdef _mssql_parameter_node *params_list
 
-    cdef void _bind(self, value, int, char *, int, int, int)
+    cdef int _bind(self, value, int, char *, int, int, int)

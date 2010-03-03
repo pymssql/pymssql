@@ -514,59 +514,70 @@ cdef class MSSQLConnection:
         else:
             return (<char *>data)[:length]
 
-    cdef BYTE *convert_python_value(self, value, int *dbtype, int *length):
+    cdef BYTE *convert_python_value(self, value, int *dbtype, int *length) except NULL:
         cdef int *intValue
         cdef double *dblValue
         cdef long *longValue
+        cdef char *strValue
 
         if value is None:
             return NULL
 
         if dbtype[0] == SQLBIT:
             intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>int(value)
+            intValue[0] = <int>value
             return <BYTE *><DBBIT *>intValue
 
-        elif dbtype[0] == SQLINT1:
+        if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
             intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
-            return <BYTE *><DBTINYINT *>intValue
+            if dbtype[0] == SQLINT1:
+                return <BYTE *><DBTINYINT *>intValue
+            if dbtype[0] == SQLINT2:
+                return <BYTE *><DBSMALLINT *>intValue
+            if dbtype[0] == SQLINT4:
+                return <BYTE *><DBINT *>intValue
 
-        elif dbtype[0] == SQLINT2:
-            intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>value
-            return <BYTE *><DBSMALLINT *>intValue
-
-        elif dbtype[0] == SQLINT4:
-            intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>value
-            return <BYTE *><DBINT *>intValue
-
-        elif dbtype[0] == SQLINT8:
+        if dbtype[0] == SQLINT8:
             longValue = <long *>PyMem_Malloc(sizeof(long))
             longValue[0] = <long>value
             return <BYTE *>longValue
 
-        elif dbtype[0] == SQLFLT4:
+        if dbtype[0] in (SQLFLT4, SQLFLT8):
             dblValue = <double *>PyMem_Malloc(sizeof(double))
             dblValue[0] = <double>value
-            return <BYTE *><DBREAL *>dblValue
+            if dbtype[0] == SQLFLT4:
+                return <BYTE *><DBREAL *>dblValue
+            if dbtype[0] == SQLFLT8:
+                return <BYTE *><DBFLT8 *>dblValue
 
-        elif dbtype[0] == SQLFLT8:
-            dblValue = <double *>PyMem_Malloc(sizeof(double))
-            dblValue[0] = <double>value
-            return <BYTE *><DBFLT8 *>dblValue
+        if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
+            if type(value) not in (datetime.date, datetime.datetime):
+                raise TypeError
 
-        elif dbtype[0] in (SQLVARCHAR, SQLCHAR, SQLTEXT):
+            value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
+                str(value.microsecond / 1000)
+            dbtype[0] = SQLCHAR
+
+        if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
+            if type(value) != decimal.Decimal:
+                raise TypeError
+
+            value = str(value)
+            dbtype[0] = SQLCHAR
+
+        if dbtype[0] in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if type(value) not in (str, unicode):
-                raise TypeError()
+                raise TypeError
 
             if self._charset and type(value) is unicode:
                 value = value.encode(self._charset)
-                
-            return <BYTE *><char *>value
 
-        elif dbtype[0] in (SQLBINARY, SQLIMAGE):
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            strcpy(strValue, value)
+            return <BYTE *>strValue
+
+        if dbtype[0] in (SQLBINARY, SQLIMAGE):
             if type(value) is not str:
                 raise TypeError()
             return <BYTE *><char *>value
@@ -962,8 +973,8 @@ cdef class MSSQLStoredProcedure:
         """
         self._bind(value, dbtype, param_name, output, null, max_length)
 
-    cdef void _bind(self, value, int dbtype, char *name, int output,
-            int null, int max_length):
+    cdef int _bind(self, value, int dbtype, char *name, int output,
+            int null, int max_length) except 1:
         cdef int length = -1
         cdef BYTE status, *data
         cdef RETCODE rtc
@@ -972,12 +983,12 @@ cdef class MSSQLStoredProcedure:
         # Set status according to output being True or False
         status = DBRPCRETURN if output else <BYTE>0
 
+        # Convert the PyObject to the db type
+        data = self.conn.convert_python_value(value, &dbtype, &length)
+
         # Store the value in the parameters dictionary for returning
         # later.
         self.params[name] = value
-
-        # Convert the PyObject to the db type
-        data = self.conn.convert_python_value(value, &dbtype, &length)
 
         # Store the converted parameter in our parameter list so we can
         # free() it later.
@@ -1014,12 +1025,10 @@ cdef class MSSQLStoredProcedure:
                 "data = %x)\n", name, status, max_length, dbtype,
                 length, data)
 
-            #fprintf(stderr, "--- data = %d", data[0])
-
         with nogil:
             rtc = dbrpcparam(self.dbproc, name, status, dbtype,
                 max_length, length, data)
-        check_cancel_and_raise(rtc, self.conn)
+        return check_cancel_and_raise(rtc, self.conn)
 
     def execute(self):
         cdef RETCODE rtc
