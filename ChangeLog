@@ -15,7 +15,11 @@ Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 		add DBSETLCHARSET
 	* tests:
 		+ feature: add test for multiple results
-	* setup.py: fix building on windows
+	* setup.py:
+		+ feature: fix building on windows
+		+ feature: clean generated C files in the clean command
+		+ feature: automatically extract freetds.zip on windows when
+		           building
 	* version 1.9.903
 
 Fri Nov 20 13:03:00 2009 Damien Churchill <damoxc@gmail.com>
