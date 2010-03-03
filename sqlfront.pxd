@@ -228,6 +228,7 @@ cdef extern from "sqlfront.h":
     ## End Remote Procedure functions ##
     
     float __builtin_logf(float)
+    DBBOOL DBDEAD(DBPROCESS *)
     
     BYTE * dbgetuserdata(DBPROCESS *)
     RETCODE dbsetmaxprocs(int)
@@ -663,5 +664,6 @@ cdef extern from "sqlfront.h":
     float __builtin_fmodf(float, float)
     long double __builtin_fmodl(long double, long double)
     RETCODE dbuse(DBPROCESS *, char *)
+    int EXCOMM = 9
 
 ctypedef int LINE_T
