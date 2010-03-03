@@ -7,6 +7,11 @@ cdef extern from "sqlfront.h":
     ## Type Definitions ##
     cdef struct tds_dblib_dbprocess:
         pass
+    cdef struct tds_sysdep_real32_type:
+        pass
+    cdef struct tds_sysdep_real64_type:
+        pass
+
     ctypedef tds_dblib_dbprocess DBPROCESS
     cdef struct tds_dblib_loginrec:
         pass
@@ -20,10 +25,9 @@ cdef extern from "sqlfront.h":
     ctypedef int           DBBIT
     ctypedef unsigned char DBBOOL
     ctypedef char          DBCHAR
-    cdef struct            DBDATETIME4:
-        DBUSMALLINT days
-        DBUSMALLINT minutes
     ctypedef int           DBINT
+    ctypedef tds_sysdep_real32_type DBREAL
+    ctypedef tds_sysdep_real64_type DBFLT8
     cdef struct            DBMONEY:
         DBINT mnyhigh
         unsigned int mnylow
@@ -31,6 +35,13 @@ cdef extern from "sqlfront.h":
         DBINT mny4
     ctypedef short int     DBSMALLINT
     
+    ctypedef struct        DBDATETIME:
+        DBINT dtdays
+        DBINT dttime
+    ctypedef struct        DBDATETIME4:
+        DBUSMALLINT days
+        DBUSMALLINT minutes
+
     ## Constants ##
     int FAIL
     int SUCCEED
@@ -309,9 +320,6 @@ cdef extern from "sqlfront.h":
         DBINT scale
     ctypedef dbtypeinfo DBTYPEINFO
     RETCODE bcp_colfmt_ps(DBPROCESS *, int, int, int, DBINT, BYTE *, int, int, DBTYPEINFO *)
-    cdef struct DBDATETIME:
-        DBINT dtdays
-        DBINT dttime
     DBINT dbdatepart(DBPROCESS *, int, DBDATETIME *)
     ctypedef int STATUS
     STATUS dbsetrow(DBPROCESS *, DBINT)
@@ -325,16 +333,16 @@ cdef extern from "sqlfront.h":
     STATUS dbrowtype(DBPROCESS *)
     int dbspid(DBPROCESS *)
     cdef struct dbdaterec:
-        DBINT dateyear
-        DBINT datemonth
-        DBINT datedmonth
-        DBINT datedyear
-        DBINT datedweek
-        DBINT datehour
-        DBINT dateminute
-        DBINT datesecond
-        DBINT datemsecond
-        DBINT datetzone
+        DBINT year
+        DBINT month
+        DBINT day
+        DBINT dayofyear
+        DBINT weekday
+        DBINT hour
+        DBINT minute
+        DBINT second
+        DBINT millisecond
+        DBINT tzone
     ctypedef dbdaterec DBDATEREC
     RETCODE dbdatecrack(DBPROCESS *, DBDATEREC *, DBDATETIME *)
     RETCODE remove_xact(DBPROCESS *, DBINT, int)
@@ -598,7 +606,7 @@ cdef extern from "sqlfront.h":
         CI_ALTERNATE = 2
         CI_CURSOR = 3
     ctypedef int BOOL
-    cdef struct DBCOL:
+    ctypedef struct DBCOL:
         DBINT SizeOfStruct
         DBCHAR * Name
         DBCHAR * ActualName

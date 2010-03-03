@@ -4,10 +4,13 @@ This is an effort to convert the pymssql low-level C module to Cython.
 
 DEF PYMSSQL_DEBUG = 0
 
-import sys
+import decimal
 import datetime
 from sqlfront cimport *
 from stdio cimport fprintf, sprintf, FILE
+from stdlib cimport strlen
+
+cdef extern int rmv_lcl(char *, char *, size_t)
 
 cdef extern from "stdio.h" nogil:
     cdef FILE *stderr
@@ -20,6 +23,8 @@ cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef char *_mssql_last_msg_str = ""
+
+cdef _decimal_context
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
@@ -96,7 +101,7 @@ login_timeout = 60
 min_error_severity = 6
 
 # Buffer size for large numbers
-cdef int NUMERIC_BUF_SZ = 45
+DEF NUMERIC_BUF_SZ = 45
 
 ###################
 ## Error Handler ##
@@ -377,10 +382,9 @@ cdef class MSSQLConnection:
         self._connected = 0
     
     cdef convert_db_value(self, BYTE *data, int type, int length):
-        #cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
+        cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
         cdef double ddata
         cdef int len
-        cdef long intdata
         cdef long prevPrecision
         cdef BYTE precision
         cdef DBDATEREC di
@@ -388,8 +392,65 @@ cdef class MSSQLConnection:
         cdef DBCOL dbcol
         
         if type == SQLBIT:
-            intdata = <int><DBBIT *>data
-            return bool(intdata)
+            return bool(<int>(<DBBIT *>data)[0])
+
+        elif type == SQLINT1:
+            return int(<int>(<DBTINYINT *>data)[0])
+
+        elif type == SQLINT2:
+            return int(<int>(<DBSMALLINT *>data)[0])
+
+        elif type == SQLINT4:
+            return int(<int>(<DBINT *>data)[0])
+
+        elif type == SQLINT8:
+            return long(<long>(<long *>data)[0])
+
+        elif type == SQLFLT4:
+            return float(<float>(<DBREAL *>data)[0])
+
+        elif type == SQLFLT8:
+            return float(<float>(<DBFLT8 *>data)[0])
+
+        elif type in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
+            dbcol.SizeOfStruct = sizeof(dbcol)
+
+            if type in (SQLMONEY, SQLMONEY4):
+                precision = 4
+            else:
+                precision = dbcol.Scale
+
+            prevPrecision = _decimal_context.prec
+            _decimal_context.prec = precision
+
+            length = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
+                <BYTE *>buf, NUMERIC_BUF_SZ)
+
+            len = rmv_lcl(buf, buf, NUMERIC_BUF_SZ)
+
+            if not len:
+                raise MSSQLDriverException('Could not remove locale formatting')
+            return decimal.Decimal(str(buf))
+
+        elif type == SQLDATETIM4:
+            dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
+                <BYTE *>&dt, -1)
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            return datetime.datetime(di.year, di.month, di.day,
+                di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif type == SQLDATETIME:
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
+            return datetime.datetime(di.year, di.month, di.day,
+                di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
+            if self.charset:
+                return str(<char *>data).decode(self.charset)
+            else:
+                return str(<char *>data)
+        else:
+            return str(<char *>data)
 
     def execute_non_query(self, query_string, params=None):
         """
@@ -765,9 +826,74 @@ cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
 cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
     return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
 
-####################################
-## Quoting Functions ##
-####################################
+
+######################
+## Helper Functions ##
+######################
+"""cdef int remove_locale(char *s, char *buf, size_t buflen):
+    cdef char c, lastsep
+    cdef size_t i, length, n
+
+
+    for i in xrange(buflen + 1):
+        c = s[i]
+        if c in ('.', ','):
+            lastsep = c
+
+    n = 0
+    for i in xrange(buflen + 1):
+        if (c >= '0' and c <= '9') or c in ('-', '+'):
+            buf[n] = s[i]
+            n += 1
+        elif (s[i] == lastsep):
+            buf[n] = s[i]
+            n += 1
+
+    print str(buf)
+
+    return 0
+
+    cdef size_t l, pi, bi
+
+    if b == <char *>NULL:
+        return 0
+
+    if s == <char *>NULL:
+        b[0] = 0
+        return 0
+
+    pi = 0
+    # Find the last separator and length of s
+    c = p[pi]
+    while c:
+        if c == '.' or c == ',':
+            lastsep = p
+        pi += 1
+        c = p[pi]
+
+    l = p - s
+    if buflen < l:
+        return 0
+
+    pi = 0
+    bi = 0
+    # Copy the number, skipping all but the last separator and all other
+    # chars.
+    p = s
+    c = p[pi]
+    while c:
+        bi += 1
+        if (c >= '0' and c <= '9') or (c == '-' or c == '+'):
+            b[bi] = c
+        elif p == lastsep:
+            b[bi] = '.'
+        pi += 1
+        c = p[pi]
+
+    b[0] = 0
+
+    return <int>(b - buf)"""
+
 cdef int get_api_coltype(int coltype):
     if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4, SQLINT8, SQLINTN,
             SQLFLT4, SQLFLT8, SQLFLTN):
@@ -782,6 +908,9 @@ cdef int get_api_coltype(int coltype):
     else:
         return BINARY
 
+#######################
+## Quoting Functions ##
+#######################
 cdef _quote_simple_value(value):
 
     if value == None:
@@ -863,6 +992,7 @@ def quote_data(data):
     return _quote_data(data)
 
 cdef void init_mssql():
+    global _decimal_context
     cdef RETCODE rtc
     rtc = dbinit()
     if rtc == FAIL:
@@ -870,5 +1000,7 @@ cdef void init_mssql():
     
     dberrhandle(err_handler)
     dbmsghandle(msg_handler)
+
+    _decimal_context = decimal.getcontext()
 
 init_mssql()

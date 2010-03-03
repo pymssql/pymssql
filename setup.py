@@ -5,6 +5,10 @@ import sys
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 
+_extra_compile_args = [
+    '-DMSDBLIB'
+]
+
 if sys.platform == 'win32':
     print ('ERROR: This version of pymssql is not support on windows')
     sys.exit(1)
@@ -44,7 +48,8 @@ setup(
     url = 'http://pymssql.sourceforge.net',
     py_modules = ['pymssql'],
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension('_mssql', ['_mssql.pyx'],
+    ext_modules = [Extension('_mssql', ['helperlib.c', '_mssql.pyx'],
+                             extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
                              libraries = libraries)],
