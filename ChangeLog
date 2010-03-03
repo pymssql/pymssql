@@ -1,0 +1,293 @@
+Fri Nov 20 13:03:00 2009 Damien Churchill <damoxc@gmail.com>
+	* mssqldbmodule.c: deprecated in favour of _mssql.pyx
+	* pymssql.py: deprecated in favour of pymssql.py
+	+ feature: added support for uniqueidentifer types
+	+ feature: added support for calling remote procedures programmatically
+	* version 1.9.901
+
+Tue May 12 15:43:00 2009  Andrzej Kukula <akukula@gmail.com>
+	* mssqldbmodule.c:
+		+ bugfix: pymssql didn't return second, third etc. result set
+			in case of multi-result statements, e.g. 'SELECT 1; SELECT 2',
+			thanks Damien Churchill <damoxc@users.sourceforge.net>
+
+Wed Apr 29 19:31:00 2009  Andrzej Kukula <akukula@gmail.com>
+	* mssqldbmodule.c:
+	  + fixed possible memory leak, thanks Evgeny Cherkashin
+		<eugene.adm@gmail.com>
+
+Tue Apr 23 23:00:00 2009  Andrzej Kukula <akukula@gmail.com>
+	+ bugfix: fixed rare quoting bug in select_db()
+	+ feature: added 'max_conn' parameter to pymssql.connect() and
+	  _mssql.connect() which defaults to 25, thanks Daniel Watrous
+	  <dwmaillist@gmail.com>
+	* nagios-plugin update - thanks Josselin Mouette <joss@debian.org>:
+	  + Include a -P port option, to avoid having to passing it with the
+		host name
+	  + Fix the encoding of the comments; utf-8 is the declared encoding
+		of the file and must be followed
+	  + Fix a typo in the SQL syntax
+	  + Connect explicitly to the "master" database (required since 1.0.0)
+	  + Improve perfdata output.
+	* version 1.0.2
+
+Tue Apr 21 22:56:00 2009  Andrzej Kukula <akukula@gmail.com>
+	* mssqldbmodule.c:
+	  + bugfix in format_and_run_query(): query strings were sometimes
+		overwritten with garbage due to DECREF in wrong place; thanks
+		Igor Nazarenko <igor.n.nazarenko@gmail.com>
+	  + bugfix in get_result(): if a query batch contained DECLARE or
+		possibly other T-SQL statements, no results were returned
+		thanks Kay Schluehr <schluehrk@users.sourceforge.net>
+	  + bugfix in execute_scalar(): check if there are any columns in result
+	  + bugfix: check for FAIL after each dbnextrow()
+	  + feature: Add support for bigint - #2660972; thanks Alexandr
+		Zamaraev <shura_zam@users.sourceforge.net>
+	* pymssql.c:
+	  + bugfix in execute(): if execute is called without second argument,
+		don't treat '%' in query string as formatting character; restored
+		compatibility with common sense and with pymssql < 1.0.0; thanks
+		Corey Bertram <corey.bertram@monitoredsecurity.com>,
+		Wes McKinney <wesmckinn@gmail.com>
+	  + feature: it is possible to specify 'as_dict' to pymssql.connect
+		and rows will be returned as dictionaries instead of tuples;
+		thanks Daniel Watrous <dwmaillist@gmail.com>
+
+Thu Jan 30 18:36:00 2009  Andrzej Kukula <akukula@gmail.com>
+	* mssqldbmodule.c:
+	  + Pyssize_t error on x64 - thanks Josselin Mouette <joss@debian.org>
+	  + critical charset updates, thanks Josselin Mouette <joss@debian.org>
+	  + more Py_ssize_t updates, further code cleanups
+	  + fixed some compiler warnings
+	* pymssql.py:
+	  + execute() failed, thanks Josselin Mouette <joss@debian.org>
+	  + critical charset updates, thanks Josselin Mouette <joss@debian.org>
+	  + removed warnings, users don't want them and they are not 'MUST'
+		priority in DB-API spec
+	* nagios-plugin: introducted Nagios plugin, thanks Julien Blache
+	  and Josselin Mouette
+	* version 1.0.1
+
+Thu Jan 29 19:23:00 2009  Andrzej Kukula <akukula@gmail.com>
+	* version 1.0.0
+	* so many changes I'll not put them here, I'll document
+	  changes from now on.
+
+Mon Sep 25 20:18:00 2006  Andrzej Kukula <akukula@gmail.com>
+	* setup.py: fix for Fink (http://Fink.SF.Net) under OS X (thanks
+	  Terrence Brannon <metaperl@gmail.com>)
+
+Sun Sep 24 10:44:00 2006  Andrzej Kukula <akukula@gmail.com>
+	* setup.py:
+	  + it can now dynamically determine the path to SQL 2000 Developer
+		Tools, if win32api and win32con modules are available
+	  + simple Python version check to prevent most frequently asked
+		question
+	  + version 0.8.0
+
+Wed Sep 13 01:20:00 2006  Andrzej Kukula <akukula@gmail.com>
+	* mssqldbmodule.c:
+	  + corrected misspellings in docstrings
+	  + fixed segfault on connection close with Python 2.5; thanks
+		Justin Francis <jfrancis@pivotalpayments.com>
+	* pymssql.py:
+	  + fixed two minor DB-API incompatibilities (thanks Matthew Good
+		<matt@matt-good.net>)
+	  + fixed datetime quoting (thanks Jan Finell <jfinell@regionline.fi>)
+	* pymssql should be able to build on cygwin (thanks
+	  rob@robnet.com)
+	* docstring fixes, webpage doc updates
+
+Tue May 15 03:18:00 2006  Jooncheol Park <exman@users.sourceforge.net>
+	* setup.py, PKG-INFO, README: license change to LGPL
+
+Wed Mar 15 08:18:00 2006  Andrzej Kukula <akukula@users.sourceforge.net>
+	* pymssql.py: fixed datetime issue (thanks Jan Finell
+	  <jfinell@regionline.fi>)
+
+Fri Feb 24 16:11:00 2006  Andrzej Kukula <akukula@users.sourceforge.net>
+	* mssqldbmodule.c: fixed typos in docstrings (thanks Konstantin
+	  Veretennicov)
+
+Tue Dec 27 15:14:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+	* mssqldbmodule.c: bug fixes, improvements and cleanups:
+	  + implemented set_login_timeout() and set_query_timeout() functions;
+	  + eliminated unnecessary ODBC code
+	  + cleaned up exception code and improved exception handling,
+		SF bug #1335560
+	  + web page now correctly mentions FreeTDS 0.63 as the minimal
+		required version
+	  + stdmsg() method is now deprecated; all errors are concatenated
+		in errmsg()
+	  + implemented min_error_severity: all errors at or above that
+		level will raise the exception; if the severity is lower, they
+		will just accumulate in errmsg()
+	  + added setting coltype to NUMBER for float types (found by
+		Jakub Labath)
+	* setup.py:
+	  + reincarnated ntwdblib.dll which turned out to be redistributable
+		after all; pymssql includes the latest version that allows
+		connecting to SQL 2005; eliminated some stupid notes from the
+		web page and will ease set up process for users
+	* apitest_mssql.py: new file
+	  + provided by Jakub Labath, this file performs some basic DB-API
+		compliance tests; it immediately triggered the unicode bug
+	* version 0.7.4
+
+Sat Oct 22 19:41:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+	* mssqldbmodule.c: multithreading improvements - from now on pymssql
+	  is thread-safe, it releases GIL in proper places; idea and initial
+	  patch by John-Peter Lee (thanks very much!)
+
+Mon Sep 5 23:29:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+	* setup.py: fixed an installation issue regarding importing pymssql
+	  that imports _mssql which isn't installed, and blows up with
+	  AttributeError... (thanks Vsevolod Stakhov)
+	* version 0.7.3
+
+Mon Sep 5 00:32:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+	* version 0.7.2
+
+Sun Sep 4 23:12:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: improvements and cleanups:
+	  + improved error handling: if the db function fails, the exception
+		is thrown automatically and immediately; no need to check
+		return value of conn.query(), just catch _mssql.error
+	  + improved error handling: it is possible that MS SQL calls message
+		handler twice; now _mssql catches and reports both of them at once
+	  + improved error handling: in some cases _mssql.query() returns
+		success but the results are invalid; now it is handled properly
+		(example "SELECT CAST(1234.5678 AS NUMERIC(4,2))")
+	  + added proper connection initialization: a number of SET statements
+		are executed upon connection setup to set sensible SQL behaviour;
+		see source for details; one needs to unset them if needed
+	  + implemented min_{message|error}_severity as it is in php_mssql
+		to ignore unimportant errors; it's work in progress
+	  + new function rmv_lcl() initially by Mark Pettit, to strip locale
+		crap from MONEY values converted to SQLCHAR while generating
+		Decimal object
+	  + other small fixes, improvements and janitorial work
+
+Tue Aug 30 00:16:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: new features:
+	  + large numbers (DECIMAL, NUMERIC, MONEY, SMALLMONEY) are returned
+		as Decimal object -- this helps maintain accuracy; thanks to
+		Mark Pettit for help
+	  + COMPUTE clauses are supported (it wouldn't fetch data for those
+		columns before)
+	  + ROWID type has been removed from _mssql module
+	  + new type DECIMAL to denote Decimal objects in result set
+
+Mon Aug 29 21:59:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: some improvements:
+	  + BIT values are returned as Python bool objects, suggested by
+		Mark Pettit
+	  + close() method returns None on success (not to be used at all)
+		and throws exception on error
+	  + fixed use of uninitialized value when parsing SMALLDATETIME
+	  + another round of performance improvements in GetRow() - eliminated
+		unnecessary data conversions and unneeded DB-Lib calls
+	  + janitorial fixes
+
+Mon Aug 22 04:35:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: massive diff:
+	  + fixed bug with fetching query results of some data types;
+		found by Mark Pettit
+	  + fixed IndexError when query returns no rows; patch by Jakub Labath
+	  + rewritten function GetRow() that fetches query results: performance
+		improvements, better handling of result data types; datetime
+		is returned as datetime object instead of string (it's more
+		consistent with other values -- and more pythonic :)
+	  + eliminated DetermineRowSize()
+	  + cleanups: _mssql_init() further improvements w.r.t. Python API
+	  + janitorial fixes
+	  + added licensing information
+	* pymssql.py: docstring changed to look nicer with help()
+	* version 0.7.2
+
+Thu Aug 11 02:12:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: improved module init function: added doc string,
+	  made compliant with Python 2.0+ module interface (there are no more
+	  coredumps on help())
+	* mssqldbmodule.c: documented that _mssql.connect() is not portable
+	  between FreeTDS-dependent platforms and Windows platforms; documented
+	  host:port usage
+
+Sat Jul 23 14:20:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: eliminated problems with Python exiting upon
+	  invalid login credentials with FreeTDS - the culprit was INT_EXIT
+	  and FreeTDS setting DBDEAD
+	* mssqldbmodule.c: added better error messages (esp. on Windows)
+	* mssqldbmodule.c: added msg_handler and err_handler debugging
+	* 0.7.1 packages re-released
+
+Fri Jul 22 03:19:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: major change; module revamped to support some
+	  more builtin Python features; some redundant code removed; memset()
+	  removed as there were no benefits but performance decrease
+	* mssqldbmodule.c: help(_mssql) works; help for conn object works too
+	* pymssql.py: _quote: removed escaping backslash -- with MSSQL it is
+	  only needed to escape single quotes by duplicating them
+	* pymssql.py: pymssqlCnx class: added a few checks to properly support
+	  DB-API 2.0 (see .close() in PEP 249)
+	* version 0.7.1
+
+Wed Jul 20 22:12:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: removed the workaround for date issue; there were
+	  more problems than benefits
+	* mssqldbmodule_tds.c: removed
+	* some more cleanups and corrections
+
+Tue Jul 19 14:23:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: major change; many portability problems fixed
+	* mssqldbmodule.c: eliminated port setting; this is job for freetds.conf
+	* mssqldbmodule_tds.c: module to get FreeTDS compile-time settings
+	* build fixes; now it builds cleanly on FreeBSD, Linux and Windows
+	* version 0.7.0
+
+Mon Jul 18 15:21:00 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* mssqldbmodule.c: fix build on Windows: changed MS_WIN32 to MS_WINDOWS
+	  reported by Mirek Rusin <mirek.rusin@onet.pl>
+	* mssqldbmodule.c: many small fixes and cleanups; janitorial fixes;
+	  indentation using indent(1L)
+	* ChangeLog fix! 'mysql' was mentioned instead of 'mssql'...
+
+Fri Feb 25 02:15:01 2005  Andrzej Kukula <akukula@users.sourceforge.net>
+
+	* Fix build on Windows with Visual Studio .NET 2003
+	  and MS SQL Server 2000 SP3a
+	* mssqldbmodule.c: Fix compile error with Visual Studio .NET 2003
+	* mssqldbmodule.c: Add detection/workaround for date issue caused by
+	  different dbdatecrack() prototypes
+	* README.freetds: describe dbdatecrack()-related issue
+
+Thu Feb 24 02:03:14 2005  Alejandro Dubrovsky  <alito@organicrobot.com>
+
+	* Export column type names
+	* mssqldbmodule.c:  Return column type information for headers
+	* Use type information to make cursor.description conform to API 2
+
+2005-02-17  Alejandro Dubrovsky  <alito@organicrobot.com>
+
+	* Apply patch by Rob Nichols to get cursor.description closer to API 2 compliance
+
+2005-02-08  Alejandro Dubrovsky  <alito@organicrobot.com>
+
+	* Message changes in mssqldbmodule.c (typos, grammar, etc)
+
+2005-02-07  Alejandro Dubrovsky  <alito@organicrobot.com>
+
+	* Added ChangeLog
+	* API Change:  add 6th parameter 'port' to connect
+	* Don't close connection on cursor close (noted by Alberto Pastore on the sourceforge project page)
+	* Make cursor.fetchone comply with DB-SIG return a tuple, not a list of tuples (report and patch by Chris Curvey)
