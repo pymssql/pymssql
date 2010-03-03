@@ -85,6 +85,17 @@ if sys.platform == 'darwin':
     include_dirs.insert(0, fink + 'include')
     library_dirs.insert(0, fink + 'lib')
 
+class clean(_clean):
+    
+    def run(self):
+        _clean.run(self)
+        for ext in self.distribution.ext_modules:
+            cy_sources = [s for s in ext.sources if s.endswith('.pyx')]
+            for cy_source in cy_sources:
+                c_source = cy_source[:-3] + 'c'
+                if os.path.exists(c_source):
+                    os.remove(c_source)
+
 setup(
     name  = 'pymssql',
     version = '1.9.903',
@@ -94,7 +105,7 @@ setup(
     author_email = 'damoxc@gmail.com',
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
-    cmdclass = {'build_ext': build_ext},
+    cmdclass = {'build_ext': build_ext, 'clean': clean},
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
