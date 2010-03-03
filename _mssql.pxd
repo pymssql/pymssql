@@ -28,6 +28,7 @@ cdef class MSSQLConnection:
     cdef BYTE *convert_python_value(self, value, int*, int*)
     cdef fetch_next_row_dict(self, int)
     cdef format_and_run_query(self, query_string, params=?)
+    cdef format_sql_command(self, format, params=?)
     cdef get_result(self)
     cdef get_row(self, int)
 

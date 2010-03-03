@@ -129,20 +129,22 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         return INT_CANCEL
 
     for conn in connection_object_list:
-        if dbproc == (<MSSQLConnection>conn).dbproc:
-            mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
-            break
+        if dbproc != (<MSSQLConnection>conn).dbproc:
+            continue
+        mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+        mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+        mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+        mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+        break
     
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
 
-    message = 'DB-Lib error message %d, severity %d:\n%s\n' % (dberr,
-            severity, dberrstr) + mssql_lastmsgstr
+    message = mssql_lastmsgstr
+    message += 'DB-Lib error message %d, severity %d:\n%s\n' % (dberr,
+            severity, dberrstr)
 
     if oserr != DBNOERR and oserr != 0:
         message += '%s error during %s' % ('Net-Lib' if \
@@ -178,12 +180,13 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         return INT_CANCEL
 
     for conn in connection_object_list:
-        if dbproc == (<MSSQLConnection>conn).dbproc:
-            mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
-            break
+        if dbproc != (<MSSQLConnection>conn).dbproc:
+            continue
+        mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+        mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+        mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+        mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+        break
 
     # Calculate the maximum severity of all messages in a row
     # Fill the remaining fields as this is going to raise the exception
@@ -488,7 +491,7 @@ cdef class MSSQLConnection:
 
         if dbtype[0] == SQLBIT:
             intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>value
+            intValue[0] = <int>int(value)
             return <BYTE *><DBBIT *>intValue
 
         elif dbtype[0] == SQLINT1:
@@ -700,6 +703,18 @@ cdef class MSSQLConnection:
         # Execute the query
         rtc = db_sqlexec(self.dbproc)
         check_cancel_and_raise(rtc, self)
+
+    cdef format_sql_command(self, format, params=None):
+        
+        if params is None:
+            return format
+
+        if type(params) not in (bool, int, long, float, unicode, str,
+            datetime.datetime, datetime.date, tuple, dict):
+            raise ValueError("'params' arg can be only a tuple or a dictionary.")
+
+        quoted = quote_data(params)
+        return format % quoted
     
     def get_header(self):
         """
@@ -958,6 +973,8 @@ cdef class MSSQLStoredProcedure:
                 "data = %x)\n", name, status, max_length, dbtype,
                 length, data)
 
+            #fprintf(stderr, "--- data = %d", data[0])
+
         with nogil:
             rtc = dbrpcparam(self.dbproc, name, status, dbtype,
                 max_length, length, data)
@@ -1161,8 +1178,14 @@ def quote_or_flatten(data):
 def quote_data(data):
     return _quote_data(data)
 
+###########################
+## Compatibility Aliases ##
+###########################
 def connect(*args, **kwargs):
     return MSSQLConnection(*args, **kwargs)
+
+MssqlDatabaseException = MSSQLDatabaseException
+MssqlDriverException = MSSQLDriverException
 
 cdef void init_mssql():
     global _decimal_context
