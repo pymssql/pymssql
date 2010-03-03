@@ -378,7 +378,7 @@ cdef class Cursor:
 
 def connect(dsn=None, user='sa', password='', host='.', 
         database='', timeout=0, login_timeout=60, trusted=False,
-        charset=None, as_dict=False, tds_ver=7):
+        charset=None, as_dict=False):
     """
     Constructor for creating a connection to the database. Returns a
     connection object.
@@ -401,8 +401,6 @@ def connect(dsn=None, user='sa', password='', host='.',
     :type charset: string
     :param as_dict: whether rows should be returned as dictionaries instead of tuples.
     :type as_dict: boolean
-    :param tds_ver: the TDS version to use for the connection; default 7
-    :type tds_ver: float
     """
 
     # first try to get the params from the DSN

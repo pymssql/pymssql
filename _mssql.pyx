@@ -333,6 +333,19 @@ cdef class MSSQLConnection:
         def __get__(self):
             return self._rows_affected
 
+    property tds_version:
+        """
+        Returns what tds version the connection is using.
+        """
+        def __get__(self):
+            cdef int version = dbtds(self.dbproc)
+            if version == 9:
+                return 8.0
+            elif version == 8:
+                return 7.0
+            elif version == 4:
+                return 4.2
+
     def __cinit__(self):
         log("_mssql.MSSQLConnection.__cinit__()")
         self._connected = 0
@@ -344,7 +357,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
-            charset='', database='', tds_ver=None):
+            charset='', database=''):
         log("_mssql.MSSQLConnection.__init__()")
     
         cdef LOGINREC *login
@@ -358,7 +371,7 @@ cdef class MSSQLConnection:
         DBSETLPWD(login, password)
         DBSETLAPP(login, "pymssql")
         DBSETLHOST(login, server);
-        
+
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 

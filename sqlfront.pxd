@@ -57,6 +57,11 @@ cdef extern from "sqlfront.h":
     int CI_REGULAR
     int MAXCOLNAMELEN
 
+    ## Version Constants ##
+    int DBVERSION_42
+    int DBVERSION_70
+    int DBVERSION_80
+
     ## Type Constants ##
     cdef enum:
         SYBBINARY
