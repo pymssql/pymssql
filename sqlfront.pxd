@@ -50,6 +50,7 @@ cdef extern from "sqlfront.h":
     int NO_MORE_RESULTS
     int REG_ROW
     int DBNOERR
+    int DBRPCRETURN
 
     int CI_ALTERNATE
     int CI_CURSOR
@@ -144,7 +145,7 @@ cdef extern from "sqlfront.h":
     #               dbnumrets()
     #   Returns:
     #     Address of a return parameter value, or NULL if no such retnum.
-    BYTE * dbretdata(DBPROCESS *, int)
+    BYTE * dbretdata(DBPROCESS *, int) nogil
     
     # Get size of an output parameter filled by a stored procedure. 
     #
@@ -155,7 +156,7 @@ cdef extern from "sqlfront.h":
     #               dbnumrets()
     #   Returns:
     #     Size of a return parameter value, or NULL if no such retnum.
-    int dbretlen(DBPROCESS *, int)
+    int dbretlen(DBPROCESS *, int) nogil
     
     # Get name of an output parameter filled by a stored procedure. 
     #
@@ -166,7 +167,7 @@ cdef extern from "sqlfront.h":
     #               dbnumrets()
     #   Returns:
     #     ASCII null-terminated string, NULL if no such retnum. 
-    char * dbretname(DBPROCESS *, int)
+    char * dbretname(DBPROCESS *, int) nogil
     
     # Fetch status value returned by query or remote procedure call.
     #
@@ -175,7 +176,7 @@ cdef extern from "sqlfront.h":
     #               communications with the server.
     #   Returns:
     #     The return value of the rpc call
-    DBINT dbretstatus(DBPROCESS *)
+    DBINT dbretstatus(DBPROCESS *) nogil
     
     # Get datatype of a stored procedure's return parameter.
     #
@@ -186,7 +187,7 @@ cdef extern from "sqlfront.h":
     #               dbnumrets()
     #   Returns:
     #     SYB* datatype token, or -1 if retnum is out of range.
-    int dbrettype(DBPROCESS *, int)
+    int dbrettype(DBPROCESS *, int) nogil
     
     # Initialize a remote procedure call.
     #
@@ -199,7 +200,7 @@ cdef extern from "sqlfront.h":
     #   Return values:
     #     SUCCEED   normal
     #     FAIL      on error
-    RETCODE dbrpcinit(DBPROCESS *, char *, DBSMALLINT)
+    RETCODE dbrpcinit(DBPROCESS *, char *, DBSMALLINT) nogil
     
     # Add a parameter to a remote procedure call. 
     #
@@ -225,7 +226,7 @@ cdef extern from "sqlfront.h":
     #   Return values:
     #     SUCCEED   normal
     #     FAIL      on error
-    RETCODE dbrpcparam(DBPROCESS *, char *, BYTE, int, DBINT, DBINT, BYTE *)
+    RETCODE dbrpcparam(DBPROCESS *, char *, BYTE, int, DBINT, DBINT, BYTE *) nogil
     
     # Execute the procedure and free associated memory.
     #
@@ -235,7 +236,7 @@ cdef extern from "sqlfront.h":
     #   Return values:
     #     SUCCEED   normal
     #     FAIL      on error
-    RETCODE dbrpcsend(DBPROCESS *)
+    RETCODE dbrpcsend(DBPROCESS *) nogil
     ## End Remote Procedure functions ##
     
     float __builtin_logf(float)
@@ -441,7 +442,7 @@ cdef extern from "sqlfront.h":
     RETCODE dbsendpassthru(DBPROCESS *, DBVOIDPTR)
     char * dbdayname(DBPROCESS *, char *, int)
 #	complex double __builtin_ctan(complex double)
-    RETCODE dbsqlok(DBPROCESS *)
+    RETCODE dbsqlok(DBPROCESS *) nogil
     RETCODE dbcursorbind(DBCURSOR *, int, int, DBINT, DBINT *, BYTE *, DBTYPEINFO *)
     DBINT dbspr1rowlen(DBPROCESS *)
     int dbtsnewlen(DBPROCESS *)
