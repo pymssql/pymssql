@@ -6,6 +6,7 @@ DEF PYMSSQL_DEBUG = 0
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
+DEF EXCOMM = 9
 
 import uuid
 import decimal
@@ -111,9 +112,9 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
 
     cdef char *mssql_lastmsgstr = _mssql_last_msg_str
-    cdef int mssql_lastmsgno = _mssql_last_msg_no
-    cdef int mssql_lastmsgseverity = _mssql_last_msg_severity
-    cdef int mssql_lastmsgstate = _mssql_last_msg_state
+    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
+    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
+    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
     cdef int _min_error_severity = min_error_severity
 
     IF PYMSSQL_DEBUG == 1:
@@ -130,22 +131,24 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     for conn in connection_object_list:
         if dbproc == (<MSSQLConnection>conn).dbproc:
             mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-            mssql_lastmsgno = (<MSSQLConnection>conn).last_msg_no
-            mssql_lastmsgseverity = (<MSSQLConnection>conn).last_msg_severity
-            mssql_lastmsgstate = (<MSSQLConnection>conn).last_msg_state
+            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
             break
     
-    if severity > mssql_lastmsgseverity:
-        mssql_lastmsgseverity = severity
-        mssql_lastmsgno = dberr
-        mssql_lastmsgstate = oserr
+    if severity > mssql_lastmsgseverity[0]:
+        mssql_lastmsgseverity[0] = severity
+        mssql_lastmsgno[0] = dberr
+        mssql_lastmsgstate[0] = oserr
 
     message = 'DB-Lib error message %d, severity %d:\n%s\n' % (dberr,
-            severity, dberrstr)
+            severity, dberrstr) + mssql_lastmsgstr
 
     if oserr != DBNOERR and oserr != 0:
-        pass
+        message += '%s error during %s' % ('Net-Lib' if \
+            severity == EXCOMM else 'Operating System', oserrstr)
 
+    strcpy(mssql_lastmsgstr, message)
     
     return INT_CANCEL
 
