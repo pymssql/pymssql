@@ -26,21 +26,24 @@ try:
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
-    from setuptools import setup, find_packages, Extension
+    from setuptools import setup, Extension
 
 import os
 import sys
-from distutils import cmd, sysconfig
+from distutils import cmd, log
 from distutils.command.clean import clean as _clean
-from Cython.Distutils import build_ext
+from Cython.Distutils import build_ext as _build_ext
 
 _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
+ROOT = os.path.dirname(__file__)
+WINDOWS = False
+
 if sys.platform == 'win32':
-    freetds_dir = os.path.join(os.path.dirname(__file__), 'win32',
-        'freetds')
+    WINDOWS = True
+    freetds_dir = os.path.join(ROOT, 'win32', 'freetds')
     include_dirs = [os.path.join(freetds_dir, 'include')]
     library_dirs = [os.path.join(freetds_dir, 'lib')]
     libraries = [
@@ -85,7 +88,36 @@ if sys.platform == 'darwin':
     include_dirs.insert(0, fink + 'include')
     library_dirs.insert(0, fink + 'lib')
 
+class build_ext(_build_ext):
+    """
+    Subclass the Cython build_ext command so it extracts freetds.zip if it
+    hasn't already been done.
+    """
+
+    def run(self):
+        # Not running on windows means we don't want to do this
+        #if not WINDOWS:
+        #    return _build_ext.run(self)
+
+        freetds_dir = os.path.join(ROOT, 'win32', 'freetds')
+
+        # If the directory exists, it's probably been extracted already.
+        if os.path.isdir(freetds_dir):
+            return _build_ext.run(self)
+
+        win32 = os.path.join(ROOT, 'win32')
+
+        log.info('extracting FreeTDS')
+        from zipfile import ZipFile
+        zip = ZipFile(os.path.join(win32, 'freetds.zip'))
+        zip.extractall(win32)
+        zip.close()
+        return _build_ext.run(self)
+
 class clean(_clean):
+    """
+    Subclass clean so it removes all the Cython generated C files.
+    """
     
     def run(self):
         _clean.run(self)
@@ -94,6 +126,7 @@ class clean(_clean):
             for cy_source in cy_sources:
                 c_source = cy_source[:-3] + 'c'
                 if os.path.exists(c_source):
+                    log.info('removing %s', c_source)
                     os.remove(c_source)
 
 setup(
