@@ -2,7 +2,7 @@
 This is an effort to convert the pymssql low-level C module to Cython.
 """
 
-DEF PYMSSQL_DEBUG = 0
+DEF PYMSSQL_DEBUG = 1
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
@@ -307,6 +307,7 @@ cdef class MSSQLConnection:
     def __cinit__(self):
         log("MSSQLConnection.__cinit__()")
         self._connected = 0
+        self._charset = <char *>PyMem_Malloc(PYMSSQL_CHARSETBUFSIZE)
         self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
         self.column_names = None
         self.column_types = None
@@ -380,9 +381,7 @@ cdef class MSSQLConnection:
 
     def __dealloc__(self):
         log("MSSQLConnection.__dealloc__()")
-        
-        if self._connected:
-            self.close()
+        self.close()
 
     def __iter__(self):
         assert_connected(self)
