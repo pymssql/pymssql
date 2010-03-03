@@ -1,5 +1,9 @@
 from sqlfront cimport DBPROCESS, BYTE
 
+ctypedef struct _mssql_parameter_node:
+    _mssql_parameter_node *next
+    BYTE                  *value
+
 cdef class MSSQLConnection:
 
     # class property variables
@@ -21,6 +25,7 @@ cdef class MSSQLConnection:
 
     cdef void clear_metadata(self)
     cdef convert_db_value(self, BYTE *, int, int)
+    cdef BYTE *convert_python_value(self, value, int*, int*)
     cdef fetch_next_row_dict(self, int)
     cdef format_and_run_query(self, query_string, params=?)
     cdef get_result(self)
@@ -28,3 +33,12 @@ cdef class MSSQLConnection:
 
 cdef class MSSQLRowIterator:
     cdef MSSQLConnection conn
+
+cdef class MSSQLStoredProcedure:
+    cdef MSSQLConnection conn
+    cdef DBPROCESS *dbproc
+    cdef char *procname
+    cdef dict params
+    cdef _mssql_parameter_node *params_list
+
+    cdef void _bind(self, value, int, char *, int, int, int)
