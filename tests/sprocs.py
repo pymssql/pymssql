@@ -64,13 +64,13 @@ class FixedTypeConversion(mssqltests.MSSQLTestCase):
         proc.execute()
         self.assertEqual(input, proc.parameters['@obigint'])
 
-#    def testBit(self):
-#        input = 1
-#        proc = self.mssql.init_procedure('pymssqlTestBit')
-#        proc.bind(input, _mssql.SQLBIT, '@ibit')
-#        proc.bind(None, _mssql.SQLBIT, '@obit', output=True)
-#        proc.execute()
-#        self.assertEqual(input, proc.parameters['@obit'])
+    def testBit(self):
+        input = True
+        proc = self.mssql.init_procedure('pymssqlTestBit')
+        proc.bind(input, _mssql.SQLBITN, '@ibit')
+        proc.bind(None, _mssql.SQLBITN, '@obit', output=True)
+        proc.execute()
+        self.assertEqual(input, proc.parameters['@obit'])
 
     def testDateTime(self):
         input = datetime.datetime(2009, 8, 27, 15, 28, 38)

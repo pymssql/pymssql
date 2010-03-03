@@ -73,6 +73,7 @@ DECIMAL = 5
 ##################
 SQLBINARY = SYBBINARY
 SQLBIT = SYBBIT
+SQLBITN = 104
 SQLCHAR = SYBCHAR
 SQLDATETIME = SYBDATETIME
 SQLDATETIM4 = SYBDATETIME4
@@ -579,7 +580,7 @@ cdef class MSSQLConnection:
         if value is None:
             return NULL
 
-        if dbtype[0] == SQLBIT:
+        if dbtype[0] in (SQLBIT, SQLBITN):
             intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             return <BYTE *><DBBIT *>intValue
@@ -1107,6 +1108,14 @@ cdef class MSSQLStoredProcedure:
             if null or output:
                 length = 0
             max_length = -1
+
+        # Add some monkey fixing for nullable bit types
+        if dbtype == SQLBITN:
+            if output:
+                max_length = 1
+                length = 0
+            else:
+                length = 1
 
         if status != DBRPCRETURN:
             max_length = -1
