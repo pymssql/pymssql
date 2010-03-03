@@ -243,6 +243,9 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 
     rtc = dbcancel(conn.dbproc);
 
+##############################
+## MSSQL Row Iterator Class ##
+##############################
 cdef class MSSQLRowIterator:
     
     def __init__(self, connection):
@@ -256,6 +259,9 @@ cdef class MSSQLRowIterator:
         clr_err(self.conn)
         return self.conn.fetch_next_row_dict(1)
 
+############################
+## MSSQL Connection Class ##
+############################
 cdef class MSSQLConnection:
 
     property charset:
@@ -899,6 +905,9 @@ cdef class MSSQLConnection:
         rtc = db_cancel(self)
         check_and_raise(rtc, self)
 
+##################################
+## MSSQL Stored Procedure Class ##
+##################################
 cdef class MSSQLStoredProcedure:
 
     property connection:

@@ -1,6 +1,6 @@
 from sqlfront cimport DBPROCESS, BYTE
 
-ctypedef struct _mssql_parameter_node:
+cdef struct _mssql_parameter_node:
     _mssql_parameter_node *next
     BYTE                  *value
 
