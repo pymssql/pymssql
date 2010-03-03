@@ -3,13 +3,16 @@ This is an effort to convert the pymssql low-level C module to Cython.
 """
 
 DEF PYMSSQL_DEBUG = 0
+DEF PYMSSQL_CHARSETBUFSIZE = 100
+DEF MSSQLDB_MSGSIZE = 1024
+DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
 
 import uuid
 import decimal
 import datetime
 from sqlfront cimport *
 from stdio cimport fprintf, sprintf, FILE
-from stdlib cimport strlen
+from stdlib cimport strlen, strcpy
 from python_mem cimport PyMem_Malloc, PyMem_Free
 
 cdef extern int rmv_lcl(char *, char *, size_t)
@@ -21,7 +24,7 @@ cdef extern from "stdio.h" nogil:
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
-cdef char *_mssql_last_msg_str = ""
+cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 
 cdef _decimal_context
 
@@ -153,6 +156,12 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         int severity, char *msgtext, char *srvname, char *procname,
         LINE_T line):
 
+    cdef char *mssql_lastmsgstr = _mssql_last_msg_str
+    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
+    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
+    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
+    cdef int _min_error_severity = min_error_severity
+
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
             "msgstate = %d, severity = %d, msgtext = '%s', " \
@@ -161,6 +170,35 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
             procname, line);
         fprintf(stderr, "+++ previous max severity = %d\n\n",
             _mssql_last_msg_severity);
+
+    if severity < _min_error_severity:
+        return INT_CANCEL
+
+    for conn in connection_object_list:
+        if dbproc == (<MSSQLConnection>conn).dbproc:
+            mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+            break
+
+    # Calculate the maximum severity of all messages in a row
+    # Fill the remaining fields as this is going to raise the exception
+    if severity > mssql_lastmsgseverity[0]:
+        mssql_lastmsgseverity[0] = severity
+        mssql_lastmsgno[0] = msgno
+        mssql_lastmsgstate[0] = msgstate
+
+    if procname != NULL and strlen(procname) > 0:
+        message = 'SQL Server message %ld, severity %d, state %d, ' \
+            'procedure %s, line %d:\n%s\n' % (<long>msgno, severity,
+            msgstate, procname, line, msgtext)
+    else:
+        message = 'SQL Server message %ld, severity %d, state %d, ' \
+            'line %d:\n%s\n' % (<long>msgno, severity, msgstate, line,
+            msgtext)
+
+    strcpy(mssql_lastmsgstr, message)
 
     return 0
 
@@ -258,6 +296,7 @@ cdef class MSSQLConnection:
         
         self._connected = 0
         self._charset = charset
+        self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
         
         self.column_names = None
         self.column_types = None
@@ -445,22 +484,22 @@ cdef class MSSQLConnection:
             return NULL
 
         if dbtype[0] == SQLBIT:
-            intValue = <int *> PyMem_Malloc(sizeof(int))
+            intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             return <BYTE *><DBBIT *>intValue
 
         elif dbtype[0] == SQLINT1:
-            intValue = <int *> PyMem_Malloc(sizeof(int))
+            intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             return <BYTE *><DBTINYINT *>intValue
 
         elif dbtype[0] == SQLINT2:
-            intValue = <int *> PyMem_Malloc(sizeof(int))
+            intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             return <BYTE *><DBSMALLINT *>intValue
 
         elif dbtype[0] == SQLINT4:
-            intValue = <int *> PyMem_Malloc(sizeof(int))
+            intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             return <BYTE *><DBINT *>intValue
 
@@ -961,18 +1000,18 @@ cdef class MSSQLStoredProcedure:
         # Get the return value from the procedure ready for return.
         return dbretstatus(self.dbproc)
 
-cdef void check_and_raise(RETCODE rtc, MSSQLConnection conn):
+cdef int check_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
     if rtc == FAIL:
-        maybe_raise_MSSQLDatabaseException(conn)
+        return maybe_raise_MSSQLDatabaseException(conn)
     elif get_last_msg_str(conn):
-        maybe_raise_MSSQLDatabaseException(conn)
+        return maybe_raise_MSSQLDatabaseException(conn)
 
-cdef void check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn):
+cdef inline int check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
     if rtc == FAIL:
         db_cancel(conn)
-        maybe_raise_MSSQLDatabaseException(conn)
+        return maybe_raise_MSSQLDatabaseException(conn)
     elif get_last_msg_str(conn):
-        maybe_raise_MSSQLDatabaseException(conn)
+        return maybe_raise_MSSQLDatabaseException(conn)
 
 cdef char *get_last_msg_str(MSSQLConnection conn):
     return conn.last_msg_str if conn != None else _mssql_last_msg_str
@@ -986,8 +1025,8 @@ cdef int get_last_msg_severity(MSSQLConnection conn):
 cdef int get_last_msg_state(MSSQLConnection conn):
     return conn.last_msg_state if conn != None else _mssql_last_msg_state
 
-cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn):
-    
+cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
+
     if get_last_msg_severity(conn) < min_error_severity:
         return 0
     
