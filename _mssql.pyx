@@ -963,6 +963,18 @@ cdef class MSSQLStoredProcedure:
 
         check_cancel_and_raise(rtc, self.conn)
 
+    def __dealloc__(self):
+        cdef _mssql_parameter_node *n, *p
+
+        n = self.params_list
+        p = NULL
+
+        while n != NULL:
+            PyMem_Free(n.value)
+            p = n
+            n = n.next
+            PyMem_Free(p)
+            
     def bind(self, value, dbtype, str param_name=None, output=False,
             null=False, int max_length=-1):
         """
