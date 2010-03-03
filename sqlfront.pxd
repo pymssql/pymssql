@@ -114,6 +114,47 @@ cdef extern from "sqlfront.h":
     #     -1 no such column or computeid.
     #      0 data is NULL.
     DBINT dbadlen(DBPROCESS *, int, int) nogil
+
+    # Get maximum simultaneous connections db-lib will open to the server.
+    #
+    #   Returns:
+    #     size of the data, in bytes
+    int dbgetmaxprocs()
+
+    # Initialize db-lib
+    RETCODE dbinit()
+
+    # Allocate a LOGINREC structure.
+    #
+    #   Return values:
+    #     NULL      the LOGINREC cannot be allocated.
+    #     LOGINREC* to valid memory
+    LOGINREC * dblogin()
+
+    # free the LOGINREC
+    void dbloginfree(LOGINREC *)
+
+    # Set maximum simultaneous connections db-lib will open to the server.
+    #
+    #   Parameters:
+    #     maxprocs  Limit for process.
+    #
+    #   Returns:
+    #     SUCCEED always
+    RETCODE dbsetmaxprocs(int)
+
+    # Change current database
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     name      database to use. 
+    #
+    #   Return values:
+    #     SUCCEED query was processed without errors.
+    #     FAIL    query was not processed
+    RETCODE dbuse(DBPROCESS *, char *) nogil
+
     ## End Primary functions ##
 
     ## Remote Procedure functions ##
@@ -243,7 +284,6 @@ cdef extern from "sqlfront.h":
     DBBOOL DBDEAD(DBPROCESS *)
     
     BYTE * dbgetuserdata(DBPROCESS *)
-    RETCODE dbsetmaxprocs(int)
     void dbexit()
 #	complex double __builtin_csinh(complex double)
     int DBNUMORDERS(DBPROCESS *)
@@ -524,7 +564,6 @@ cdef extern from "sqlfront.h":
     char * dbqual(DBPROCESS *, int, char *)
     RETCODE dbdate4zero(DBPROCESS *, DBDATETIME4 *)
     char * dbgetnatlanf(DBPROCESS *)
-    LOGINREC * dblogin()
     RETCODE dbmnyinit(DBPROCESS *, DBMONEY *, int, DBBOOL *)
     double __builtin_frexp(double, int *)
     ctypedef DBWAITFUNC(*DB_DBBUSY_FUNC)(void *)
@@ -625,7 +664,6 @@ cdef extern from "sqlfront.h":
         BOOL Identity
     RETCODE dbcolinfo(DBPROCESS *, int, DBINT, DBINT, DBCOL *)
     int dbdatename(DBPROCESS *, char *, int, DBDATETIME *)
-    RETCODE dbinit()
     int __builtin_ctz(int)
     int dbmnycmp(DBPROCESS *, DBMONEY *, DBMONEY *)
     DBINT dbdatlen(DBPROCESS *, int) nogil
@@ -653,7 +691,6 @@ cdef extern from "sqlfront.h":
     DBINT dbcollen(DBPROCESS *, int)
     RETCODE dbtablecolinfo(DBPROCESS *, DBINT, DBCOL *)
     RETCODE dbrpwset(LOGINREC *, char *, char *, int)
-    void dbloginfree(LOGINREC *)
     float __builtin_frexpf(float, int *)
     long double __builtin_frexpl(long double, int *)
     RETCODE dbfcmd(DBPROCESS *, char *)
@@ -661,7 +698,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbsprline(DBPROCESS *, char *, DBINT, DBCHAR)
     bool __builtin_va_arg_pack()
     int dbstrcmp(DBPROCESS *, char *, int, char *, int, DBSORTORDER *)
-    int dbgetmaxprocs()
     int dbaltop(DBPROCESS *, int, int)
     RETCODE dbsetdefcharset(char *)
 #	complex long double __builtin_ccoshl(complex long double)
@@ -673,7 +709,6 @@ cdef extern from "sqlfront.h":
     double __builtin_ceil(double)
     float __builtin_fmodf(float, float)
     long double __builtin_fmodl(long double, long double)
-    RETCODE dbuse(DBPROCESS *, char *)
     int EXCOMM = 9
 
 ctypedef int LINE_T
