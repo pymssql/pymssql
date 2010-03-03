@@ -614,8 +614,9 @@ cdef class MSSQLConnection:
         with nogil:
             dbresults(self.dbproc)
             self._rows_affected = dbcount(self.dbproc)
-        
-        self.cancel()
+
+        rtc = db_cancel(self)
+        check_and_raise(rtc, self)
 
     def execute_query(self, query_string, params=None):
         """
