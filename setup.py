@@ -131,7 +131,7 @@ class clean(_clean):
 
 setup(
     name  = 'pymssql',
-    version = '1.9.904',
+    version = '1.9.905',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',
@@ -139,6 +139,9 @@ setup(
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
     cmdclass = {'build_ext': build_ext, 'clean': clean},
+    data_files = [
+        ('', ['_mssql.pyx', 'pymssql.pyx'])
+    ],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,

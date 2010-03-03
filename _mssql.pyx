@@ -49,6 +49,7 @@ cdef extern from "stdio.h" nogil:
 cdef extern from "string.h":
     
     cdef char *strncpy(char *, char *, size_t)
+    cdef void *memcpy(void *, void *, size_t)
 
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
@@ -580,6 +581,7 @@ cdef class MSSQLConnection:
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
         cdef char *strValue
+        cdef BYTE *binValue
 
         if value is None:
             return NULL
@@ -641,9 +643,11 @@ cdef class MSSQLConnection:
         if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
             if type(value) is not str:
                 raise TypeError()
-            strValue = <char *>PyMem_Malloc(len(value) + 1)
-            strcpy(strValue, value)
-            return <BYTE *>strValue
+
+            binValue = <BYTE *>PyMem_Malloc(len(value))
+            memcpy(binValue, <char *>value, len(value))
+            length[0] = len(value)
+            return <BYTE *>binValue
 
         # No conversion was possible so just return NULL
         return NULL
@@ -835,7 +839,7 @@ cdef class MSSQLConnection:
         
         if params:
             query_string = self.format_sql_command(query_string, params)
-        
+
         # Prepare the query buffer
         dbcmd(self.dbproc, query_string)
         
@@ -857,6 +861,7 @@ cdef class MSSQLConnection:
             quoted = _quote_data(params, self._charset)
         else:
             quoted = _quote_data(params)
+
         return format % quoted
     
     def get_header(self):
@@ -1100,7 +1105,8 @@ cdef class MSSQLStoredProcedure:
                 length = 0
                 if not output:
                     max_length = -1
-            else:
+            # only set the length for strings, binary may contain NULLs
+            elif dbtype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
                 length = strlen(<char *>data)
         else:
             # Fixed length data type
@@ -1122,7 +1128,7 @@ cdef class MSSQLStoredProcedure:
         IF PYMSSQL_DEBUG == 1:
             fprintf(stderr, "\n--- rpc_bind(name = '%s', status = %d, " \
                 "max_length = %d, data_type = %d, data_length = %d, "
-                "data = %x)\n", name, status, max_length, dbtype,
+                "data = %x)\n", <char *>name, status, max_length, dbtype,
                 length, data)
 
         with nogil:
