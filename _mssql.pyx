@@ -672,6 +672,8 @@ cdef class MSSQLConnection:
         This method works exactly the same as 'iter(conn).next()'. Remaining
         rows, if any, can still be iterated after calling this method.
         """
+        self.format_and_run_query(query_string, params)
+        return self.fetch_next_row_dict(0)
 
     def execute_scalar(self, query_string, params=None):
         """
@@ -714,6 +716,8 @@ cdef class MSSQLConnection:
     cdef fetch_next_row_dict(self, int throw):
         cdef RETCODE rtc
         cdef int col
+
+        self.get_result()
 
         if self.last_dbresults == NO_MORE_RESULTS:
             self.clear_metadata()
