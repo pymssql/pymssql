@@ -21,6 +21,10 @@ cdef extern int rmv_lcl(char *, char *, size_t)
 cdef extern from "stdio.h" nogil:
     cdef FILE *stderr
 
+cdef extern from "string.h":
+    
+    cdef char *strncpy(char *, char *, size_t)
+
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
@@ -105,6 +109,10 @@ min_error_severity = 6
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
 
+cdef void log(char * message):
+    if PYMSSQL_DEBUG == 1:
+        fprintf(stderr, "%s\n", message)
+
 ###################
 ## Error Handler ##
 ###################
@@ -150,7 +158,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         message += '%s error during %s' % ('Net-Lib' if \
             severity == EXCOMM else 'Operating System', oserrstr)
 
-    strcpy(mssql_lastmsgstr, message)
+    strncpy(mssql_lastmsgstr, message, PYMSSQL_MSGSIZE)
     
     return INT_CANCEL
 
@@ -204,7 +212,7 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
             'line %d:\n%s\n' % (<long>msgno, severity, msgstate, line,
             msgtext)
 
-    strcpy(mssql_lastmsgstr, message)
+    strncpy(mssql_lastmsgstr, message, PYMSSQL_MSGSIZE)
 
     return 0
 
@@ -289,23 +297,23 @@ cdef class MSSQLConnection:
         
         def __get__(self):
             return self._rows_affected
-    
+
+    def __cinit__(self):
+        log("MSSQLConnection.__cinit__()")
+        self._connected = 0
+        self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+        self.column_names = None
+        self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
             charset="", database='', max_conn=25):
+        log("MSSQLConnection.__init__()")
     
         cdef LOGINREC *login
         cdef RETCODE rtc
     
         if max_conn <= 0:
             raise MSSQLDriverException("max_conn value must be greater than 0.")
-        
-        self._connected = 0
-        self._charset = charset
-        self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
-        
-        self.column_names = None
-        self.column_types = None
         
         login = dblogin()
         if login == NULL:
@@ -318,12 +326,16 @@ cdef class MSSQLConnection:
         
         # Set the connection limit
         dbsetmaxprocs(max_conn)
-        
-        # Set the login timeout
-        dbsetlogintime(login_timeout)
 
         # Add ourselves to the global connection list
         connection_object_list.append(self)
+
+        # Set the character set name
+        if charset:
+            strncpy(self._charset, charset, PYMSSQL_CHARSETBUFSIZE)
+        
+        # Set the login timeout
+        dbsetlogintime(login_timeout)
         
         # Connect to the server
         self.dbproc = dbopen(login, server)
@@ -359,7 +371,13 @@ cdef class MSSQLConnection:
         
         if database:
             self.select_db(database)
-    
+
+    def __dealloc__(self):
+        log("MSSQLConnection.__dealloc__()")
+        
+        if self._connected:
+            self.close()
+
     def __iter__(self):
         assert_connected(self)
         clr_err(self)
@@ -373,6 +391,7 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
+        log("MSSQLConnection.cancel()")
         cdef RETCODE rtc
         
         assert_connected(self)
@@ -382,6 +401,7 @@ cdef class MSSQLConnection:
         check_and_raise(rtc, self)
     
     cdef void clear_metadata(self):
+        log("MSSQLConnection.clear_metadata()")
         self.column_names = None
         self.column_types = None
         self.num_columns = 0
@@ -395,17 +415,23 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
+        log("MSSQLConnection.close()")
         if self == None:
             return None
         
         if not self._connected:
             return None
+
+        clr_err(self)
         
         with nogil:
             dbclose(self.dbproc)
             self.dbproc = NULL
-        
+
         self._connected = 0
+        PyMem_Free(self.last_msg_str)
+        PyMem_Free(self._charset)
+        connection_object_list.remove(self)
     
     cdef convert_db_value(self, BYTE *data, int type, int length):
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
