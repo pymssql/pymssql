@@ -1,5 +1,8 @@
 from sqlfront cimport DBPROCESS, BYTE
 
+
+cdef void log(char *, ...)
+
 cdef struct _mssql_parameter_node:
     _mssql_parameter_node *next
     BYTE                  *value
@@ -23,9 +26,11 @@ cdef class MSSQLConnection:
     cdef tuple column_names
     cdef tuple column_types
 
+    cpdef cancel(self)
     cdef void clear_metadata(self)
     cdef convert_db_value(self, BYTE *, int, int)
     cdef BYTE *convert_python_value(self, value, int*, int*)
+    cdef fetch_next_row(self, int)
     cdef fetch_next_row_dict(self, int)
     cdef format_and_run_query(self, query_string, params=?)
     cdef format_sql_command(self, format, params=?)

@@ -131,7 +131,7 @@ min_error_severity = 6
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
 
-cdef void log(char * message):
+cdef void log(char * message, ...):
     if PYMSSQL_DEBUG != 1:
         return
     fprintf(stderr, "+++ %s\n", message)
@@ -414,7 +414,7 @@ cdef class MSSQLConnection:
         clr_err(self)
         return MSSQLRowIterator(self)
 
-    def cancel(self):
+    cpdef cancel(self):
         """
         cancel() -- cancel all pending results.
         
@@ -736,11 +736,10 @@ cdef class MSSQLConnection:
             return None
 
         return self.get_row(rtc)[0]
-    
-    cdef fetch_next_row_dict(self, int throw):
+
+    cdef fetch_next_row(self, int throw):
         cdef RETCODE rtc
-        cdef int col
-        log("_mssql.MSSQLConnection.fetch_next_row_dict()")
+        log("_mssql.MSSQLConnection.fetch_next_row()")
 
         self.get_result()
 
@@ -762,9 +761,15 @@ cdef class MSSQLConnection:
             if throw:
                 raise StopIteration
             return None
-        
+
+        return self.get_row(rtc)
+    
+    cdef fetch_next_row_dict(self, int throw):
+        cdef int col
+        log("_mssql.MSSQLConnection.fetch_next_row_dict()")
+
         row_dict = {}
-        row = self.get_row(rtc)
+        row = self.fetch_next_row(throw)
         
         for col in xrange(1, self.num_columns + 1):
             name = self.column_names[col - 1]
