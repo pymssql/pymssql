@@ -515,7 +515,7 @@ cdef class MSSQLConnection:
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
             
-            return decimal.Decimal(_remove_locale(buf))
+            return decimal.Decimal(_remove_locale(buf, len))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
@@ -530,8 +530,8 @@ cdef class MSSQLConnection:
                 di.hour, di.minute, di.second, di.millisecond * 1000)
 
         elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
-            if self.charset:
-                return (<char *>data)[:length].decode(self.charset)
+            if self._charset:
+                return (<char *>data)[:length].decode(self._charset)
             else:
                 return (<char *>data)[:length]
 
@@ -808,8 +808,11 @@ cdef class MSSQLConnection:
         if type(params) not in (bool, int, long, float, unicode, str,
             datetime.datetime, datetime.date, tuple, dict):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
-
-        quoted = _quote_data(params)
+        
+        if self._charset:
+            quoted = _quote_data(params, self._charset)
+        else:
+            quoted = _quote_data(params)
         return format % quoted
     
     def get_header(self):
@@ -995,7 +998,7 @@ cdef class MSSQLStoredProcedure:
             return self.params
 
     
-    def __init__(self, str name, MSSQLConnection connection):
+    def __init__(self, bytes name, MSSQLConnection connection):
         cdef RETCODE rtc
 
         # We firstly want to check if tdsver is >= 8 as anything less
@@ -1027,7 +1030,7 @@ cdef class MSSQLStoredProcedure:
             n = n.next
             PyMem_Free(p)
             
-    def bind(self, value, dbtype, str param_name=None, output=False,
+    def bind(self, value, dbtype, bytes param_name=None, output=False,
             null=False, int max_length=-1):
         """
         bind(value, data_type, param_name = None, output = False,
@@ -1209,22 +1212,29 @@ cdef int get_api_coltype(int coltype):
     else:
         return BINARY
 
-cdef _remove_locale(str value):
-    cdef int last_sep = -1, i
-    for i, c in enumerate(value):
+cdef char *_remove_locale(char *s, size_t buflen):
+    cdef char c, *stripped = s
+    cdef int i, x = 0, last_sep = -1
+    
+    for i, c in enumerate(s[0:buflen]):
         if c in (',', '.'):
             last_sep = i
 
-    stripped = ''
-    for i, c in enumerate(value):
+    for i, c in enumerate(s[0:buflen]):
         if (c >= '0' and c <= '9') or c in ('+', '-'):
-            stripped += c
+            stripped[x] = c
+            x += 1 
         elif i == last_sep:
-            stripped += c
+            stripped[x] = c
+            x += 1 
+    stripped[x] = 0
     return stripped
 
-def remove_locale(str value):
-    return _remove_locale(value)
+def remove_locale(bytes value):
+    cdef char *s = <char*>value
+    cdef size_t l = strlen(s)
+    return _remove_locale(s, l)
+
 
 #######################
 ## Quoting Functions ##
