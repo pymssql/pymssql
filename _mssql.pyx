@@ -960,33 +960,9 @@ cdef class MSSQLConnection:
         """
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.select_db()")
-        
-        # Check we are connected first
-        assert_connected(self)
-        clr_err(self)
-        
-        if dbname[0] == "[" and dbname[-1] == "]":
-            command = "USE %s" % dbname
-        else:
-            dbname = dbname.replace("]", "]]")
-            command = "USE [%s]" % dbname
-        
-        rtc = db_cancel(self)
-        check_and_raise(rtc, self)
-        
-        rtc = dbcmd(self.dbproc, command)
-        check_cancel_and_raise(rtc, self)
-        
-        # NOTE: don't use Py_BEGIN_ALLOW_THREADS here; doing so causes severe
-        # unstability in multihreated scripts (especially when select_db is
-        # called whilst constructing MSSQLConnection. Any number of threads > 1
-        # causes problems. It has something to do with msg_handler.
-        rtc = dbsqlexec(self.dbproc)
-        check_and_raise(rtc, self)
-        
-        rtc = db_cancel(self)
-        check_and_raise(rtc, self)
 
+        dbuse(self.dbproc, dbname)
+        
 ##################################
 ## MSSQL Stored Procedure Class ##
 ##################################
