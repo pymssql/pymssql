@@ -327,7 +327,7 @@ cdef class Cursor:
             rows = []
             for i in xrange(size):
                 try:
-                    list.append(self.getrow())
+                    rows.append(self.getrow())
                 except StopIteration:
                     break
             return rows
