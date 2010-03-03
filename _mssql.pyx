@@ -134,8 +134,9 @@ min_error_severity = 6
 DEF NUMERIC_BUF_SZ = 45
 
 cdef void log(char * message):
-    if PYMSSQL_DEBUG == 1:
-        fprintf(stderr, "%s\n", message)
+    if PYMSSQL_DEBUG != 1:
+        return
+    fprintf(stderr, "+++ %s\n", message)
 
 ###################
 ## Error Handler ##
@@ -335,7 +336,7 @@ cdef class MSSQLConnection:
             return self._rows_affected
 
     def __cinit__(self):
-        log("MSSQLConnection.__cinit__()")
+        log("_mssql.MSSQLConnection.__cinit__()")
         self._connected = 0
         self._charset = <char *>PyMem_Malloc(PYMSSQL_CHARSETBUFSIZE)
         self._charset[0] = <char>0
@@ -346,7 +347,7 @@ cdef class MSSQLConnection:
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
             charset='', database='', tds_ver=7):
-        log("MSSQLConnection.__init__()")
+        log("_mssql.MSSQLConnection.__init__()")
     
         cdef LOGINREC *login
         cdef RETCODE rtc
@@ -407,7 +408,7 @@ cdef class MSSQLConnection:
             self.select_db(database)
 
     def __dealloc__(self):
-        log("MSSQLConnection.__dealloc__()")
+        log("_mssql.MSSQLConnection.__dealloc__()")
         self.close()
 
     def __iter__(self):
@@ -423,7 +424,7 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
-        log("MSSQLConnection.cancel()")
+        log("_mssql.MSSQLConnection.cancel()")
         cdef RETCODE rtc
         
         assert_connected(self)
@@ -433,7 +434,7 @@ cdef class MSSQLConnection:
         check_and_raise(rtc, self)
     
     cdef void clear_metadata(self):
-        log("MSSQLConnection.clear_metadata()")
+        log("_mssql.MSSQLConnection.clear_metadata()")
         self.column_names = None
         self.column_types = None
         self.num_columns = 0
@@ -447,7 +448,7 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
-        log("MSSQLConnection.close()")
+        log("_mssql.MSSQLConnection.close()")
         if self == None:
             return None
         
@@ -466,6 +467,7 @@ cdef class MSSQLConnection:
         connection_object_list.remove(self)
     
     cdef convert_db_value(self, BYTE *data, int type, int length):
+        log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
         cdef int len
         cdef long prevPrecision
@@ -536,6 +538,7 @@ cdef class MSSQLConnection:
             return (<char *>data)[:length]
 
     cdef BYTE *convert_python_value(self, value, int *dbtype, int *length) except <BYTE *>NULL:
+        log("_mssql.MSSQLConnection.convert_python_value()")
         cdef int *intValue
         cdef double *dblValue
         cdef long *longValue
@@ -626,6 +629,7 @@ cdef class MSSQLConnection:
         After calling this method, rows_affected property contains number of
         rows affected by the last SQL command.
         """
+        log("_mssql.MSSQLConnection.execute_non_query()")
         cdef RETCODE rtc
         
         self.format_and_run_query(query_string, params)
@@ -667,6 +671,7 @@ cdef class MSSQLConnection:
         result rows_affected property contains number of rows returned by
         last command (this is how MS SQL returns it).
         """
+        log("_mssql.MSSQLConnection.execute_query()")
         self.format_and_run_query(query_string, params)
         self.get_result()
 
@@ -691,6 +696,7 @@ cdef class MSSQLConnection:
         This method works exactly the same as 'iter(conn).next()'. Remaining
         rows, if any, can still be iterated after calling this method.
         """
+        log("_mssql.MSSQLConnection.execute_row()")
         self.format_and_run_query(query_string, params)
         return self.fetch_next_row_dict(0)
 
@@ -716,6 +722,7 @@ cdef class MSSQLConnection:
         method.
         """
         cdef RETCODE rtc
+        log("_mssql.MSSQLConnection.execute_scalar()")
 
         self.format_and_run_query(query_string, params)
         self.get_result()
@@ -735,6 +742,7 @@ cdef class MSSQLConnection:
     cdef fetch_next_row_dict(self, int throw):
         cdef RETCODE rtc
         cdef int col
+        log("_mssql.MSSQLConnection.fetch_next_row_dict()")
 
         self.get_result()
 
@@ -778,6 +786,7 @@ cdef class MSSQLConnection:
         execute_*() function. It returns NULL on error, None on success.
         """
         cdef RETCODE rtc
+        log("_mssql.MSSQLConnection.format_and_run_query()")
         assert_connected(self)
         clr_err(self)
         
@@ -795,6 +804,7 @@ cdef class MSSQLConnection:
         check_cancel_and_raise(rtc, self)
 
     cdef format_sql_command(self, format, params=None):
+        log("_mssql.MSSQLConnection.format_sql_command()")
         
         if params is None:
             return format
@@ -819,6 +829,7 @@ cdef class MSSQLConnection:
         of the data is None, as permitted by the specs.
         """
         cdef int col
+        log("_mssql.MSSQLConnection.get_header()")
         self.get_result()
 
         if self.num_columns == 0:
@@ -833,6 +844,7 @@ cdef class MSSQLConnection:
     
     cdef get_result(self):
         cdef int coltype
+        log("_mssql.MSSQLConnection.get_result()")
         
         if self.last_dbresults:
             return None
@@ -872,6 +884,7 @@ cdef class MSSQLConnection:
         cdef int col_type
         cdef int len
         cdef BYTE *data
+        log("_mssql.MSSQLConnection.get_row()")
 
         if PYMSSQL_DEBUG == 1:
             global _row_count
@@ -907,6 +920,7 @@ cdef class MSSQLConnection:
         and creates a MSSQLStoredProcedure object that allows parameters to
         be bound.
         """
+        log("_mssql.MSSQLConnection.init_procedure()")
         return MSSQLStoredProcedure(procname, self)
 
     def nextresult(self):
@@ -919,6 +933,7 @@ cdef class MSSQLConnection:
         """
         
         cdef RETCODE rtc
+        log("_mssql.MSSQLConnection.nextresult()")
         
         assert_connected(self)
         clr_err(self)
@@ -944,6 +959,7 @@ cdef class MSSQLConnection:
         failure.
         """
         cdef RETCODE rtc
+        log("_mssql.MSSQLConnection.select_db()")
         
         # Check we are connected first
         assert_connected(self)
@@ -994,6 +1010,7 @@ cdef class MSSQLStoredProcedure:
     
     def __init__(self, bytes name, MSSQLConnection connection):
         cdef RETCODE rtc
+        log("_mssql.MSSQLStoredProcedure.__init__()")
 
         # We firstly want to check if tdsver is >= 8 as anything less
         # doesn't support remote procedure calls.
@@ -1014,6 +1031,7 @@ cdef class MSSQLStoredProcedure:
 
     def __dealloc__(self):
         cdef _mssql_parameter_node *n, *p
+        log("_mssql.MSSQLStoredProcedure.__dealloc__()")
 
         n = self.params_list
         p = NULL
@@ -1032,6 +1050,7 @@ cdef class MSSQLStoredProcedure:
 
         This method binds a parameter to the stored procedure.
         """
+        log("_mssql.MSSQLStoredProcedure.bind()")
         self._bind(value, dbtype, param_name, output, null, max_length)
 
     cdef int _bind(self, value, int dbtype, char *name, int output,
@@ -1040,6 +1059,7 @@ cdef class MSSQLStoredProcedure:
         cdef BYTE status, *data
         cdef RETCODE rtc
         cdef _mssql_parameter_node *pn
+        log("_mssql.MSSQLStoredProcedure._bind()")
 
         # Set status according to output being True or False
         status = DBRPCRETURN if output else <BYTE>0
@@ -1096,6 +1116,7 @@ cdef class MSSQLStoredProcedure:
         cdef int output_count, i, type, length
         cdef char *name
         cdef BYTE *data
+        log("_mssql.MSSQLStoredProcedure.execute()")
 
         # Cancel any pending results as this throws a server error
         # otherwise.
@@ -1174,6 +1195,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
     raise ex
 
 cdef void assert_connected(MSSQLConnection conn):
+    log("_mssql.assert_connected()")
     if not conn.connected:
         raise MSSQLDriverException("Not connected to any MS SQL server")
 
@@ -1228,7 +1250,6 @@ def remove_locale(bytes value):
     cdef char *s = <char*>value
     cdef size_t l = strlen(s)
     return _remove_locale(s, l)
-
 
 #######################
 ## Quoting Functions ##
