@@ -10,8 +10,27 @@ _extra_compile_args = [
 ]
 
 if sys.platform == 'win32':
-    print ('ERROR: This version of pymssql is not support on windows')
-    sys.exit(1)
+    freetds_dir = r'd:\devel\freetds'
+    include_dirs = [os.path.join(freetds_dir, 'include')]
+    library_dirs = [os.path.join(freetds_dir, 'lib')]
+    libraries = [
+        'msvcrt',
+        'kernel32',
+        'user32',
+        'gdi32',
+        'winspool',
+        'ws2_32',
+        'comdlg32',
+        'advapi32',
+        'shell32',
+        'ole32',
+        'oleaut32',
+        'uuid',
+        'odbc32',
+        'odbccp32',
+        'libTDS',
+        'dblib'
+    ]
 
 else:
     include_dirs = [
@@ -30,7 +49,6 @@ else:
         '/usr/pkg/freetds/lib'
     ]
     libraries = [ "sybdb" ]   # on Mandriva you may have to change it to sybdb_mssql
-    data_files = []
 
 if sys.platform == 'darwin':
     fink = '/sw/'
@@ -52,6 +70,9 @@ setup(
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
                              libraries = libraries),
-                   Extension('pymssql', ['pymssql.pyx'])],
-    data_files = data_files
+                   Extension('pymssql', ['pymssql.pyx']
+                             extra_compile_args = _extra_compile_args,
+                             include_dirs = include_dirs,
+                             library_dirs = library_dirs,
+                             libraries = libraries)]
 )
