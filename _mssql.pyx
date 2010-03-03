@@ -17,9 +17,6 @@ cdef extern int rmv_lcl(char *, char *, size_t)
 cdef extern from "stdio.h" nogil:
     cdef FILE *stderr
 
-# Forward declare some types and variables
-cdef class MSSQLConnection
-
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
