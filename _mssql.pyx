@@ -514,7 +514,7 @@ cdef class MSSQLConnection:
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
             
-            return decimal.Decmial(_remove_locale(buf))
+            return decimal.Decimal(_remove_locale(buf))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
