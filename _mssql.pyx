@@ -2,30 +2,25 @@
 This is an effort to convert the pymssql low-level C module to Cython.
 """
 
+import sys
 import datetime
+from sqlfront cimport *
 
 # Forward declare some types and variables
 cdef class MSSQLConnection
+
+# Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef char *_mssql_last_msg_str = ""
 
-# Unfortunately we are unable to store the connections in a simple [] as this
-# loses all the C properties (I think, least it starts to have attribute errors).
-#ctypedef struct _mssql_connection_list_node:
-#    _mssql_connection_list_node *next
-#    void *obj
-#cdef _mssql_connection_list_node *connection_object_list
-#connection_object_list = NULL
+# List to store the connection objects in
+cdef list connection_object_list = list()
 
-include "ftds_sqlfront.pxd"
-
-cdef extern from "pyerrors.h":
-    ctypedef class __builtin__.Exception [object PyBaseExceptionObject]:
-        pass
-
-# db-api types
+#############################
+## DB-API type definitions ##
+#############################
 cdef enum:
     STRING = 1
     BINARY = 2
@@ -33,7 +28,9 @@ cdef enum:
     DATETIME = 4
     DECIMAL = 5
 
-# db-lib types
+##################
+## DB-LIB types ##
+##################
 cdef enum:
     SQLBINARY = SYBBINARY
     SQLBIT = SYBBIT
@@ -60,24 +57,44 @@ cdef enum:
     SQLVARBINARY = SYBVARBINARY
     SQLVARCHAR = SYBVARCHAR
 
-cdef int NUMERIC_BUF_SZ = 45
+#######################
+## Exception classes ##
+#######################
+cdef extern from "pyerrors.h":
+    ctypedef class __builtin__.Exception [object PyBaseExceptionObject]:
+        pass
 
 cdef class MSSQLException(Exception):
-    pass
+    """
+    Base exception class for the MSSQL driver.
+    """
 
 cdef class MSSQLDriverException(MSSQLException):
-    pass
+    """
+    Inherits from the base class and raised when an error is caused within
+    the driver itself.
+    """
 
 cdef class MSSQLDatabaseException(MSSQLException):
+    """
+    Raised when an error occurs within the database.
+    """
     
     cdef readonly int number
     cdef readonly int severity
     cdef readonly int state
-    
+
+# Module attributes for configuring _mssql
 login_timeout = 60
 
 min_error_severity = 6
 
+# Buffer size for large numbers
+cdef int NUMERIC_BUF_SZ = 45
+
+###################
+## Error Handler ##
+###################
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
     
@@ -89,22 +106,27 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     if severity < min_error_severity:
         return INT_CANCEL
 
-    """print connection_list
-    for conn in connection_list:
-        print dir(conn)
-        if dbproc == <DBPROCESS *>conn.dbproc:
-            mssql_lastmsgstr = conn.last_msg_str
-            mssql_lastmsgno = <int *>conn.last_msg_no
-            mssql_lastmsgseverity = <int *>conn.last_msg_severity
-            mssql_lastmsgstate = <int *>conn.last_msg_state
+    for conn in connection_object_list:
+        if dbproc == (<MSSQLConnection>conn).dbproc:
+            mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
             break
     
-    if severity < <int *>mssql_lastmsgseverity:
-        mssql_lastmsgseverity = <int *>severity"""
-        
+    if &severity > mssql_lastmsgseverity:
+        mssql_lastmsgseverity = &severity
+        mssql_lastmsgno = &dberr
+        mssql_lastmsgstate = &oserr
+    
+    if oserr != DBNOERR and oserr != 0:
+        pass
     
     return INT_CANCEL
 
+#####################
+## Message Handler ##
+#####################
 cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate, int severity,
         char *msgtext, char *srvname, char *procname, LINE_T line):
     return 0
@@ -167,8 +189,8 @@ cdef class MSSQLConnection:
     cdef int num_columns
     cdef int debug_queries
     cdef char *last_msg_str
-    cdef column_names
-    cdef column_types
+    cdef tuple column_names
+    cdef tuple column_types
     
     property charset:
         """
@@ -211,11 +233,11 @@ cdef class MSSQLConnection:
             return self._rows_affected
     
 
-    def __init__(self, server="localhost", user="sa", password="", trusted=0, charset="", database="masterdb", max_conn=25):
+    def __init__(self, server="localhost", user="sa", password="", trusted=0,
+            charset="", database="masterdb", max_conn=25):
     
         cdef LOGINREC *login
         cdef RETCODE rtc
-        #cdef _mssql_connection_list_node *n
     
         if max_conn <= 0:
             raise MSSQLDriverException("max_conn value must be greater than 0.")
@@ -223,8 +245,8 @@ cdef class MSSQLConnection:
         self._connected = 0
         self._charset = charset
         
-        self.column_names = ()
-        self.column_types = ()
+        #self.column_names = tuple()
+        #self.column_types = tuple()
         
         login = dblogin()
         if login == NULL:
@@ -238,17 +260,11 @@ cdef class MSSQLConnection:
         # Set the connection limit
         dbsetmaxprocs(max_conn)
         
-        #n = <_mssql_connection_list_node *>PyMem_Malloc(sizeof(_mssql_connection_list_node))
-        #if n == NULL:
-        #    dbloginfree(login)
-        #    raise MSSQLDriverException("Out of memory")
-        #    
-        #n.next = connection_object_list
-        #n.obj = <void *>self
-        #connection_object_list = n
-        
         # Set the login timeout
         dbsetlogintime(login_timeout)
+
+        # Add ourselves to the global connection list
+        connection_object_list.append(self)
         
         # Connect to the server
         self.dbproc = dbopen(login, server)
@@ -531,7 +547,7 @@ cdef class MSSQLConnection:
         return tuple(header_tuple)
     
     cdef get_result(self):
-        cdef int coltype, apicoltype
+        cdef int coltype
         
         if self.last_dbresults:
             return None
@@ -554,25 +570,19 @@ cdef class MSSQLConnection:
         self._rows_affected = dbcount(self.dbproc)
         self.num_columns = dbnumcols(self.dbproc)
         
-        self.column_names = []
-        self.column_types = []
+        self.column_names = tuple()
+        self.column_types = tuple()
+
+        column_names = list()
+        column_types = list()
         
         for col in xrange(1, self.num_columns):
-            self.column_names.append(dbcolname(self.dbproc, col))
+            column_names.append(dbcolname(self.dbproc, col))
             coltype = dbcoltype(self.dbproc, col)
-        
-            if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4, SQLINT8, SQLINTN, SQLFLT4, SQLFLT8, SQLFLTN):
-                apicoltype = NUMBER
-            elif coltype in (SQLMONEY, SQLMONEY4, SQLMONEYN, SQLNUMERIC, SQLDECIMAL):
-                apicoltype = DECIMAL
-            elif coltype in (SQLDATETIME, SQLDATETIM4, SQLDATETIMN):
-                apicoltype = DATETIME
-            elif coltype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
-                apicoltype = STRING
-            else:
-                apicoltype = BINARY
-            
-            self.column_types.append(apicoltype)
+            column_types.append(get_api_coltype(coltype))
+
+        self.column_names = tuple(column_names)
+        self.column_types = tuple(column_types)
     
     cdef get_row(self, int row_info):
         cdef DBPROCESS *dbproc = self.dbproc
@@ -581,7 +591,7 @@ cdef class MSSQLConnection:
         cdef int len
         cdef BYTE *data
         
-        record = ()
+        record = tuple()
         
         for col in xrange(1, self.num_columns + 1):
             with nogil:
@@ -729,82 +739,98 @@ cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
     return dbdatlen(dbproc, col) if row_info == REG_ROW else dbadlen(dbproc, row_info, col)
 
 ####################################
-## Quoting & Formatting Functions ##
+## Quoting Functions ##
 ####################################
+cdef int get_api_coltype(int coltype):
+    if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4, SQLINT8, SQLINTN,
+            SQLFLT4, SQLFLT8, SQLFLTN):
+        return NUMBER
+    elif coltype in (SQLMONEY, SQLMONEY4, SQLMONEYN, SQLNUMERIC,
+            SQLDECIMAL):
+        return DECIMAL
+    elif coltype in (SQLDATETIME, SQLDATETIM4, SQLDATETIMN):
+        return DATETIME
+    elif coltype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
+        return STRING
+    else:
+        return BINARY
 
 cdef _quote_simple_value(value):
-    
+
     if value == None:
         return 'NULL'
-    
+
     if type(value) is bool:
         return 1 if value else 0
-    
+
     if type(value) in (int, long, float):
         return value
-    
+
     if type(value) is unicode:
         return "N'" + value.encode('utf8').replace("'", "''") + "'"
-    
+
     if type(value) is str:
         return "'" + value.replace("'", "''") + "'"
-    
+
     if type(value) is datetime.datetime:
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
             value.year, value.month, value.day,
             value.hour, value.minute, value.second, value.microsecond / 1000)
-    
+
     if type(value) is datetime.date:
         return "{d '%04d-%02d-%02d'} " % (value.year, value.month, value.day)
-    
-    return None
 
-# We'll add this method to the module to allow for unit testing of the
-# underlying C method.
-def quote_simple_value(value):
-    return _quote_simple_value(value)
+    return None
 
 cdef _quote_or_flatten(data):
     result = _quote_simple_value(data)
-    
+
     if result is not None:
         return result
-    
+
     if type(data) not in (list, tuple):
         raise ValueError('expected a simple type, a tuple or a list')
-    
+
     string = ''
     for value in data:
         value = _quote_simple_value(value)
-        
+
         if value is None:
             raise ValueError('found an unsupported type')
-        
+
         string += '%s,' % value
     return string[:-1]
 
-def quote_or_flatten(data):
-    return _quote_or_flatten(data)
-
+# This function is supposed to take a simple value, tuple or dictionary,
+# normally passed in via the params argument in the execute_* methods. It
+# then quotes and flattens the arguments and returns then.
 cdef _quote_data(data):
     result = _quote_simple_value(data)
-    
+
     if result is not None:
         return result
-    
+
     if type(data) is dict:
         result = {}
         for k, v in data.iteritems():
             result[k] = _quote_or_flatten(v)
         return result
-    
+
     if type(data) is tuple:
         result = []
         for v in data:
             result.append(_quote_or_flatten(v))
         return tuple(result)
-    
+
     raise ValueError('expected a simple type, a tuple or a dictionary.')
+
+# We'll add these methods to the module to allow for unit testing of the
+# underlying C methods.
+def quote_simple_value(value):
+    return _quote_simple_value(value)
+
+def quote_or_flatten(data):
+    return _quote_or_flatten(data)
 
 def quote_data(data):
     return _quote_data(data)

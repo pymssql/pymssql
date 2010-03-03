@@ -38,6 +38,7 @@ cdef extern from "sqlfront.h":
     int NO_MORE_ROWS
     int NO_MORE_RESULTS
     int REG_ROW
+    int DBNOERR
 
     int CI_ALTERNATE
     int CI_CURSOR
