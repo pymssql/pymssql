@@ -446,11 +446,11 @@ cdef class MSSQLConnection:
 
         elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if self.charset:
-                return str(<char *>data).decode(self.charset)
+                return str(<char *>data)[:length].decode(self.charset)
             else:
-                return str(<char *>data)
+                return str(<char *>data)[:length]
         else:
-            return str(<char *>data)
+            return str(<char *>data)[:length]
 
     def execute_non_query(self, query_string, params=None):
         """
@@ -830,70 +830,6 @@ cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
 ######################
 ## Helper Functions ##
 ######################
-"""cdef int remove_locale(char *s, char *buf, size_t buflen):
-    cdef char c, lastsep
-    cdef size_t i, length, n
-
-
-    for i in xrange(buflen + 1):
-        c = s[i]
-        if c in ('.', ','):
-            lastsep = c
-
-    n = 0
-    for i in xrange(buflen + 1):
-        if (c >= '0' and c <= '9') or c in ('-', '+'):
-            buf[n] = s[i]
-            n += 1
-        elif (s[i] == lastsep):
-            buf[n] = s[i]
-            n += 1
-
-    print str(buf)
-
-    return 0
-
-    cdef size_t l, pi, bi
-
-    if b == <char *>NULL:
-        return 0
-
-    if s == <char *>NULL:
-        b[0] = 0
-        return 0
-
-    pi = 0
-    # Find the last separator and length of s
-    c = p[pi]
-    while c:
-        if c == '.' or c == ',':
-            lastsep = p
-        pi += 1
-        c = p[pi]
-
-    l = p - s
-    if buflen < l:
-        return 0
-
-    pi = 0
-    bi = 0
-    # Copy the number, skipping all but the last separator and all other
-    # chars.
-    p = s
-    c = p[pi]
-    while c:
-        bi += 1
-        if (c >= '0' and c <= '9') or (c == '-' or c == '+'):
-            b[bi] = c
-        elif p == lastsep:
-            b[bi] = '.'
-        pi += 1
-        c = p[pi]
-
-    b[0] = 0
-
-    return <int>(b - buf)"""
-
 cdef int get_api_coltype(int coltype):
     if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4, SQLINT8, SQLINTN,
             SQLFLT4, SQLFLT8, SQLFLTN):
