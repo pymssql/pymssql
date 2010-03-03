@@ -1,0 +1,77 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Copyright © 2008 Julien Blache
+# Copyright © 2008 Josselin Mouette
+# Licensed under the LGPL version 2.1 or later
+
+import sys
+import _mssql
+import pymssql
+import optparse
+from datetime import datetime
+
+class MyParser(optparse.OptionParser):
+    def error(self,msg):
+        sys.stdout.write("UNKNOWN: %s\n" %msg)
+        sys.exit(3)
+
+parser=MyParser(description="Nagios check for MS SQL Server 2000 & up")
+parser.add_option ('-H', '--host', dest="hostname", help="Host to query (required)")
+parser.add_option ('-P', '--port', dest="port", type="int", help="Port to connect to", default=1433)
+parser.add_option ('-u', '--user', dest="user", help="Database user name (required)")
+parser.add_option ('-p', '--password', dest="password", help="Database password (required)")
+parser.add_option ('-d', '--database', dest="database", help="Database to check (optional)")
+(options, args) = parser.parse_args()
+
+if options.hostname == None or options.user == None or options.password == None:
+   parser.error('missing a required argument')
+
+if options.database:
+    if not options.database.replace('_','').isalnum():
+        parser.error('incorrect database name')
+
+def escape (string, *args):
+    bs = '\\'
+    qt = '\''
+    l = []
+    for arg in args:
+        l.append (qt+str(arg).replace(bs, bs+bs).replace(qt, bs+qt)+qt)
+    return string%tuple(l)
+
+try:
+    stamp1 = datetime.utcnow()
+
+    conn = pymssql.connect(host = "%s:%i"%(options.hostname,options.port), user = options.user, password = options.password, database="master")
+    curs = conn.cursor()
+
+    if options.database:
+        curs.execute(escape('''SELECT COUNT(*) FROM sysprocesses p
+                               JOIN sysdatabases d
+                               ON d.dbid = p.dbid
+                               WHERE p.sid > 50 AND d.name = %s;''',
+                            options.database))
+    else:
+        curs.execute("SELECT COUNT(*) FROM sysprocesses WHERE spid > 50;")
+    nbusers = curs.fetchone()[0]
+
+    if options.database:
+        curs.execute("USE %s;"%options.database)
+
+    stamp2 = datetime.utcnow()
+
+    conn.close()
+except pymssql.Error, errstr:
+    print "CRITICAL: %s" % str(errstr).splitlines()[-1]
+    sys.exit(2)
+except _mssql.error, errstr:
+    print "CRITICAL: %s" % str(errstr).splitlines()[-1]
+    sys.exit(2)
+#except:
+#    print "UNKNOWN: plugin error"
+#    sys.exit(3)
+
+dstamp = stamp2 - stamp1
+sec = dstamp.seconds + dstamp.microseconds / 1000000.0
+
+print "OK: %d users, response time %.3f ms|users=%d time=%.6fs" % (nbusers, sec*1000., nbusers, sec)
+sys.exit(0)
