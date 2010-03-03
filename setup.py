@@ -96,8 +96,8 @@ class build_ext(_build_ext):
 
     def run(self):
         # Not running on windows means we don't want to do this
-        #if not WINDOWS:
-        #    return _build_ext.run(self)
+        if not WINDOWS:
+            return _build_ext.run(self)
 
         freetds_dir = os.path.join(ROOT, 'win32', 'freetds')
 
