@@ -748,6 +748,7 @@ cdef class MSSQLConnection:
             self.clear_metadata()
             if throw:
                 raise StopIteration
+            return None
         
         with nogil:
             rtc = dbnextrow(self.dbproc)
@@ -756,12 +757,11 @@ cdef class MSSQLConnection:
 
         if rtc == NO_MORE_ROWS:
             self.clear_metadata()
-            
             # 'rows_affected' is nonzero only after all records are read
             self._rows_affected = dbcount(self.dbproc)
-            self.last_dbresults = 0
             if throw:
                 raise StopIteration
+            return None
         
         row_dict = {}
         row = self.get_row(rtc)
@@ -856,10 +856,10 @@ cdef class MSSQLConnection:
             self.num_columns = dbnumcols(self.dbproc)
             if self.last_dbresults != SUCCEED or self.num_columns > 0:
                 break
-
         check_cancel_and_raise(self.last_dbresults, self)
         
         if self.last_dbresults == NO_MORE_RESULTS:
+            self.num_columns = 0
             return None
         
         self._rows_affected = dbcount(self.dbproc)
