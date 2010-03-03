@@ -1275,6 +1275,7 @@ def connect(*args, **kwargs):
 
 MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
+MssqlConnection = MSSQLConnectioN
 
 cdef void init_mssql():
     global _decimal_context
