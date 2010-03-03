@@ -91,6 +91,18 @@ if sys.platform == 'darwin':
     include_dirs.insert(0, fink + 'include')
     library_dirs.insert(0, fink + 'lib')
 
+    # some mac ports paths
+    include_dirs += [
+        '/opt/local/include',
+        '/opt/local/include/freetds',
+        '/opt/local/freetds/include'
+    ]
+    library_dirs += [
+        '/opt/local/lib',
+        '/opt/local/lib/freetds',
+        '/opt/local/freetds/lib'
+    ]
+
 class build_ext(_build_ext):
     """
     Subclass the Cython build_ext command so it extracts freetds.zip if it
