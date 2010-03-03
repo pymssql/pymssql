@@ -664,24 +664,3 @@ cdef extern from "sqlfront.h":
     RETCODE dbuse(DBPROCESS *, char *)
 
 ctypedef int LINE_T
-
-cdef void clr_err(MSSQLConnection conn):
-    if conn != None:
-        conn.last_msg_no = 0
-        conn.last_msg_severity = 0
-        conn.last_msg_state = 0
-    else:
-        _mssql_last_msg_no = 0
-        _mssql_last_msg_severity = 0
-        _mssql_last_msg_state = 0
-
-cdef RETCODE db_cancel(MSSQLConnection conn):
-    cdef RETCODE rtc
-
-    if conn == None:
-        return SUCCEED
-
-    if conn.dbproc == NULL:
-        return SUCCEED
-
-    rtc = dbcancel(conn.dbproc);
