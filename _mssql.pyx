@@ -263,6 +263,21 @@ cdef class MSSQLConnection:
         It can be called more than once in a row. No exception is raised in
         this case.
         """
+    
+    cdef convert_db_value(self, BYTE *data, int type, int length):
+        #cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
+        cdef double ddata
+        cdef int len
+        cdef long intdata
+        cdef long prevPrecision
+        cdef BYTE precision
+        cdef DBDATEREC di
+        cdef DBDATETIME dt
+        cdef DBCOL dbcol
+        
+        if type == SQLBIT:
+            intdata = <int><DBBIT *>data
+            return bool(intdata)
 
     def execute_non_query(self, query_string, params=None):
         """
@@ -393,7 +408,7 @@ cdef class MSSQLConnection:
                 raise StopIteration
         
         row_dict = {}
-        row = get_row(self, rtc)
+        row = self.get_row(rtc)
         
         for col in xrange(1, self.num_columns + 1):
             name = self.column_names[col - 1]
@@ -492,6 +507,28 @@ cdef class MSSQLConnection:
                 apicoltype = BINARY
             
             self.column_types.append(apicoltype)
+    
+    cdef get_row(self, int row_info):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef int col
+        cdef int col_type
+        cdef int len
+        cdef BYTE *data
+        
+        record = ()
+        
+        for col in xrange(1, self.num_columns + 1):
+            with nogil:
+                data = get_data(dbproc, row_info, col)
+                col_type = get_type(dbproc, row_info, col)
+                len = get_length(dbproc, row_info, col)
+            
+            if data == NULL:
+                record += (None,)
+                continue
+            
+            record += (self.convert_db_value(data, col_type, len),)
+        return record
     
     def init_procedure(self):
         """
@@ -629,40 +666,3 @@ cdef int get_type(DBPROCESS *dbproc, int row_info, int col) nogil:
 
 cdef int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
     return (row_info == REG_ROW and dbdatlen(dbproc, col) or dbadlen(dbproc, row_info, col))
-
-cdef get_row(MSSQLConnection conn, int row_info):
-    cdef DBPROCESS *dbproc = conn.dbproc
-    cdef int col
-    cdef int col_type
-    cdef int len
-    cdef BYTE *data
-    
-    record = ()
-    
-    for col in xrange(1, conn.num_columns + 1):
-        with nogil:
-            data = get_data(dbproc, row_info, col)
-            col_type = get_type(dbproc, row_info, col)
-            len = get_length(dbproc, row_info, col)
-        
-        if data == NULL:
-            record += (None,)
-            continue
-        
-        record += (convert_db_value(conn, data, col_type, len),)
-    return record
-
-cdef convert_db_value(MSSQLConnection conn, BYTE *data, int type, int length):
-    #cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
-    cdef double ddata
-    cdef int len
-    cdef long intdata
-    cdef long prevPrecision
-    cdef BYTE precision
-    cdef DBDATEREC di
-    cdef DBDATETIME dt
-    cdef DBCOL dbcol
-    
-    if type == SQLBIT:
-        intdata = <int><DBBIT *>data
-        return bool(intdata)
