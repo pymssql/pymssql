@@ -11,7 +11,7 @@ class TestingThread(threading.Thread):
         try:
             mssql = _mssql.connect(server, username, password)
             mssql.select_db(database)
-            for i in xrange(0, 100):
+            for i in xrange(0, 1000):
                 mssql.execute_query('SELECT %d', (i,))
                 for row in mssql:
                     assert row[0] == i
