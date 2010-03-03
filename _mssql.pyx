@@ -345,15 +345,12 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
-            charset='', database='', max_conn=25):
+            charset='', database='', tds_ver=7):
         log("MSSQLConnection.__init__()")
     
         cdef LOGINREC *login
         cdef RETCODE rtc
     
-        if max_conn <= 0:
-            raise MSSQLDriverException("max_conn value must be greater than 0.")
-        
         login = dblogin()
         if login == NULL:
             raise MSSQLDriverException("Out of memory")
@@ -363,9 +360,6 @@ cdef class MSSQLConnection:
         DBSETLAPP(login, "pymssql")
         DBSETLHOST(login, server);
         
-        # Set the connection limit
-        dbsetmaxprocs(max_conn)
-
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 
