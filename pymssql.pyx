@@ -381,21 +381,72 @@ def connect(dsn = None, user = 'sa', password = '', host = '.',
         charset = None, as_dict = False, max_conn = 25):
     """
     Constructor for creating a connection to the database. Returns a
-    connection object. Parameters are as follows:
+    connection object.
+
+    :param dsn: colon-delimited string in form host:dbase:user:pass:opt:tty
+    :type dsn: string
+    :param user: database user to connect as
+    :type user: string
+    :param password: user's password
+    :type password: string
+    :param host: database host
+    :type host: string
+    :param database: the database to initially connect to
+    :type database: string
+    :param timeout: query timeout in seconds, default 0 (no timeout)
+    :type timeout: int
+    :param login_timeout: timeout for connection and login in seconds, default 60
+    :type login_timeout: int
+    :param charset: character set with which to connect to the database
+    :type charset: string
+    :param as_dict: whether rows should be returned as dictionaries instead of tuples.
+    :type as_dict: boolean
+    :param max_conn: how many simulataneous connections to allow; default 25
+    :type max_conn: int
     """
 
+    # first try to get the params from the DSN
+    dbhost = ''
+    dbbase = ''
+    dbuser = ''
+    dbpasswd = ''
+    dbopt = ''
+    dbtty = ''
+    try:
+        (dbhost, dbbase, dbuser, dbpassword, dbopt, dbtty) = dsn.split(':')
+    except:
+        pass
+
+    # override the dsn values
+    if user != '':
+        dbuser = user
+    if password != '':
+        dbpasswd = password
+    if database != '':
+        dbbase = database
+    if host != '':
+        dbhost = host
+
+    # add default user and host
+    if dbhost == '':
+        dbhost = '.'
+    if dbuser == '':
+        dbuser = 'sa'
+
+    # set the login timeout
     _mssql.login_timeout = login_timeout
 
     try:
-        conn = _mssql.connect(host, user, password, trusted, charset,
-        database, max_conn = max_conn)
+        conn = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset,
+            dbbase, max_conn = max_conn)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])
 
     except _mssql.MSSQLDriverException, e:
         raise InterfaceError(e[0])
-
+    
+    # default query timeout
     try:
         timeout = int(timeout)
     except ValueError, e:

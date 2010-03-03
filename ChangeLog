@@ -1,5 +1,6 @@
 Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx: add support for varbinary types
+	* pymssql.pyx: add DSN support that was missing
 	* setup.py: fix building on windows
 	* version 1.9.903
 
