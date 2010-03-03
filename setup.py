@@ -21,6 +21,11 @@
 #   Boston, MA    02110-1301, USA.
 #
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '.pyrex'))
+
 try:
     from setuptools import setup, Extension
 except ImportError:
@@ -28,8 +33,6 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
 
-import os
-import sys
 from distutils import cmd, log
 from distutils.command.clean import clean as _clean
 from Cython.Distutils import build_ext as _build_ext
@@ -131,7 +134,7 @@ class clean(_clean):
 
 setup(
     name  = 'pymssql',
-    version = '1.9.905.1',
+    version = '1.9.906',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',
