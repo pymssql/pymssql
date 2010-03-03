@@ -2,7 +2,7 @@
 This is an effort to convert the pymssql low-level C module to Cython.
 """
 
-DEF PYMSSQL_DEBUG = 1
+DEF PYMSSQL_DEBUG = 0
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
