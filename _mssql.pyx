@@ -298,7 +298,7 @@ cdef class MSSQLConnection:
         """
         
         def __get__(self):
-            if self._charset:
+            if strlen(self._charset):
                 return self._charset
             return None
 
@@ -530,7 +530,7 @@ cdef class MSSQLConnection:
                 di.hour, di.minute, di.second, di.millisecond * 1000)
 
         elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
-            if self._charset:
+            if strlen(self._charset):
                 return (<char *>data)[:length].decode(self._charset)
             else:
                 return (<char *>data)[:length]
@@ -809,7 +809,7 @@ cdef class MSSQLConnection:
             datetime.datetime, datetime.date, tuple, dict):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
         
-        if self._charset:
+        if strlen(self._charset):
             quoted = _quote_data(params, self._charset)
         else:
             quoted = _quote_data(params)
