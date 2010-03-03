@@ -790,14 +790,12 @@ cdef class MSSQLConnection:
         """
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.format_and_run_query()")
-        assert_connected(self)
-        clr_err(self)
+
+        # Cancel any pending results
+        self.cancel()
         
         if params:
             query_string = self.format_sql_command(query_string, params)
-        
-        # Cancel any pending results
-        db_cancel(self)
         
         # Prepare the query buffer
         dbcmd(self.dbproc, query_string)
