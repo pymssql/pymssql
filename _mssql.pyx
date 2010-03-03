@@ -372,6 +372,7 @@ cdef class MSSQLConnection:
         # Set the character set name
         if charset:
             strncpy(self._charset, charset, PYMSSQL_CHARSETBUFSIZE)
+            DBSETLCHARSET(login, self._charset)
         
         # Set the login timeout
         dbsetlogintime(login_timeout)
@@ -808,7 +809,7 @@ cdef class MSSQLConnection:
             datetime.datetime, datetime.date, tuple, dict):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
 
-        quoted = quote_data(params)
+        quoted = _quote_data(params)
         return format % quoted
     
     def get_header(self):
@@ -1228,7 +1229,7 @@ def remove_locale(str value):
 #######################
 ## Quoting Functions ##
 #######################
-cdef _quote_simple_value(value):
+cdef _quote_simple_value(value, charset='utf8'):
 
     if value == None:
         return 'NULL'
@@ -1240,7 +1241,7 @@ cdef _quote_simple_value(value):
         return value
 
     if type(value) is unicode:
-        return "N'" + value.encode('utf8').replace("'", "''") + "'"
+        return "N'" + value.encode(charset).replace("'", "''") + "'"
 
     if type(value) is str:
         return "'" + value.replace("'", "''") + "'"
@@ -1257,8 +1258,8 @@ cdef _quote_simple_value(value):
 
     return None
 
-cdef _quote_or_flatten(data):
-    result = _quote_simple_value(data)
+cdef _quote_or_flatten(data, charset='utf8'):
+    result = _quote_simple_value(data, charset)
 
     if result is not None:
         return result
@@ -1268,7 +1269,7 @@ cdef _quote_or_flatten(data):
 
     string = ''
     for value in data:
-        value = _quote_simple_value(value)
+        value = _quote_simple_value(value, charset)
 
         if value is None:
             raise ValueError('found an unsupported type')
@@ -1279,7 +1280,7 @@ cdef _quote_or_flatten(data):
 # This function is supposed to take a simple value, tuple or dictionary,
 # normally passed in via the params argument in the execute_* methods. It
 # then quotes and flattens the arguments and returns then.
-cdef _quote_data(data):
+cdef _quote_data(data, charset='utf8'):
     result = _quote_simple_value(data)
 
     if result is not None:
@@ -1288,13 +1289,13 @@ cdef _quote_data(data):
     if type(data) is dict:
         result = {}
         for k, v in data.iteritems():
-            result[k] = _quote_or_flatten(v)
+            result[k] = _quote_or_flatten(v, charset)
         return result
 
     if type(data) is tuple:
         result = []
         for v in data:
-            result.append(_quote_or_flatten(v))
+            result.append(_quote_or_flatten(v, charset))
         return tuple(result)
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')

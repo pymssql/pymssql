@@ -1,6 +1,7 @@
 Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
 		+ feature: add support for varbinary types
+		+ feature: add support for passing in charset to _quote_data
 		+ bugfix: rename MSSQLConnection.next_result to MSSQLConnection.nextresult as before
 		+ bugfix: set the charset upon login
 	* pymssql.pyx:
