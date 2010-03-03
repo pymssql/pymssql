@@ -251,7 +251,7 @@ cdef class MSSQLConnection:
     
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
-            charset="", database="master", max_conn=25):
+            charset="", database='', max_conn=25):
     
         cdef LOGINREC *login
         cdef RETCODE rtc
@@ -869,7 +869,7 @@ cdef class MSSQLStoredProcedure:
 
     cdef void _bind(self, value, int dbtype, char *name, int output,
             int null, int max_length):
-        cdef int length = 0
+        cdef int length = -1
         cdef BYTE status, *data
         cdef RETCODE rtc
         cdef _mssql_parameter_node *pn
@@ -914,7 +914,10 @@ cdef class MSSQLStoredProcedure:
             max_length = -1
 
         IF PYMSSQL_DEBUG == 1:
-            pass
+            fprintf(stderr, "\n--- rpc_bind(name = '%s', status = %d, " \
+                "max_length = %d, data_type = %d, data_length = %d, "
+                "data = %x)\n", name, status, max_length, dbtype,
+                length, data)
 
         with nogil:
             rtc = dbrpcparam(self.dbproc, name, status, dbtype,
