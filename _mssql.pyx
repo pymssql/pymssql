@@ -1207,10 +1207,12 @@ cdef _quote_simple_value(value):
     if type(value) is datetime.datetime:
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
             value.year, value.month, value.day,
-            value.hour, value.minute, value.second, value.microsecond / 1000)
+            value.hour, value.minute, value.second,
+            value.microsecond / 1000)
 
     if type(value) is datetime.date:
-        return "{d '%04d-%02d-%02d'} " % (value.year, value.month, value.day)
+        return "{d '%04d-%02d-%02d'} " % (
+        value.year, value.month, value.day)
 
     return None
 
@@ -1275,7 +1277,7 @@ def connect(*args, **kwargs):
 
 MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
-MssqlConnection = MSSQLConnectioN
+MssqlConnection = MSSQLConnection
 
 cdef void init_mssql():
     global _decimal_context
