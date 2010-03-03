@@ -252,6 +252,7 @@ cdef extern from "sqlfront.h":
     RETCODE DBSETLHOST(LOGINREC *x, char *y)
     RETCODE DBSETLPWD(LOGINREC *x, char *y)
     RETCODE DBSETLUSER(LOGINREC *x, char *y)
+    RETCODE DBSETLCHARSET(LOGINREC *x, char *y)
     DBBOOL bcp_getl(LOGINREC *)
 #	complex float __builtin_csinf(complex float)
     RETCODE dbmny4minus(DBPROCESS *, DBMONEY4 *, DBMONEY4 *)

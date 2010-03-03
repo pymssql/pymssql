@@ -2,8 +2,11 @@ Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
 		+ feature: add support for varbinary types
 		+ bugfix: rename MSSQLConnection.next_result to MSSQLConnection.nextresult as before
+		+ bugfix: set the charset upon login
 	* pymssql.pyx:
 		+ feature: add DSN support that was missing
+	* sqlfront.pxd:
+		add DBSETLCHARSET
 	* tests:
 		+ feature: add test for multiple results
 	* setup.py: fix building on windows
