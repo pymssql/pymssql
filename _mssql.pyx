@@ -30,7 +30,11 @@ DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
 DEF EXCOMM = 9
 
-import uuid
+from python_version cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
+
+if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
+    import uuid
+
 import decimal
 import datetime
 from sqlfront cimport *
@@ -564,7 +568,7 @@ cdef class MSSQLConnection:
             else:
                 return (<char *>data)[:length]
 
-        elif type == SQLUUID:
+        elif type == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
@@ -1054,24 +1058,19 @@ cdef class MSSQLStoredProcedure:
             n = n.next
             PyMem_Free(p)
             
-    def bind(self, value, dbtype, bytes param_name=None, output=False,
-            null=False, int max_length=-1):
+    def bind(self, object value, int dbtype, bytes name=None,
+            int output=False, int null=False, int max_length=-1):
         """
         bind(value, data_type, param_name = None, output = False,
             null = False, max_length = -1) -- bind a parameter
 
         This method binds a parameter to the stored procedure.
         """
-        log("_mssql.MSSQLStoredProcedure.bind()")
-        self._bind(value, dbtype, param_name, output, null, max_length)
-
-    cdef int _bind(self, value, int dbtype, char *name, int output,
-            int null, int max_length) except 1:
         cdef int length = -1
-        cdef BYTE status, *data
         cdef RETCODE rtc
+        cdef BYTE status, *data
         cdef _mssql_parameter_node *pn
-        log("_mssql.MSSQLStoredProcedure._bind()")
+        log("_mssql.MSSQLStoredProcedure.bind()")
 
         # Set status according to output being True or False
         status = DBRPCRETURN if output else <BYTE>0
@@ -1197,7 +1196,7 @@ cdef int get_last_msg_severity(MSSQLConnection conn):
 cdef int get_last_msg_state(MSSQLConnection conn):
     return conn.last_msg_state if conn != None else _mssql_last_msg_state
 
-cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
+cdef inline int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     if get_last_msg_severity(conn) < min_error_severity:
         return 0

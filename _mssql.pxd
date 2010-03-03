@@ -51,5 +51,3 @@ cdef class MSSQLStoredProcedure:
     cdef char *procname
     cdef dict params
     cdef _mssql_parameter_node *params_list
-
-    cdef int _bind(self, value, int, char *, int, int, int)
