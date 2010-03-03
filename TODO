@@ -1,0 +1,13 @@
+Complete
+========
+
+ * Connecting to the server
+ * Selecting a database
+ * Executing straight text
+ 
+TODO
+====
+
+ * Quote and flattern parameters
+ * Returning data
+ * Stored Procedures
