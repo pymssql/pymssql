@@ -17,6 +17,8 @@ cdef extern from "sqlfront.h":
         pass
     ctypedef tds_dblib_loginrec LOGINREC
     ctypedef void DBCURSOR
+    ctypedef int BOOL
+    ctypedef short int SHORT
     ctypedef unsigned char BYTE
     ctypedef int RETCODE
     ctypedef short unsigned int DBUSMALLINT
@@ -41,6 +43,41 @@ cdef extern from "sqlfront.h":
     ctypedef struct        DBDATETIME4:
         DBUSMALLINT days
         DBUSMALLINT minutes
+
+    ctypedef struct        DBCOL:
+        DBINT SizeOfStruct
+        DBCHAR * Name
+        DBCHAR * ActualName
+        DBCHAR * TableName
+        SHORT Type
+        DBINT UserType
+        DBINT MaxLength
+        BYTE Precision
+        BYTE Scale
+        BOOL VarLength
+        BYTE Null
+        BYTE CaseSensitive
+        BYTE Updatable
+        BOOL Identity
+
+    ctypedef struct            DBDATEREC:
+        DBINT year
+        DBINT month
+        DBINT day
+        DBINT dayofyear
+        DBINT weekday
+        DBINT hour
+        DBINT minute
+        DBINT second
+        DBINT millisecond
+        DBINT tzone
+
+
+    # Error handler callback
+    ctypedef int(*EHANDLEFUNC)(DBPROCESS *, int, int, int, char *, char *)
+
+    # Message handler callback
+    ctypedef int(*MHANDLEFUNC)(DBPROCESS *, DBINT, int, int, char *, char *, char *, int)
 
     ## Constants ##
     int FAIL
@@ -120,6 +157,147 @@ cdef extern from "sqlfront.h":
     #      0 data is NULL.
     DBINT dbadlen(DBPROCESS *, int, int) nogil
 
+    # Get datatype for a compute column data. 
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     computeid of COMPUTE clause to which we're referring. 
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     SYB* datatype token
+    #
+    #   Return values:
+    #     -1 no such column or computeid.
+    int dbalttype(DBPROCESS *, int, int) nogil
+
+    # Cancel the current command batch
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Returns:
+    #     SUCCEED always
+    RETCODE dbcancel(DBPROCESS *) nogil
+
+    # Close a connection to the server and free associated resources.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    void dbclose(DBPROCESS *) nogil
+
+    # Close a connection to the server and free associated resources.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     cmdstring SQL to append to the command buffer.
+    #
+    #   Returns:
+    #     SUCCEED   success
+    #     FAIL      insufficient memory
+    RETCODE dbcmd(DBPROCESS *, char *)
+
+    # Get the datatype of a regular result set column.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     SYB* datatype token value, or zero if column is out of range.
+    int dbcoltype(DBPROCESS *, int) nogil
+
+    # Convert one datatype to another.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     srctype   datatype of the data to convert
+    #     src       buffer to convert
+    #     srclen    length of src
+    #     desttype  target datatype
+    #     dest      output buffer
+    #     destlen   size of dest
+    #
+    #   Returns:
+    #     On success, the count of output bytes in dest, else -1. On
+    #     failure, it will call any user-supplied error handler.
+    DBINT dbconvert(DBPROCESS *, int, BYTE *, DBINT, int, BYTE *, DBINT)
+
+    
+    # Get count of rows processed.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #   Returns:
+    #     * for insert/update/delete, count of rows affected.
+    #     * for select, count of rows returned, after all rows have been
+    #       fetched.
+    DBINT dbcount(DBPROCESS *) nogil
+
+    # Check if dbproc is an ex-parrot.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #   Returns:
+    #     * for insert/update/delete, count of rows affected.
+    #     * for select, count of rows returned, after all rows have been
+    DBBOOL dbdead(DBPROCESS *)
+
+    # Get address of data in a regular result column.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     pointer to the data, or NULL if data is NULL, or if column is
+    #     out of range
+    BYTE * dbdata(DBPROCESS *, int) nogil
+
+    # Break a DBDATETIME value into useful pieces.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     di        output: structure to contain the exploded parts of
+    #                       datetime.
+    #     datetime  input: DBDATETIME to be converted.
+    #
+    #   Return values:
+    #     SUCCEED always
+    RETCODE dbdatecrack(DBPROCESS *, DBDATEREC *, DBDATETIME *)
+
+    # Get size of current row's data in a regular result column.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     column    Nth column in computeid, starting from 1.
+    #
+    #   Returns:
+    #     size of the data, in bytes
+    DBINT dbdatlen(DBPROCESS *, int) nogil
+
+    # Set an error handler, for messages from db-lib.
+    #
+    #   Parameters:
+    #       handler pointer to callback function that will handle errors.
+    #               Pass NULL to restore the default handler.
+    #
+    #   Returns:
+    #       address of prior handler, or NULL if none was previously
+    #       installed.
+    EHANDLEFUNC dberrhandle(EHANDLEFUNC)
+
     # Get maximum simultaneous connections db-lib will open to the server.
     #
     #   Returns:
@@ -127,6 +305,11 @@ cdef extern from "sqlfront.h":
     int dbgetmaxprocs()
 
     # Initialize db-lib
+    #
+    #   Return values:
+    #     SUCCEED   normal
+    #     FAIL      cannot allocate an array of TDS_MAX_CONN TDSSOCKET
+    #               pointers.
     RETCODE dbinit()
 
     # Allocate a LOGINREC structure.
@@ -139,6 +322,72 @@ cdef extern from "sqlfront.h":
     # free the LOGINREC
     void dbloginfree(LOGINREC *)
 
+    # Set a message handler, for messages from the server.
+    #
+    #   Parameters:
+    #       handler address of the function that will process the messages.
+    MHANDLEFUNC dbmsghandle(MHANDLEFUNC)
+
+    # Read result row into the row buffer and into any bound host variables.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     REG_ROW   regular row has been read.
+    #     BUF_FULL  reading the next row would cause the buffer to be
+    #               exceeded. No row was read from the server.
+    #
+    #   Returns:
+    #     computeid when a compute row is read.
+    RETCODE dbnextrow(DBPROCESS *) nogil
+
+    # Return number of regular columns in a result set.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Returns:
+    #     number of columns in the result set row.
+    int dbnumcols(DBPROCESS *)
+
+    # Form a connection with the server.
+    #
+    #   Parameters:
+    #     login   LOGINREC* carrying the account information
+    #     server  name of the dataserver to connect to
+    #
+    #   Returns:
+    #     value pointer on successful login.
+    #
+    #   Return values:
+    #     NULL insufficient memory, unable to connect for any reason
+    DBPROCESS * dbopen(LOGINREC *, char *)
+
+    # Set up query results.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     SUCCEED   some result are available.
+    #     FAIL      query was not processed successfully by the server.
+    #     NO_MORE_RESULTS   query produced no results.
+    RETCODE dbresults(DBPROCESS *) nogil
+
+    # Set maximum seconds db-lib waits for a server response to a login
+    # attempt.
+    #
+    #   Parameters:
+    #     seconds   New limit for application.
+    #
+    #   Returns:
+    #     SUCCEED always
+    RETCODE dbsetlogintime(int)
+
     # Set maximum simultaneous connections db-lib will open to the server.
     #
     #   Parameters:
@@ -147,6 +396,50 @@ cdef extern from "sqlfront.h":
     #   Returns:
     #     SUCCEED always
     RETCODE dbsetmaxprocs(int)
+
+    # Set maximum seconds db-lib waits for a server response to query.
+    #
+    #   Parameters:
+    #     seconds   New limit for application.
+    #
+    #   Returns:
+    #     SUCCEED always
+    RETCODE dbsettime(int)
+
+    # Send the SQL command to the server and wait for an answer.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     SUCCEED   query was processed without errors.
+    #     FAIL      was returned by dbsqlsend() or dbsqlok()
+    RETCODE dbsqlexec(DBPROCESS *) nogil
+
+    # Wait for results of a query from the server.
+    #   
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     SUCCEED   everything worked, fetch results with dbnextresults().
+    #     FAIL      SQL syntax error, typically.
+    RETCODE dbsqlok(DBPROCESS *) nogil
+
+    # Get the TDS version in use for dbproc.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Returns:
+    #     a DBTDS* token.
+    #
+    #   Remarks:
+    #     The integer values of the constants are counterintuitive.
+    int dbtds(DBPROCESS *)
 
     # Change current database
     #
@@ -284,35 +577,34 @@ cdef extern from "sqlfront.h":
     #     FAIL      on error
     RETCODE dbrpcsend(DBPROCESS *) nogil
     ## End Remote Procedure functions ##
-    
-    float __builtin_logf(float)
-    DBBOOL DBDEAD(DBPROCESS *)
-    
-    BYTE * dbgetuserdata(DBPROCESS *)
+
+    # TODO:
+    char * dbname(DBPROCESS *)
     void dbexit()
-#	complex double __builtin_csinh(complex double)
-    int DBNUMORDERS(DBPROCESS *)
-#	complex long double __builtin_csinl(complex long double)
+    
+    DBBOOL DBDEAD(DBPROCESS *)
     RETCODE DBSETLAPP(LOGINREC *x, char *y)
     RETCODE DBSETLHOST(LOGINREC *x, char *y)
     RETCODE DBSETLPWD(LOGINREC *x, char *y)
     RETCODE DBSETLUSER(LOGINREC *x, char *y)
     RETCODE DBSETLCHARSET(LOGINREC *x, char *y)
+    
+    BYTE * dbgetuserdata(DBPROCESS *)
+#	complex double __builtin_csinh(complex double)
+    int DBNUMORDERS(DBPROCESS *)
+#	complex long double __builtin_csinl(complex long double)
     DBBOOL bcp_getl(LOGINREC *)
 #	complex float __builtin_csinf(complex float)
     RETCODE dbmny4minus(DBPROCESS *, DBMONEY4 *, DBMONEY4 *)
 #	complex float __builtin_cpowf(complex float, complex float)
     ctypedef void DBSORTORDER
     DBSORTORDER * dbloadsort(DBPROCESS *)
-    char * dbname(DBPROCESS *)
     RETCODE dbreginit(DBPROCESS *, DBCHAR *, DBSMALLINT)
 #	complex long double __builtin_ccosl(complex long double)
 #	complex double __builtin_ccosh(complex double)
     DBBOOL db12hour(DBPROCESS *, char *)
 #	complex float __builtin_ccosf(complex float)
     RETCODE dbregnowatch(DBPROCESS *, DBCHAR *, DBSMALLINT)
-    ctypedef int(*MHANDLEFUNC)(DBPROCESS *, DBINT, int, int, char *, char *, char *, int)
-    MHANDLEFUNC dbmsghandle(MHANDLEFUNC)
     RETCODE dbbind(DBPROCESS *, int, int, DBINT, BYTE *)
     int dbiowdesc(DBPROCESS *)
     RETCODE dbmnyndigit(DBPROCESS *, DBMONEY *, DBCHAR *, DBBOOL *)
@@ -321,7 +613,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbsafestr(DBPROCESS *, char *, DBINT, char *, DBINT, int)
     float __builtin_fabsf(float)
     DBBINARY * dbtxtimestamp(DBPROCESS *, int)
-    DBINT dbconvert(DBPROCESS *, int, BYTE *, DBINT, int, BYTE *, DBINT)
     long double __builtin_fabsl(long double)
     RETCODE dbmny4sub(DBPROCESS *, DBMONEY4 *, DBMONEY4 *, DBMONEY4 *)
     RETCODE dbmnymaxpos(DBPROCESS *, DBMONEY *)
@@ -334,7 +625,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbsetopt(DBPROCESS *, int, char *, int)
     char * dbcolname(DBPROCESS *, int)
     bool __builtin_isinf()
-    RETCODE dbresults(DBPROCESS *) nogil
 #	complex long double __builtin_cexpl(complex long double)
     char * dbgetchar(DBPROCESS *, int)
     int dbstrsort(DBPROCESS *, char *, int, char *, int, DBSORTORDER *)
@@ -354,7 +644,6 @@ cdef extern from "sqlfront.h":
     DBINT dbcurrow(DBPROCESS *)
     double __builtin_tan(double)
     RETCODE dbsetlversion(LOGINREC *, BYTE)
-    ctypedef short int SHORT
     ctypedef short unsigned int USHORT
     DBCURSOR * dbcursoropen(DBPROCESS *, BYTE *, SHORT, SHORT, USHORT, DBINT *)
     ctypedef void DBXLATE
@@ -379,23 +668,9 @@ cdef extern from "sqlfront.h":
     DBBINARY * dbtxptr(DBPROCESS *, int)
     STATUS dbrowtype(DBPROCESS *)
     int dbspid(DBPROCESS *)
-    cdef struct dbdaterec:
-        DBINT year
-        DBINT month
-        DBINT day
-        DBINT dayofyear
-        DBINT weekday
-        DBINT hour
-        DBINT minute
-        DBINT second
-        DBINT millisecond
-        DBINT tzone
-    ctypedef dbdaterec DBDATEREC
-    RETCODE dbdatecrack(DBPROCESS *, DBDATEREC *, DBDATETIME *)
     RETCODE remove_xact(DBPROCESS *, DBINT, int)
     RETCODE dbsqlsend(DBPROCESS *)
     void dbclrbuf(DBPROCESS *, DBINT)
-    RETCODE dbsqlexec(DBPROCESS *) nogil
     double __builtin_cos(double)
     RETCODE dbnpdefine(DBPROCESS *, DBCHAR *, DBSMALLINT)
     float __builtin_asinf(float)
@@ -405,7 +680,6 @@ cdef extern from "sqlfront.h":
     float __builtin_expf(float)
     bool __builtin_islessgreater()
     void dbsetavail(DBPROCESS *)
-    RETCODE dbnextrow(DBPROCESS *) nogil
     long double __builtin_expl(long double)
     RETCODE bcp_colptr(DBPROCESS *, BYTE *, int)
     RETCODE bcp_init(DBPROCESS *, char *, char *, char *, int)
@@ -413,7 +687,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbgetloginfo(DBPROCESS *, DBLOGINFO * *)
     RETCODE dbdatechar(DBPROCESS *, char *, int, int)
 #	float __builtin_cargf(complex float)
-    RETCODE dbcmd(DBPROCESS *, char *)
 #	long double __builtin_cargl(complex long double)
     char * dbtabsoruce(DBPROCESS *, int, int *)
     DBPROCESS * open_commit(LOGINREC *, char *)
@@ -439,13 +712,9 @@ cdef extern from "sqlfront.h":
     RETCODE dbfreesort(DBPROCESS *, DBSORTORDER *)
     RETCODE dbstrcpy(DBPROCESS *, int, int, char *)
     DBPROCESS * tdsdbopen(LOGINREC *, char *, int)
-    DBPROCESS * dbopen(LOGINREC *, char *)
     RETCODE dbnullbind(DBPROCESS *, int, DBINT *)
-    int dbtds(DBPROCESS *)
     RETCODE dbcursorinfo(DBCURSOR *, DBINT *, DBINT *)
 #	complex long double __builtin_csinhl(complex long double)
-    ctypedef int(*EHANDLEFUNC)(DBPROCESS *, int, int, int, char *, char *)
-    EHANDLEFUNC dberrhandle(EHANDLEFUNC)
     float __builtin_coshf(float)
 #	complex float __builtin_csinhf(complex float)
     long double __builtin_coshl(long double)
@@ -457,7 +726,6 @@ cdef extern from "sqlfront.h":
     double __builtin_powi(double, int)
     double __builtin_asin(double)
     RETCODE dbdatezero(DBPROCESS *, DBDATETIME *)
-    int dbnumcols(DBPROCESS *)
     void dbrpwclr(LOGINREC *)
     STATUS dbreadtext(DBPROCESS *, void *, DBINT)
     int dbnumcompute(DBPROCESS *)
@@ -488,7 +756,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbsendpassthru(DBPROCESS *, DBVOIDPTR)
     char * dbdayname(DBPROCESS *, char *, int)
 #	complex double __builtin_ctan(complex double)
-    RETCODE dbsqlok(DBPROCESS *) nogil
     RETCODE dbcursorbind(DBCURSOR *, int, int, DBINT, DBINT *, BYTE *, DBTYPEINFO *)
     DBINT dbspr1rowlen(DBPROCESS *)
     int dbtsnewlen(DBPROCESS *)
@@ -509,10 +776,8 @@ cdef extern from "sqlfront.h":
     RETCODE dbsetversion(DBINT)
     RETCODE dbmnydown(DBPROCESS *, DBMONEY *, int, int *)
     RETCODE dbmnydivide(DBPROCESS *, DBMONEY *, DBMONEY *, DBMONEY *)
-    int dbcoltype(DBPROCESS *, int) nogil
 #	complex long double __builtin_cpowl(complex long double, complex long double)
     double __builtin_inf()
-    int dbalttype(DBPROCESS *, int, int) nogil
     int __builtin_ctzl(long int)
     int __builtin_popcountll(long long int)
     RETCODE dbtxtsput(DBPROCESS *, DBBINARY, int)
@@ -523,7 +788,6 @@ cdef extern from "sqlfront.h":
     long double __builtin_acosl(long double)
     RETCODE bcp_batch(DBPROCESS *)
     DBTYPEINFO * dbcoltypeinfo(DBPROCESS *, int)
-    BYTE * dbdata(DBPROCESS *, int) nogil
     int __builtin_ctzll(long long int)
     int dbgetlusername(LOGINREC *, BYTE *, int)
     char * dbtabname(DBPROCESS *, int)
@@ -546,7 +810,6 @@ cdef extern from "sqlfront.h":
     RETCODE dbmnyminus(DBPROCESS *, DBMONEY *, DBMONEY *)
 #	complex float __builtin_csqrtf(complex float)
     RETCODE bcp_done(DBPROCESS *)
-    RETCODE dbsetlogintime(int)
 #	complex double __builtin_ccos(complex double)
     RETCODE bcp_control(DBPROCESS *, int, DBINT)
     RETCODE dbmny4zero(DBPROCESS *, DBMONEY4 *)
@@ -599,7 +862,6 @@ cdef extern from "sqlfront.h":
     DBINT dbcolutype(DBPROCESS *, int)
     DBINT stat_xact(DBPROCESS *, DBINT)
     RETCODE dbaltbind(DBPROCESS *, int, int, int, DBINT, BYTE *)
-    RETCODE dbcancel(DBPROCESS *) nogil
     RETCODE dbreglist(DBPROCESS *)
     int bcp_getbatchsize(DBPROCESS *)
     float __builtin_tanhf(float)
@@ -617,14 +879,12 @@ cdef extern from "sqlfront.h":
     void build_xact_string(char *, char *, DBINT, char *)
     DBBINARY * dbtxtsnewval(DBPROCESS *)
     float __builtin_tanf(float)
-    void dbclose(DBPROCESS *) nogil
     double __builtin_tanh(double)
     long double __builtin_tanl(long double)
 #	complex float __builtin_clogf(complex float)
 #	complex long double __builtin_clogl(complex long double)
     double __builtin_sqrt(double)
     bool __builtin_isunordered()
-    RETCODE dbsettime(int)
     float __builtin_nansf(char *)
     RETCODE bcp_exec(DBPROCESS *, DBINT *)
     RETCODE dbclropt(DBPROCESS *, int, char *)
@@ -651,27 +911,10 @@ cdef extern from "sqlfront.h":
         CI_REGULAR = 1
         CI_ALTERNATE = 2
         CI_CURSOR = 3
-    ctypedef int BOOL
-    ctypedef struct DBCOL:
-        DBINT SizeOfStruct
-        DBCHAR * Name
-        DBCHAR * ActualName
-        DBCHAR * TableName
-        SHORT Type
-        DBINT UserType
-        DBINT MaxLength
-        BYTE Precision
-        BYTE Scale
-        BOOL VarLength
-        BYTE Null
-        BYTE CaseSensitive
-        BYTE Updatable
-        BOOL Identity
     RETCODE dbcolinfo(DBPROCESS *, int, DBINT, DBINT, DBCOL *)
     int dbdatename(DBPROCESS *, char *, int, DBDATETIME *)
     int __builtin_ctz(int)
     int dbmnycmp(DBPROCESS *, DBMONEY *, DBMONEY *)
-    DBINT dbdatlen(DBPROCESS *, int) nogil
     RETCODE dbsetlname(LOGINREC *, char *, int)
     DBINT dblastrow(DBPROCESS *)
     RETCODE dbmorecmds(DBPROCESS *)
@@ -679,7 +922,6 @@ cdef extern from "sqlfront.h":
     RETCODE bcp_moretext(DBPROCESS *, DBINT, BYTE *)
     char * dbservcharset(DBPROCESS *)
     RETCODE dbsetlbool(LOGINREC *, int, int)
-    DBBOOL dbdead(DBPROCESS *)
     RETCODE dbaltbind_ps(DBPROCESS *, int, int, int, DBINT, BYTE *, DBTYPEINFO *)
     RETCODE dbprrow(DBPROCESS *)
     char * dbchange(DBPROCESS *)
@@ -699,7 +941,6 @@ cdef extern from "sqlfront.h":
     float __builtin_frexpf(float, int *)
     long double __builtin_frexpl(long double, int *)
     RETCODE dbfcmd(DBPROCESS *, char *)
-    DBINT dbcount(DBPROCESS *) nogil
     RETCODE dbsprline(DBPROCESS *, char *, DBINT, DBCHAR)
     bool __builtin_va_arg_pack()
     int dbstrcmp(DBPROCESS *, char *, int, char *, int, DBSORTORDER *)
