@@ -10,7 +10,8 @@ _extra_compile_args = [
 ]
 
 if sys.platform == 'win32':
-    freetds_dir = r'd:\devel\freetds'
+    freetds_dir = os.path.join(os.path.dirname(__file__), 'win32',
+        'freetds')
     include_dirs = [os.path.join(freetds_dir, 'include')]
     library_dirs = [os.path.join(freetds_dir, 'lib')]
     libraries = [
