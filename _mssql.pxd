@@ -12,6 +12,7 @@ cdef class MSSQLConnection:
     # class property variables
     cdef bint _connected
     cdef int _rows_affected
+    cdef int _query_timeout
     cdef char *_charset
 
     # class internal variables
@@ -30,6 +31,10 @@ cdef class MSSQLConnection:
     cdef void clear_metadata(self)
     cdef convert_db_value(self, BYTE *, int, int)
     cdef BYTE *convert_python_value(self, value, int*, int*)
+    cpdef execute_query(self, query, params=?)
+    cpdef execute_non_query(self, query, params=?)
+    cpdef execute_row(self, query, params=?)
+    cpdef execute_scalar(self, query, params=?)
     cdef fetch_next_row(self, int)
     cdef fetch_next_row_dict(self, int)
     cdef format_and_run_query(self, query_string, params=?)

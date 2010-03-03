@@ -322,7 +322,27 @@ cdef class MSSQLConnection:
         """
         
         def __get__(self):
-            pass
+            return self.execute_scalar('SELECT @@IDENTITY')
+
+    property query_timeout:
+        """
+        A
+        """
+        def __get__(self):
+            return self._query_timeout
+
+        def __set__(self, value):
+            cdef int val = int(value)
+            cdef RETCODE rtc
+            if val < 0:
+                raise ValueError("The 'query_timeout' attribute must be >= 0.")
+
+            # currently this will set it application wide :-(
+            rtc = dbsettime(val)
+            check_and_raise(rtc, self)
+
+            # if all is fine then set our attribute
+            self._query_timeout = val
     
     property rows_affected:
         """
@@ -622,7 +642,7 @@ cdef class MSSQLConnection:
         # No conversion was possible so just return NULL
         return NULL
 
-    def execute_non_query(self, query_string, params=None):
+    cpdef execute_non_query(self, query_string, params=None):
         """
         execute_non_query(query_string, params=None)
 
@@ -652,7 +672,7 @@ cdef class MSSQLConnection:
         rtc = db_cancel(self)
         check_and_raise(rtc, self)
 
-    def execute_query(self, query_string, params=None):
+    cpdef execute_query(self, query_string, params=None):
         """
         execute_query(query_string, params=None)
 
@@ -686,7 +706,7 @@ cdef class MSSQLConnection:
         self.format_and_run_query(query_string, params)
         self.get_result()
 
-    def execute_row(self, query_string, params=None):
+    cpdef execute_row(self, query_string, params=None):
         """
         execute_row(query_string, params=None)
 
@@ -711,7 +731,7 @@ cdef class MSSQLConnection:
         self.format_and_run_query(query_string, params)
         return self.fetch_next_row_dict(0)
 
-    def execute_scalar(self, query_string, params=None):
+    cpdef execute_scalar(self, query_string, params=None):
         """
         execute_scalar(query_string, params=None)
 
