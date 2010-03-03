@@ -338,8 +338,9 @@ cdef class MSSQLConnection:
         log("MSSQLConnection.__cinit__()")
         self._connected = 0
         self._charset = <char *>PyMem_Malloc(PYMSSQL_CHARSETBUFSIZE)
-        self._charset = NULL 
+        self._charset[0] = <char>0
         self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+        self.last_msg_str[0] = <char>0
         self.column_names = None
         self.column_types = None
 
