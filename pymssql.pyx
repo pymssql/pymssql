@@ -376,21 +376,19 @@ cdef class Cursor:
         """
         pass
 
-def connect(dsn=None, user='sa', password='', host='.', 
-        database='', timeout=0, login_timeout=60, trusted=False,
-        charset=None, as_dict=False):
+def connect(server='.', user='sa', password='', database='', timeout=0,
+        login_timeout=60, trusted=False, charset=None, as_dict=True,
+        host=''):
     """
     Constructor for creating a connection to the database. Returns a
-    connection object.
+    Connection object.
 
-    :param dsn: colon-delimited string in form host:dbase:user:pass:opt:tty
-    :type dsn: string
+    :param server: database host
+    :type server: string
     :param user: database user to connect as
     :type user: string
     :param password: user's password
     :type password: string
-    :param host: database host
-    :type host: string
     :param database: the database to initially connect to
     :type database: string
     :param timeout: query timeout in seconds, default 0 (no timeout)
@@ -399,44 +397,30 @@ def connect(dsn=None, user='sa', password='', host='.',
     :type login_timeout: int
     :param charset: character set with which to connect to the database
     :type charset: string
-    :param as_dict: whether rows should be returned as dictionaries instead of tuples.
+    :keyword as_dict: whether rows should be returned as dictionaries instead of tuples.
     :type as_dict: boolean
     """
 
-    # first try to get the params from the DSN
-    dbhost = ''
-    dbbase = ''
-    dbuser = ''
-    dbpasswd = ''
-    dbopt = ''
-    dbtty = ''
-    try:
-        (dbhost, dbbase, dbuser, dbpassword, dbopt, dbtty) = dsn.split(':')
-    except:
-        pass
-
-    # override the dsn values
-    if user != '':
-        dbuser = user
-    if password != '':
-        dbpasswd = password
-    if database != '':
-        dbbase = database
-    if host != '':
-        dbhost = host
-
-    # add default user and host
-    if dbhost == '':
-        dbhost = '.'
-    if dbuser == '':
-        dbuser = 'sa'
-
-    # set the login timeout
     _mssql.login_timeout = login_timeout
 
+    # set the login timeout
     try:
-        conn = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset,
-            dbbase)
+        login_timeout = int(login_timeout)
+    except ValueError:
+        login_timeout = 0
+
+    # default query timeout
+    try:
+        timeout = int(timeout)
+    except ValueError:
+        timeout = 0
+
+    if host:
+        server = host
+
+    try:
+        conn = _mssql.connect(server, user, password, trusted, charset,
+            database)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])
@@ -444,11 +428,6 @@ def connect(dsn=None, user='sa', password='', host='.',
     except _mssql.MSSQLDriverException, e:
         raise InterfaceError(e[0])
     
-    # default query timeout
-    try:
-        timeout = int(timeout)
-    except ValueError, e:
-        timeout = 0
 
     if timeout != 0:
         conn.query_timeout = timeout
