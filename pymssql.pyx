@@ -460,3 +460,19 @@ def connect(server='.', user='sa', password='', database='', timeout=0,
         conn.query_timeout = timeout
 
     return Connection(conn, as_dict)
+
+def get_max_connections():
+    """
+    Get the maximum number of simulatenous connections pymssql will open
+    to the server.
+    """
+    return _mssql.get_max_connections()
+
+def set_max_connections(int limit):
+    """
+    Set maximum simultaneous connections db-lib will open to the server.
+
+    :param limit: the connection limit
+    :type limit: int
+    """
+    _mssql.set_max_connections(connections)

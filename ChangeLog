@@ -7,6 +7,7 @@ Sun Feb 28 23:03:00 2010 Damien Churchill <damoxc@gmail.com>
 	* pymssql.pyx:
 		+ feature: add the output type to be used with callproc()
 		+ depreciate: the dsn keyword param to pymssql.connect()
+		+ feature: add the get/set_max_connections to pymssql
 	* sqlfront.pxd:
 		+ feature: tidy up and remove all unused methods.
 	* version 1.9.906
