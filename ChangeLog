@@ -4,6 +4,9 @@ Sun Feb 28 23:03:00 2010 Damien Churchill <damoxc@gmail.com>
 		          a bug in setuptools.
 	* _mssql.pyx:
 		+ bugfix: add support for connecting using "." and "(local)"
+	* pymssql.pyx:
+		+ feature: add the output type to be used with callproc()
+		+ depreciate: the dsn keyword param to pymssql.connect()
 	* sqlfront.pxd:
 		+ feature: tidy up and remove all unused methods.
 	* version 1.9.906

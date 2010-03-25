@@ -87,6 +87,31 @@ class ProgrammingError(DatabaseError):
 class NotSupportedError(DatabaseError):
     pass
 
+# stored procedure output parameter
+cdef class output:
+
+    cdef object _type
+    cdef object _value
+
+    property type:
+        """
+        This is the type of the parameter.
+        """
+        def __get__(self):
+            return self._type
+
+    property value:
+        """
+        This is the value of the parameter.
+        """
+        def __get__(self):
+            return self._value
+
+    
+    def __init__(self, param_type, value=None):
+        self._type = param_type
+        self._value = value
+
 ######################
 ## Connection class ##
 ######################
@@ -175,12 +200,14 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot commit transation: ' + e[0])
 
-    def cursor(self):
+    def cursor(self, as_dict=None):
         """
         Return cursor object that can be used to make queries and fetch
         results from the database.
         """
-        return Cursor(self, self.as_dict)
+        if as_dict is None:
+            as_dict = self.as_dict
+        return Cursor(self, as_dict)
 
     def rollback(self):
         """
