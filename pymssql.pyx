@@ -404,7 +404,7 @@ cdef class Cursor:
         pass
 
 def connect(server='.', user='sa', password='', database='', timeout=0,
-        login_timeout=60, trusted=False, charset=None, as_dict=True,
+        login_timeout=60, trusted=False, charset=None, as_dict=False,
         host=''):
     """
     Constructor for creating a connection to the database. Returns a
