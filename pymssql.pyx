@@ -475,4 +475,4 @@ def set_max_connections(int limit):
     :param limit: the connection limit
     :type limit: int
     """
-    _mssql.set_max_connections(connections)
+    _mssql.set_max_connections(limit)
