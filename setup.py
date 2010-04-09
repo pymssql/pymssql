@@ -23,6 +23,7 @@
 
 import os
 import sys
+import getpass
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.pyrex'))
 
@@ -163,6 +164,10 @@ class release(Command):
         pass
 
     def run(self):
+        self.username = None
+        self.password = None
+        self.store = None
+        
         if WINDOWS:
             self.release_windows()
         else:
@@ -183,13 +188,59 @@ class release(Command):
         bdist.formats = 'zip,wininst'
         bdist.ensure_finalized()
         bdist.run()
+        
+        (name, version, fullname) = self.get_info()
+        
+        self.upload(fullname + '.zip', '%s %s source zipped' % (name, version))
+        self.upload(fullname + '.win32.zip', '%s %s win32 zip installer' % (name, version))
+        self.upload(fullname + '.win32-py2.6.exe', '%s %s windows installer' % (name, version))
+        self.upload(fullname + '-py2.6-win32.egg', '%s %s windows egg' % (name, version))
 
     def release_unix(self):
         # generate linux source distributions
         sdist = self.distribution.get_command_obj('sdist')
-        sdist.formats = 'zip,gztar,bztar'
+        sdist.formats = 'gztar,bztar'
         sdist.ensure_finalized()
         sdist.run()
+        
+        (name, version, fullname) = self.get_info()
+        self.upload(fullname + '.tar.gz', '%s %s source gzipped' % (name, version))
+        self.upload(fullname + '.tar.bz2', '%s %s source bzipped' % (name, version))
+    
+    def get_info(self):
+        """
+        Return the project name and version
+        """
+        return (
+            self.distribution.get_name(),
+            self.distribution.get_version(),
+            self.distribution.get_fullname()
+        )
+
+    def upload(self, filename, comment):
+        from gc_upload import upload
+        
+        if self.username is None:
+            username = raw_input('Username: ')
+            password = getpass.getpass('Password: ')
+            
+            if self.store is None:
+                store = raw_input('Store credentials for later use? [Y/n]')
+                self.store = store in ('', 'y', 'Y')
+            
+            if self.store:
+                self.username = username
+                self.password = password
+                
+        else:
+            username = self.username
+            password = self.password
+
+        filename = os.path.join('dist', filename)
+        log.info('uploading %s to googlecode', filename)
+        (status, reason, url) = upload(filename, 'pymssql', username, password, comment)
+        if not url:
+            log.error('upload to googlecode failed: %s', reason)
 
 setup(
     name  = 'pymssql',
