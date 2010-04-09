@@ -33,7 +33,8 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
 
-from distutils import cmd, log
+from distutils import log
+from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
 from Cython.Distutils import build_ext as _build_ext
 
@@ -144,6 +145,50 @@ class clean(_clean):
                     log.info('removing %s', c_source)
                     os.remove(c_source)
 
+class release(Command):
+    """
+    Setuptools command to run all the required commands to perform
+    a release. This acts differently depending on the platform it
+    is being run on.
+    """
+
+    description = "Run all the commands required for a release."
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if WINDOWS:
+            self.release_windows()
+        else:
+            self.release_unix()
+
+    def release_window(self):
+        sdist = self.distribution.get_command_obj('sdist')
+        sdist.formats = 'zip'
+        sdist.ensure_finalized()
+        sdist.run()
+
+        bdist = self.distribution.get_command_obj('bdist')
+        bdist.formats = 'zip,wininst'
+        bdist.ensure_finalized()
+        bdist.run()
+        
+        bdist_egg = self.distribution.get_command_obj('bdist_egg')
+        bdist_egg.bdist.ensure_finalized()
+        bdist_egg.run()
+
+    def release_unix(self):
+        sdist = self.distribution.get_command_obj('sdist')
+        sdist.formats = 'zip,gztar,bztar'
+        sdist.ensure_finalized()
+        sdist.run()
+
 setup(
     name  = 'pymssql',
     version = '1.9.906',
@@ -153,7 +198,11 @@ setup(
     author_email = 'damoxc@gmail.com',
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
-    cmdclass = {'build_ext': build_ext, 'clean': clean},
+    cmdclass = {
+        'build_ext': build_ext,
+        'clean': clean,
+        'release': release
+    },
     data_files = [
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
