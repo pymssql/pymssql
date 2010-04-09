@@ -169,21 +169,23 @@ class release(Command):
             self.release_unix()
 
     def release_windows(self):
+        # generate windows source distributions
         sdist = self.distribution.get_command_obj('sdist')
         sdist.formats = 'zip'
         sdist.ensure_finalized()
         sdist.run()
+        
+        # generate a windows egg
+        self.run_command('bdist_egg')
 
-        bdist = self.distribution.get_command_obj('bdist')
+        # generate windows installers
+        bdist = self.reinitialize_command('bdist')
         bdist.formats = 'zip,wininst'
         bdist.ensure_finalized()
         bdist.run()
-        
-        bdist_egg = self.distribution.get_command_obj('bdist_egg')
-        bdist_egg.ensure_finalized()
-        bdist_egg.run()
 
     def release_unix(self):
+        # generate linux source distributions
         sdist = self.distribution.get_command_obj('sdist')
         sdist.formats = 'zip,gztar,bztar'
         sdist.ensure_finalized()
@@ -206,6 +208,7 @@ setup(
     data_files = [
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
+	zip_safe = False,
     setup_requires=["Cython>=0.12"],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
