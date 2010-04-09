@@ -168,7 +168,7 @@ class release(Command):
         else:
             self.release_unix()
 
-    def release_window(self):
+    def release_windows(self):
         sdist = self.distribution.get_command_obj('sdist')
         sdist.formats = 'zip'
         sdist.ensure_finalized()
@@ -180,7 +180,7 @@ class release(Command):
         bdist.run()
         
         bdist_egg = self.distribution.get_command_obj('bdist_egg')
-        bdist_egg.bdist.ensure_finalized()
+        bdist_egg.ensure_finalized()
         bdist_egg.run()
 
     def release_unix(self):
