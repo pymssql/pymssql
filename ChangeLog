@@ -1,4 +1,4 @@
-Sun Feb 28 23:03:00 2010 Damien Churchill <damoxc@gmail.com>
+Fri Apr 09 13:16:00 2010 Damien Churchill <damoxc@gmail.com>
 	* setup.py:
 		+ bugfix: include hack faking that pyrex is installed to workaround
 		          a bug in setuptools.
