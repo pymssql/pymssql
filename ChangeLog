@@ -1,3 +1,8 @@
+Wed Apr 21 16:02:00 2010 Damien Churchill <damoxc@gmail.com>
+	* MANIFEST.in:
+		+ bugfix: include missing .pyrex folder
+	* version 1.9.907
+
 Fri Apr 09 13:16:00 2010 Damien Churchill <damoxc@gmail.com>
 	* setup.py:
 		+ bugfix: include hack faking that pyrex is installed to workaround

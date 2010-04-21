@@ -1,5 +1,6 @@
 include ChangeLog
 include LICENSE
 include *.pxd
-recursive-include nagios-plugin *
 include win32/freetds.zip
+recursive-include .pyrex
+recursive-include nagios-plugin *
