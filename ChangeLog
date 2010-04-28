@@ -1,3 +1,8 @@
+Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>
+	* MANIFEST.in:
+		+ bugfix: fix recursive-include for .pyrex
+	* version 1.9.907.1
+
 Wed Apr 21 16:02:00 2010 Damien Churchill <damoxc@gmail.com>
 	* MANIFEST.in:
 		+ bugfix: include missing .pyrex folder
