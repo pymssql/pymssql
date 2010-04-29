@@ -6,7 +6,7 @@ This is an effort to convert the pymssql low-level C module to Cython.
 #
 #   Copyright (C) 2003 Joon-cheol Park <jooncheol@gmail.com>
 #                 2008 Andrzej Kukula <akukula@gmail.com>
-#                 2009 Damien Churchill <damoxc@gmail.com>
+#                 2009-2010 Damien Churchill <damoxc@gmail.com>
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -601,6 +601,9 @@ cdef class MSSQLConnection:
             intValue[0] = <int>value
             return <BYTE *><DBBIT *>intValue
 
+        if dbtype[0] == SQLINTN:
+            dbtype[0] = SQLINT4
+
         if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
             intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
@@ -1096,6 +1099,10 @@ cdef class MSSQLStoredProcedure:
         # Store the value in the parameters dictionary for returning
         # later.
         self.params[name] = value
+
+        # We support nullable parameters by just not binding them
+        if dbtype in (SQLINTN, SQLBITN) and data == NULL:
+            return
 
         # Store the converted parameter in our parameter list so we can
         # free() it later.

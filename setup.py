@@ -244,7 +244,7 @@ class release(Command):
 
 setup(
     name  = 'pymssql',
-    version = '1.9.908',
+    version = '1.9.909',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',

@@ -1,7 +1,13 @@
+Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
+	* _mssql.py:
+		+ feature: add support for nullable ints and nullable bits in
+		           stored procedure parameters.
+	* version 1.9.909
+
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>
 	* MANIFEST.in:
 		+ bugfix: fix recursive-include for .pyrex
-	* version 1.9.907.1
+	* version 1.9.908
 
 Wed Apr 21 16:02:00 2010 Damien Churchill <damoxc@gmail.com>
 	* MANIFEST.in:
