@@ -4,6 +4,8 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		           stored procedure parameters.
 		+ feature: add support for positional parameters in stored
 		           procedures.
+	* pymssql:
+		+ feature: add initial support for callproc()
 	* version 1.9.909
 
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>

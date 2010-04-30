@@ -56,6 +56,15 @@ NUMBER = DBAPIType(_mssql.NUMBER)
 DATETIME = DBAPIType(_mssql.DATETIME)
 DECIMAL = DBAPIType(_mssql.DECIMAL)
 
+cdef dict DBTYPES = {
+    'str': _mssql.SQLVARCHAR,
+    'int': _mssql.SQLINT4,
+    'long': _mssql.SQLINT8,
+    'Decimal': _mssql.SQLDECIMAL,
+    'datetime': _mssql.SQLDATETIME,
+    'date': _mssql.SQLDATETIME
+}
+
 # exception hierarchy
 class Warning(StandardError):
     pass
@@ -273,6 +282,34 @@ cdef class Cursor:
         protocol.
         """
         return self
+
+    def callproc(self, bytes procname, parameters=()):
+        """
+        Call a stored procedure with the given name.
+
+        :param procname: The name of the procedure to call
+        :type procname: str
+        :keyword parameters: The optional parameters for the procedure
+        :type parameters: sequence
+        """
+        proc = self._source._conn.init_procedure(procname)
+        for parameter in parameters:
+            if type(parameter) is output:
+                param_type = parameter.type
+                param_value = parameter.value
+                param_output = True
+            else:
+                param_type = type(parameter)
+                param_value = parameter
+                param_output = False
+
+            db_type = DBTYPES.get(param_type.__name__)
+            if db_type == None:
+                raise NotSupportedError('Unable to determine database type')
+
+            proc.bind(param_value, db_type, output=param_output)
+        proc.execute()
+        return tuple([proc.parameters[p] for p in proc.parameters])
 
     def close(self):
         """
