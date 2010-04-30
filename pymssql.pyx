@@ -57,8 +57,9 @@ DATETIME = DBAPIType(_mssql.DATETIME)
 DECIMAL = DBAPIType(_mssql.DECIMAL)
 
 cdef dict DBTYPES = {
+    'bool': _mssql.SQLBITN,
     'str': _mssql.SQLVARCHAR,
-    'int': _mssql.SQLINT4,
+    'int': _mssql.SQLINTN,
     'long': _mssql.SQLINT8,
     'Decimal': _mssql.SQLDECIMAL,
     'datetime': _mssql.SQLDATETIME,
