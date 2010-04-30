@@ -1040,7 +1040,6 @@ cdef class MSSQLStoredProcedure:
         """The parameters that have been bound to this procedure."""
         def __get__(self):
             return self.params
-
     
     def __init__(self, bytes name, MSSQLConnection connection):
         cdef RETCODE rtc
@@ -1056,6 +1055,7 @@ cdef class MSSQLStoredProcedure:
         self.dbproc = connection.dbproc
         self.procname = name
         self.params = dict()
+        self.output_indexes = list()
         self.param_count = 0
         self.had_positional = False
 
@@ -1164,6 +1164,8 @@ cdef class MSSQLStoredProcedure:
         if name:
             self.params[name] = value
         self.params[self.param_count] = value
+        if output:
+            self.output_indexes.append(self.param_count)
         self.param_count += 1
 
     def execute(self):
@@ -1187,7 +1189,7 @@ cdef class MSSQLStoredProcedure:
             rtc = dbsqlok(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
-        # Need to call thsi regardless of wether or not there are output
+        # Need to call this regardless of wether or not there are output
         # parameters in roder for the return status to be correct.
         output_count = dbnumrets(self.dbproc)
 
@@ -1202,7 +1204,9 @@ cdef class MSSQLStoredProcedure:
                     data = dbretdata(self.dbproc, i)
 
                 value = self.conn.convert_db_value(data, type, length)
-                self.params[name] = value
+                if strlen(name):
+                    self.params[name] = value
+                self.params[self.output_indexes[i-1]] = value
 
         # Get the return value from the procedure ready for return.
         return dbretstatus(self.dbproc)

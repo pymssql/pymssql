@@ -50,5 +50,6 @@ cdef class MSSQLStoredProcedure:
     cdef char *procname
     cdef int param_count
     cdef bool had_positional
+    cdef list output_indexes
     cdef dict params
     cdef _mssql_parameter_node *params_list
