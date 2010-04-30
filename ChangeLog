@@ -2,6 +2,8 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 	* _mssql.py:
 		+ feature: add support for nullable ints and nullable bits in
 		           stored procedure parameters.
+		+ feature: add support for positional parameters in stored
+		           procedures.
 	* version 1.9.909
 
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>

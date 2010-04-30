@@ -1049,14 +1049,15 @@ cdef class MSSQLStoredProcedure:
         # We firstly want to check if tdsver is >= 8 as anything less
         # doesn't support remote procedure calls.
         if connection.tds_version < 7:
-            raise MSSQLDriverException("Stored Procedures aren't " \
+            raise MSSQLDriverException("Stored Procedures aren't " 
                 "supported with a TDS version less than 7.")
         
         self.conn = connection
         self.dbproc = connection.dbproc
         self.procname = name
         self.params = dict()
-        self.params_list = NULL
+        self.param_count = 0
+        self.had_positional = False
 
         with nogil:
             rtc = dbrpcinit(self.dbproc, self.procname, 0)
@@ -1087,6 +1088,7 @@ cdef class MSSQLStoredProcedure:
         cdef int length = -1
         cdef RETCODE rtc
         cdef BYTE status, *data
+        cdef char *param_name
         cdef _mssql_parameter_node *pn
         log("_mssql.MSSQLStoredProcedure.bind()")
 
@@ -1095,10 +1097,6 @@ cdef class MSSQLStoredProcedure:
 
         # Convert the PyObject to the db type
         data = self.conn.convert_python_value(value, &dbtype, &length)
-
-        # Store the value in the parameters dictionary for returning
-        # later.
-        self.params[name] = value
 
         # We support nullable parameters by just not binding them
         if dbtype in (SQLINTN, SQLBITN) and data == NULL:
@@ -1142,16 +1140,31 @@ cdef class MSSQLStoredProcedure:
         if status != DBRPCRETURN:
             max_length = -1
 
+        if name:
+            param_name = name
+            if self.had_positional:
+                raise MSSQLDriverException('Cannot bind named parameter after positional')
+        else:
+            param_name = ''
+            self.had_positional = True
+
         IF PYMSSQL_DEBUG == 1:
             fprintf(stderr, "\n--- rpc_bind(name = '%s', status = %d, " \
                 "max_length = %d, data_type = %d, data_length = %d, "
-                "data = %x)\n", <char *>name, status, max_length, dbtype,
+                "data = %x)\n", param_name, status, max_length, dbtype,
                 length, data)
 
         with nogil:
-            rtc = dbrpcparam(self.dbproc, name, status, dbtype,
+            rtc = dbrpcparam(self.dbproc, param_name, status, dbtype,
                 max_length, length, data)
-        return check_cancel_and_raise(rtc, self.conn)
+        check_cancel_and_raise(rtc, self.conn)
+
+        # Store the value in the parameters dictionary for returning
+        # later, by name if that has been supplied.
+        if name:
+            self.params[name] = value
+        self.params[self.param_count] = value
+        self.param_count += 1
 
     def execute(self):
         cdef RETCODE rtc

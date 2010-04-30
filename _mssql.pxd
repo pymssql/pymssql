@@ -1,6 +1,5 @@
 from sqlfront cimport DBPROCESS, BYTE
 
-
 cdef void log(char *, ...)
 
 cdef struct _mssql_parameter_node:
@@ -49,5 +48,7 @@ cdef class MSSQLStoredProcedure:
     cdef MSSQLConnection conn
     cdef DBPROCESS *dbproc
     cdef char *procname
+    cdef int param_count
+    cdef bool had_positional
     cdef dict params
     cdef _mssql_parameter_node *params_list
