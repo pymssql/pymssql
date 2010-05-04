@@ -866,8 +866,8 @@ cdef class MSSQLConnection:
         if params is None:
             return format
 
-        if type(params) not in (bool, int, long, float, unicode, str,
-            datetime.datetime, datetime.date, tuple, dict):
+        if not issubclass(type(params), (bool, int, long, float, unicode, str,
+            datetime.datetime, datetime.date, dict, tuple)):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
         
         if strlen(self._charset):
@@ -1348,7 +1348,7 @@ cdef _quote_or_flatten(data, charset='utf8'):
     if result is not None:
         return result
 
-    if type(data) not in (list, tuple):
+    if not issubclass(type(data), (list, tuple)):
         raise ValueError('expected a simple type, a tuple or a list')
 
     string = ''
@@ -1370,13 +1370,13 @@ cdef _quote_data(data, charset='utf8'):
     if result is not None:
         return result
 
-    if type(data) is dict:
+    if issubclass(type(data), dict):
         result = {}
         for k, v in data.iteritems():
             result[k] = _quote_or_flatten(v, charset)
         return result
 
-    if type(data) is tuple:
+    if issubclass(type(data), tuple):
         result = []
         for v in data:
             result.append(_quote_or_flatten(v, charset))
