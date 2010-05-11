@@ -5,6 +5,7 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ feature: add support for positional parameters in stored
 		           procedures.
 		+ bugfix:  add support for using type subclasses as parameters
+		+ bugfix:  correctly report incorrect logins.
 	* pymssql:
 		+ feature: add initial support for callproc()
 	* version 1.9.909
