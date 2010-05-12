@@ -443,7 +443,7 @@ cdef class Cursor:
 
 def connect(server='.', user='sa', password='', database='', timeout=0,
         login_timeout=60, trusted=False, charset=None, as_dict=False,
-        host=''):
+        host='', appname=None):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -464,6 +464,8 @@ def connect(server='.', user='sa', password='', database='', timeout=0,
     :type charset: string
     :keyword as_dict: whether rows should be returned as dictionaries instead of tuples.
     :type as_dict: boolean
+    :keyword appname: Set the application name to use for the connection
+    :type appname: string
     """
 
     _mssql.login_timeout = login_timeout
@@ -485,7 +487,7 @@ def connect(server='.', user='sa', password='', database='', timeout=0,
 
     try:
         conn = _mssql.connect(server, user, password, trusted, charset,
-            database)
+            database, appname)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])

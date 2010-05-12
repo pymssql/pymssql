@@ -6,8 +6,10 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		           procedures.
 		+ bugfix:  add support for using type subclasses as parameters
 		+ bugfix:  correctly report incorrect logins.
+		+ feature: add support for setting the application name
 	* pymssql:
 		+ feature: add initial support for callproc()
+		+ feature: add support for setting the application name
 	* version 1.9.909
 
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>

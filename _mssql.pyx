@@ -384,7 +384,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="", trusted=0,
-            charset='', database=''):
+            charset='', database='', appname=None):
         log("_mssql.MSSQLConnection.__init__()")
     
         cdef LOGINREC *login
@@ -403,10 +403,12 @@ cdef class MSSQLConnection:
         login = dblogin()
         if login == NULL:
             raise MSSQLDriverException("Out of memory")
+
+        appname = appname or "pymssql"
     
         DBSETLUSER(login, user)
         DBSETLPWD(login, password)
-        DBSETLAPP(login, "pymssql")
+        DBSETLAPP(login, appname)
         DBSETLHOST(login, server);
 
         # Add ourselves to the global connection list
