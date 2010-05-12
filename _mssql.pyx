@@ -429,8 +429,8 @@ cdef class MSSQLConnection:
         dbloginfree(login)
         
         if self.dbproc == NULL:
-            maybe_raise_MSSQLDatabaseException(None)
             connection_object_list.remove(self)
+            maybe_raise_MSSQLDatabaseException(None)
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
         
         self._connected = 1
