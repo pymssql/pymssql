@@ -639,7 +639,10 @@ cdef class MSSQLConnection:
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
-            if type(value) != decimal.Decimal:
+            if type(value) in (int, long, bytes):
+                value = decimal.Decimal(value)
+
+            if type(value) not in (decimal.Decimal, float):
                 raise TypeError
 
             value = str(value)

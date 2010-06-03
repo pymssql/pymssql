@@ -7,6 +7,8 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ bugfix:  add support for using type subclasses as parameters
 		+ bugfix:  correctly report incorrect logins.
 		+ feature: add support for setting the application name
+		+ bugfix:  accept more than just the decimal.Decimal type for
+		           money and decimal parameters.
 	* pymssql:
 		+ feature: add initial support for callproc()
 		+ feature: add support for setting the application name
