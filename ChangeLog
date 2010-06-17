@@ -12,6 +12,9 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 	* pymssql:
 		+ feature: add initial support for callproc()
 		+ feature: add support for setting the application name
+		+ bugfix:  fix issue #7, thanks has.temp3
+	* MANIFEST.in:
+		+ feature: include the tests
 	* version 1.9.909
 
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>

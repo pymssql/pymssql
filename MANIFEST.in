@@ -4,3 +4,4 @@ include *.pxd
 include win32/freetds.zip
 recursive-include .pyrex *
 recursive-include nagios-plugin *
+recursive-include tests *

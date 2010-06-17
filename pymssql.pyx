@@ -411,8 +411,8 @@ cdef class Cursor:
             else:
                 rows = [tuple([row[r] for r in sorted(row.keys()) if \
                         type(r) == int]) for row in self._source._conn]
-                self._rownumber += len(rows)
-                return rows
+            self._rownumber += len(rows)
+            return rows
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError, e[0]
         except _mssql.MSSQLDriverException, e:
