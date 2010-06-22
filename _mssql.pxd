@@ -28,8 +28,8 @@ cdef class MSSQLConnection:
 
     cpdef cancel(self)
     cdef void clear_metadata(self)
-    cdef convert_db_value(self, BYTE *, int, int)
-    cdef BYTE *convert_python_value(self, value, int*, int*)
+    cdef object convert_db_value(self, BYTE *, int, int)
+    cdef int convert_python_value(self, object value, BYTE **, int*, int*) except -1
     cpdef execute_query(self, query, params=?)
     cpdef execute_non_query(self, query, params=?)
     cpdef execute_row(self, query, params=?)

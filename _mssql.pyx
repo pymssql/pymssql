@@ -64,6 +64,9 @@ cdef _decimal_context
 # List to store the connection objects in
 cdef list connection_object_list = list()
 
+# Store the 32bit max int
+cdef int max_int = 2147483647
+
 #############################
 ## DB-API type definitions ##
 #############################
@@ -517,7 +520,7 @@ cdef class MSSQLConnection:
         PyMem_Free(self._charset)
         connection_object_list.remove(self)
     
-    cdef convert_db_value(self, BYTE *data, int type, int length):
+    cdef object convert_db_value(self, BYTE *data, int type, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
         cdef int len
@@ -588,51 +591,60 @@ cdef class MSSQLConnection:
         else:
             return (<char *>data)[:length]
 
-    cdef BYTE *convert_python_value(self, value, int *dbtype, int *length) except <BYTE *>NULL:
+    cdef int convert_python_value(self, object value, BYTE **dbValue,
+            int *dbtype, int *length) except 1:
         log("_mssql.MSSQLConnection.convert_python_value()")
-        cdef int *intValue
+        cdef long *intValue
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
         cdef char *strValue
         cdef BYTE *binValue
 
         if value is None:
-            return NULL
+            dbValue[0] = <BYTE *>NULL
+            return 0
 
         if dbtype[0] in (SQLBIT, SQLBITN):
-            intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>value
-            return <BYTE *><DBBIT *>intValue
+            intValue = <long *>PyMem_Malloc(sizeof(long))
+            intValue[0] = <long>value
+            dbValue[0] = <BYTE *><DBBIT *>intValue
+            return 0
 
         if dbtype[0] == SQLINTN:
             dbtype[0] = SQLINT4
 
         if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
-            intValue = <int *>PyMem_Malloc(sizeof(int))
-            intValue[0] = <int>value
+            intValue = <long *>PyMem_Malloc(sizeof(long))
+            intValue[0] = <long>value
             if dbtype[0] == SQLINT1:
-                return <BYTE *><DBTINYINT *>intValue
+                dbValue[0] = <BYTE *><DBTINYINT *>intValue
+                return 0
             if dbtype[0] == SQLINT2:
-                return <BYTE *><DBSMALLINT *>intValue
+                dbValue[0] = <BYTE *><DBSMALLINT *>intValue
+                return 0
             if dbtype[0] == SQLINT4:
-                return <BYTE *><DBINT *>intValue
+                dbValue[0] = <BYTE *><DBINT *>intValue
+                return 0
 
         if dbtype[0] == SQLINT8:
             longValue = <PY_LONG_LONG *>PyMem_Malloc(sizeof(PY_LONG_LONG))
             longValue[0] = <PY_LONG_LONG>value
-            return <BYTE *>longValue
+            dbValue[0] = <BYTE *>longValue
+            return 0
 
         if dbtype[0] in (SQLFLT4, SQLFLT8):
             dblValue = <double *>PyMem_Malloc(sizeof(double))
             dblValue[0] = <double>value
             if dbtype[0] == SQLFLT4:
-                return <BYTE *><DBREAL *>dblValue
+                dbValue[0] = <BYTE *><DBREAL *>dblValue
+                return 0
             if dbtype[0] == SQLFLT8:
-                return <BYTE *><DBFLT8 *>dblValue
+                dbValue[0] = <BYTE *><DBFLT8 *>dblValue
+                return 0
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
             if type(value) not in (datetime.date, datetime.datetime):
-                raise TypeError
+                raise TypeError('value can only be a date or datetime')
 
             value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
                 str(value.microsecond / 1000)
@@ -643,33 +655,35 @@ cdef class MSSQLConnection:
                 value = decimal.Decimal(value)
 
             if type(value) not in (decimal.Decimal, float):
-                raise TypeError
+                raise TypeError('value can only be a Decimal')
 
             value = str(value)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if type(value) not in (str, unicode):
-                raise TypeError
+                raise TypeError('value can only be str or unicode')
 
             if strlen(self._charset) > 0 and type(value) is unicode:
                 value = value.encode(self._charset)
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             strcpy(strValue, value)
-            return <BYTE *>strValue
+            dbValue[0] = <BYTE *>strValue
+            return 0
 
         if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
             if type(value) is not str:
-                raise TypeError()
+                raise TypeError('value can only be str')
 
             binValue = <BYTE *>PyMem_Malloc(len(value))
             memcpy(binValue, <char *>value, len(value))
             length[0] = len(value)
-            return <BYTE *>binValue
+            dbValue[0] = <BYTE *>binValue
+            return 0
 
-        # No conversion was possible so just return NULL
-        return NULL
+        # No conversion was possible so raise an error
+        raise MSSQLDriverException('Unable to convert value')
 
     cpdef execute_non_query(self, query_string, params=None):
         """
@@ -1102,7 +1116,7 @@ cdef class MSSQLStoredProcedure:
         status = DBRPCRETURN if output else <BYTE>0
 
         # Convert the PyObject to the db type
-        data = self.conn.convert_python_value(value, &dbtype, &length)
+        self.conn.convert_python_value(value, &data, &dbtype, &length)
 
         # We support nullable parameters by just not binding them
         if dbtype in (SQLINTN, SQLBITN) and data == NULL:
