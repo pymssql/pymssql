@@ -10,6 +10,8 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ bugfix:  accept more than just the decimal.Decimal type for
 		           money and decimal parameters.
 		+ bugfix:  fix raising exceptions from convert_python_value()
+		+ bugfix:  fix binding parameters of int type when larger than
+		           2^31 - 1 (raise exception).
 	* pymssql:
 		+ feature: add initial support for callproc()
 		+ feature: add support for setting the application name

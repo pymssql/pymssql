@@ -65,7 +65,7 @@ cdef _decimal_context
 cdef list connection_object_list = list()
 
 # Store the 32bit max int
-cdef int max_int = 2147483647
+cdef int MAX_INT = 2147483647
 
 #############################
 ## DB-API type definitions ##
@@ -594,7 +594,7 @@ cdef class MSSQLConnection:
     cdef int convert_python_value(self, object value, BYTE **dbValue,
             int *dbtype, int *length) except 1:
         log("_mssql.MSSQLConnection.convert_python_value()")
-        cdef long *intValue
+        cdef int *intValue
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
         cdef char *strValue
@@ -605,8 +605,8 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] in (SQLBIT, SQLBITN):
-            intValue = <long *>PyMem_Malloc(sizeof(long))
-            intValue[0] = <long>value
+            intValue = <int *>PyMem_Malloc(sizeof(int))
+            intValue[0] = <int>value
             dbValue[0] = <BYTE *><DBBIT *>intValue
             return 0
 
@@ -614,8 +614,10 @@ cdef class MSSQLConnection:
             dbtype[0] = SQLINT4
 
         if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
-            intValue = <long *>PyMem_Malloc(sizeof(long))
-            intValue[0] = <long>value
+            if value > MAX_INT:
+                raise MSSQLDriverException('value cannot be larger than %d' % MAX_INT)
+            intValue = <int *>PyMem_Malloc(sizeof(int))
+            intValue[0] = <int>value
             if dbtype[0] == SQLINT1:
                 dbValue[0] = <BYTE *><DBTINYINT *>intValue
                 return 0
