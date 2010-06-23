@@ -207,6 +207,7 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
     cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
     cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
     cdef int _min_error_severity = min_error_severity
+    cdef char mssql_message[PYMSSQL_MSGSIZE]
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
@@ -237,15 +238,17 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         mssql_lastmsgstate[0] = msgstate
 
     if procname != NULL and strlen(procname) > 0:
-        message = 'SQL Server message %ld, severity %d, state %d, ' \
-            'procedure %s, line %d:\n%s\n' % (<long>msgno, severity,
+        sprintf(mssql_message,
+            'SQL Server message %ld, severity %d, state %d, ' \
+            'procedure %s, line %d:\n%s\n', <long>msgno, severity,
             msgstate, procname, line, msgtext)
     else:
-        message = 'SQL Server message %ld, severity %d, state %d, ' \
-            'line %d:\n%s\n' % (<long>msgno, severity, msgstate, line,
+        sprintf(mssql_message,
+            'SQL Server message %ld, severity %d, state %d, ' \
+            'line %d:\n%s\n', <long>msgno, severity, msgstate, line,
             msgtext)
 
-    strncpy(mssql_lastmsgstr, message, PYMSSQL_MSGSIZE)
+    strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
 
     return 0
 
@@ -1239,7 +1242,7 @@ cdef int check_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
     elif get_last_msg_str(conn):
         return maybe_raise_MSSQLDatabaseException(conn)
 
-cdef inline int check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
+cdef int check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
     if rtc == FAIL:
         db_cancel(conn)
         return maybe_raise_MSSQLDatabaseException(conn)
@@ -1258,7 +1261,7 @@ cdef int get_last_msg_severity(MSSQLConnection conn):
 cdef int get_last_msg_state(MSSQLConnection conn):
     return conn.last_msg_state if conn != None else _mssql_last_msg_state
 
-cdef inline int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
+cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     if get_last_msg_severity(conn) < min_error_severity:
         return 0
