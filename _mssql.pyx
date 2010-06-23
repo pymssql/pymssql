@@ -24,7 +24,7 @@ This is an effort to convert the pymssql low-level C module to Cython.
 # MA  02110-1301  USA
 #
 
-DEF PYMSSQL_DEBUG = 0
+DEF PYMSSQL_DEBUG = 1
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
@@ -157,6 +157,8 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
     cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
     cdef int _min_error_severity = min_error_severity
+    cdef char mssql_message[PYMSSQL_MSGSIZE]
+    cdef char error_type[16]
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
@@ -183,15 +185,14 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
 
-    message = mssql_lastmsgstr
-    message += 'DB-Lib error message %d, severity %d:\n%s\n' % (dberr,
-            severity, dberrstr)
+    sprintf(mssql_message, '%sDB-Lib error message %d, severity %d:\n%s\n',
+        mssql_lastmsgstr, dberr, severity, dberrstr)
 
     if oserr != DBNOERR and oserr != 0:
-        message += '%s error during %s' % ('Net-Lib' if \
-            severity == EXCOMM else 'Operating System', oserrstr)
+        error_type[0] = 'Net-Lib' if severity == EXCOMM else 'Operating System'
+        sprintf(mssql_message, '%s%s error during %s', error_type, oserrstr)
 
-    strncpy(mssql_lastmsgstr, message, PYMSSQL_MSGSIZE)
+    strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
     
     return INT_CANCEL
 
@@ -891,8 +892,9 @@ cdef class MSSQLConnection:
         if params is None:
             return format
 
-        if not issubclass(type(params), (bool, int, long, float, unicode, str,
-            datetime.datetime, datetime.date, dict, tuple)):
+        if not issubclass(type(params),
+                (bool, int, long, float, unicode, str,
+                datetime.datetime, datetime.date, dict, tuple)):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
         
         if strlen(self._charset):
