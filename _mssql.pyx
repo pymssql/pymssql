@@ -52,8 +52,6 @@ cdef extern from "string.h":
     cdef char *strncpy(char *, char *, size_t)
     cdef void *memcpy(void *, void *, size_t)
 
-cdef object _mssql_msg_lock = thread.allocate_lock()
-
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
