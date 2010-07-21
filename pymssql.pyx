@@ -35,6 +35,15 @@ threadsafety = 1
 # this module uses extended python format codes
 paramstyle = 'pyformat'
 
+# store a tuple of programming error codes
+cdef object prog_errors = (
+    102,    # syntax error
+    207,    # invalid column name
+    208,    # invalid object name
+    2812,   # unknown procedure
+    4104    # multi-part identifier could not be bound
+)
+
 cdef class DBAPIType:
     
     cdef tuple values
@@ -331,7 +340,7 @@ cdef class Cursor:
             self.description = self._source._conn.get_header()
 
         except _mssql.MSSQLDatabaseException, e:
-            if e.number == 208:
+            if e.number in prog_errors:
                 raise ProgrammingError, e[0]
             raise OperationalError, e[0]
         except _mssql.MSSQLDriverException, e:
