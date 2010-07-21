@@ -144,7 +144,15 @@ cdef class MSSQLDatabaseException(MSSQLException):
     property message:
         
         def __get__(self):
-            pass
+            if self.procname:
+                return 'SQL Server message %d, severity %d, state %d, ' \
+                    'procedure %s, line %d:\n%s' % (self.number,
+                    self.severity, self.state, self.procname,
+                    self.line, self.text)
+            else:
+                return 'SQL Server message %d, severity %d, state %d, ' \
+                    'line %d:\n%s' % (self.number, self.severity,
+                    self.state, self.line, self.text)
 
 # Module attributes for configuring _mssql
 login_timeout = 60
@@ -272,16 +280,6 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         strncpy(mssql_lastmsgsrv, srvname, PYMSSQL_MSGSIZE)
         strncpy(mssql_lastmsgproc, procname, PYMSSQL_MSGSIZE)
 
-#    if procname != NULL and strlen(procname) > 0:
-#        sprintf(mssql_message,
-#            'SQL Server message %ld, severity %d, state %d, ' \
-#            'procedure %s, line %d:\n%s\n', <long>msgno, severity,
-#            msgstate, procname, line, msgtext)
-#    else:
-#        sprintf(mssql_message,
-#            'SQL Server message %ld, severity %d, state %d, ' \
-#            'line %d:\n%s\n', <long>msgno, severity, msgstate, line,
-#            msgtext)
 
     return 0
 

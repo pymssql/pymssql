@@ -68,7 +68,7 @@ class FixedTypeConversion(mssqltests.MSSQLTestCase):
         input = True
         proc = self.mssql.init_procedure('pymssqlTestBit')
         proc.bind(input, _mssql.SQLBITN, '@ibit')
-        proc.bind(None, _mssql.SQLBITN, '@obit', output=True)
+        proc.bind(False, _mssql.SQLBITN, '@obit', output=True)
         proc.execute()
         self.assertEqual(input, proc.parameters['@obit'])
 
