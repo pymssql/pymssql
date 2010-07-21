@@ -37,6 +37,7 @@ if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
 
 import decimal
 import datetime
+
 from sqlfront cimport *
 from stdio cimport fprintf, sprintf, FILE
 from stdlib cimport strlen, strcpy
@@ -51,6 +52,8 @@ cdef extern from "string.h":
     cdef char *strncpy(char *, char *, size_t)
     cdef void *memcpy(void *, void *, size_t)
 
+cdef object _mssql_msg_lock = thread.allocate_lock()
+
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
@@ -59,7 +62,7 @@ cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
-cdef _decimal_context
+cdef object _decimal_context
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
@@ -151,14 +154,16 @@ cdef void log(char * message, ...):
 ###################
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         char *dberrstr, char *oserrstr):
-
-    cdef char *mssql_lastmsgstr = _mssql_last_msg_str
-    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
-    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
-    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
+    cdef char *mssql_lastmsgstr
+    cdef int *mssql_lastmsgno
+    cdef int *mssql_lastmsgseverity
+    cdef int *mssql_lastmsgstate
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
     cdef char error_type[16]
+
+    if severity < _min_error_severity:
+        return INT_CANCEL
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
@@ -167,9 +172,11 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             oserr, dberrstr, oserrstr, DBDEAD(dbproc));
         fprintf(stderr, "*** previous max severity = %d\n\n",
             _mssql_last_msg_severity);
-    
-    if severity < _min_error_severity:
-        return INT_CANCEL
+
+    mssql_lastmsgstr = _mssql_last_msg_str
+    mssql_lastmsgno = &_mssql_last_msg_no
+    mssql_lastmsgseverity = &_mssql_last_msg_severity
+    mssql_lastmsgstate = &_mssql_last_msg_state
 
     for conn in connection_object_list:
         if dbproc != (<MSSQLConnection>conn).dbproc:
@@ -203,10 +210,10 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         int severity, char *msgtext, char *srvname, char *procname,
         LINE_T line):
 
-    cdef char *mssql_lastmsgstr = _mssql_last_msg_str
-    cdef int *mssql_lastmsgno = &_mssql_last_msg_no
-    cdef int *mssql_lastmsgseverity = &_mssql_last_msg_severity
-    cdef int *mssql_lastmsgstate = &_mssql_last_msg_state
+    cdef char *mssql_lastmsgstr
+    cdef int *mssql_lastmsgno
+    cdef int *mssql_lastmsgseverity
+    cdef int *mssql_lastmsgstate
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
 
@@ -221,6 +228,11 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
 
     if severity < _min_error_severity:
         return INT_CANCEL
+
+    mssql_lastmsgstr = _mssql_last_msg_str
+    mssql_lastmsgno = &_mssql_last_msg_no
+    mssql_lastmsgseverity = &_mssql_last_msg_severity
+    mssql_lastmsgstate = &_mssql_last_msg_state
 
     for conn in connection_object_list:
         if dbproc != (<MSSQLConnection>conn).dbproc:
