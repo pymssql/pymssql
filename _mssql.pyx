@@ -56,7 +56,10 @@ cdef extern from "string.h":
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
+cdef int _mssql_last_msg_line = 0
 cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+cdef char *_mssql_last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
@@ -133,6 +136,15 @@ cdef class MSSQLDatabaseException(MSSQLException):
     cdef readonly int number
     cdef readonly int severity
     cdef readonly int state
+    cdef readonly int line
+    cdef readonly char *text
+    cdef readonly char *srvname
+    cdef readonly char *procname
+
+    property message:
+        
+        def __get__(self):
+            pass
 
 # Module attributes for configuring _mssql
 login_timeout = 60
@@ -197,7 +209,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         error_type[0] = 'Net-Lib' if severity == EXCOMM else 'Operating System'
         sprintf(mssql_message, '%s%s error during %s', error_type, oserrstr)
 
-    strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
+    #strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
     
     return INT_CANCEL
 
@@ -208,12 +220,14 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         int severity, char *msgtext, char *srvname, char *procname,
         LINE_T line):
 
-    cdef char *mssql_lastmsgstr
     cdef int *mssql_lastmsgno
     cdef int *mssql_lastmsgseverity
     cdef int *mssql_lastmsgstate
+    cdef int *mssql_lastmsgline
+    cdef char *mssql_lastmsgstr
+    cdef char *mssql_lastmsgsrv
+    cdef char *mssql_lastmsgproc
     cdef int _min_error_severity = min_error_severity
-    cdef char mssql_message[PYMSSQL_MSGSIZE]
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
@@ -228,17 +242,23 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         return INT_CANCEL
 
     mssql_lastmsgstr = _mssql_last_msg_str
+    mssql_lastmsgsrv = _mssql_last_msg_srv
+    mssql_lastmsgproc = _mssql_last_msg_proc
     mssql_lastmsgno = &_mssql_last_msg_no
     mssql_lastmsgseverity = &_mssql_last_msg_severity
     mssql_lastmsgstate = &_mssql_last_msg_state
+    mssql_lastmsgline = &_mssql_last_msg_line
 
     for conn in connection_object_list:
         if dbproc != (<MSSQLConnection>conn).dbproc:
             continue
         mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+        mssql_lastmsgsrv = (<MSSQLConnection>conn).last_msg_srv
+        mssql_lastmsgproc = (<MSSQLConnection>conn).last_msg_proc
         mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
         mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
         mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+        mssql_lastmsgline = &(<MSSQLConnection>conn).last_msg_line
         break
 
     # Calculate the maximum severity of all messages in a row
@@ -247,19 +267,21 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = msgno
         mssql_lastmsgstate[0] = msgstate
+        mssql_lastmsgline[0] = line
+        strncpy(mssql_lastmsgstr, msgtext, PYMSSQL_MSGSIZE)
+        strncpy(mssql_lastmsgsrv, srvname, PYMSSQL_MSGSIZE)
+        strncpy(mssql_lastmsgproc, procname, PYMSSQL_MSGSIZE)
 
-    if procname != NULL and strlen(procname) > 0:
-        sprintf(mssql_message,
-            'SQL Server message %ld, severity %d, state %d, ' \
-            'procedure %s, line %d:\n%s\n', <long>msgno, severity,
-            msgstate, procname, line, msgtext)
-    else:
-        sprintf(mssql_message,
-            'SQL Server message %ld, severity %d, state %d, ' \
-            'line %d:\n%s\n', <long>msgno, severity, msgstate, line,
-            msgtext)
-
-    strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
+#    if procname != NULL and strlen(procname) > 0:
+#        sprintf(mssql_message,
+#            'SQL Server message %ld, severity %d, state %d, ' \
+#            'procedure %s, line %d:\n%s\n', <long>msgno, severity,
+#            msgstate, procname, line, msgtext)
+#    else:
+#        sprintf(mssql_message,
+#            'SQL Server message %ld, severity %d, state %d, ' \
+#            'line %d:\n%s\n', <long>msgno, severity, msgstate, line,
+#            msgtext)
 
     return 0
 
@@ -397,6 +419,10 @@ cdef class MSSQLConnection:
         self._charset[0] = <char>0
         self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
         self.last_msg_str[0] = <char>0
+        self.last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+        self.last_msg_srv[0] = <char>0
+        self.last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+        self.last_msg_proc[0] = <char>0
         self.column_names = None
         self.column_types = None
 
@@ -1263,6 +1289,12 @@ cdef int check_cancel_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:
 
 cdef char *get_last_msg_str(MSSQLConnection conn):
     return conn.last_msg_str if conn != None else _mssql_last_msg_str
+
+cdef char *get_last_msg_srv(MSSQLConnection conn):
+    return conn.last_msg_srv if conn != None else _mssql_last_msg_srv
+
+cdef char *get_last_msg_proc(MSSQLConnection conn):
+    return conn.last_msg_proc if conn != None else _mssql_last_msg_proc
     
 cdef int get_last_msg_no(MSSQLConnection conn):
     return conn.last_msg_no if conn != None else _mssql_last_msg_no
@@ -1273,6 +1305,9 @@ cdef int get_last_msg_severity(MSSQLConnection conn):
 cdef int get_last_msg_state(MSSQLConnection conn):
     return conn.last_msg_state if conn != None else _mssql_last_msg_state
 
+cdef int get_last_msg_line(MSSQLConnection conn):
+    return conn.last_msg_line if conn != None else _mssql_last_msg_line
+
 cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     if get_last_msg_severity(conn) < min_error_severity:
@@ -1282,10 +1317,14 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
     if len(error_msg) == 0:
         error_msg = "Unknown error"
 
-    ex = MSSQLDatabaseException(error_msg)
+    ex = MSSQLDatabaseException((get_last_msg_no(conn), error_msg))
+    (<MSSQLDatabaseException>ex).text = error_msg
+    (<MSSQLDatabaseException>ex).srvname = get_last_msg_srv(conn)
+    (<MSSQLDatabaseException>ex).procname = get_last_msg_proc(conn)
     (<MSSQLDatabaseException>ex).number = get_last_msg_no(conn)
     (<MSSQLDatabaseException>ex).severity = get_last_msg_severity(conn)
     (<MSSQLDatabaseException>ex).state = get_last_msg_state(conn)
+    (<MSSQLDatabaseException>ex).line = get_last_msg_line(conn)
     db_cancel(conn)
     clr_err(conn)
     raise ex

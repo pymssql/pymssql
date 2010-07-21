@@ -331,6 +331,8 @@ cdef class Cursor:
             self.description = self._source._conn.get_header()
 
         except _mssql.MSSQLDatabaseException, e:
+            if e.number == 208:
+                raise ProgrammingError, e[0]
             raise OperationalError, e[0]
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e[0]

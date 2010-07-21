@@ -19,10 +19,13 @@ cdef class MSSQLConnection:
     cdef int last_msg_no
     cdef int last_msg_severity
     cdef int last_msg_state
+    cdef int last_msg_line
     cdef int last_dbresults
     cdef int num_columns
     cdef int debug_queries
     cdef char *last_msg_str
+    cdef char *last_msg_srv
+    cdef char *last_msg_proc
     cdef tuple column_names
     cdef tuple column_types
 
