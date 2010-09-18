@@ -32,6 +32,8 @@
 #include <structmember.h>
 #include <datetime.h>
 
+char *_mssql_module_version = "1.1.0";
+
 // Py_ssize_t is defined starting from Python 2.5
 #if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
 typedef int Py_ssize_t;
@@ -1656,6 +1658,9 @@ init_mssql(void) {
 		"Low level Python module for communicating with MS SQL servers.");
 
 	if (_mssql_module == NULL)  return;
+
+	// add version number
+	PyModule_AddStringConstant(_mssql_module, "__version__", _mssql_module_version);
 
 	// add the connection object to module dictionary
 	Py_INCREF(&_mssql_connection_type);
