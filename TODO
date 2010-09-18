@@ -1,0 +1,14 @@
+Serious/important:
+
+Moderate:
+- Sybase compatibility update (private mail from Kurt Sutter on 2009-04-24)
+  didn't make it into 1.0.2
+- improve inline documentation strings - that's job for English native speakers
+- fix apitest_mssql.py
+- test on big-endian platforms
+
+Low priority:
+- try to call dbexit() on module dealloc / python unload (how?)
+
+Other notes:
+- when and how to use unicode(row[index], 'fancy-encoding', 'ignore')

@@ -1,0 +1,15 @@
+pymssql - simple MS SQL Python extension module
+by Park joon-cheol <jooncheol@gmail.com> (Initial Version Developer)
+Andrzej Kukula <akukula@gmail.com> (Active Developer)
+
+pymssql is the Python language extension module that provides access to
+Microsoft SQL Servers from Python scripts. It is compliant with Python
+DB-API 2.0 Specification. pymssql project is hosted on Sourceforge.net.
+-----------------------------------------------------------------------
+This library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1 of the
+License, or (at your option) any later version.
+-----------------------------------------------------------------------
+Detailed information on pymssql is available on the website:
+http://pymssql.sourceforge.net/

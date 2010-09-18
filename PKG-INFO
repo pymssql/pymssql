@@ -1,0 +1,23 @@
+Metadata-Version: 1.0
+Name: pymssql
+Version: 1.0.2
+Summary: A simple database interface to MS-SQL for Python.
+Home-page: http://pymssql.sourceforge.net
+Author: Joon-cheol Park
+Author-email: jooncheol@gmail.com
+Maintainer: Andrzej Kukula
+Maintainer-email: akukula+pymssql@gmail.com
+License: GNU Library or Lesser General Public License (LGPL)
+Description: A simple database interface to MS-SQL for Python.
+Keywords: mssql sqlserver pymssql
+Platform: POSIX, Windows
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: C
+Classifier: Topic :: Database :: Front-Ends
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
