@@ -66,6 +66,9 @@ cdef list connection_object_list = list()
 # Store the 32bit max int
 cdef int MAX_INT = 2147483647
 
+# Store the module version
+__version__ = '1.9.909'
+
 #############################
 ## DB-API type definitions ##
 #############################
