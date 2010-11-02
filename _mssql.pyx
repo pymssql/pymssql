@@ -979,12 +979,13 @@ cdef class MSSQLConnection:
             if self.last_dbresults != SUCCEED or self.num_columns > 0:
                 break
         check_cancel_and_raise(self.last_dbresults, self)
+
+        self._rows_affected = dbcount(self.dbproc)
         
         if self.last_dbresults == NO_MORE_RESULTS:
             self.num_columns = 0
             return None
         
-        self._rows_affected = dbcount(self.dbproc)
         self.num_columns = dbnumcols(self.dbproc)
 
         column_names = list()

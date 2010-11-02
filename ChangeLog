@@ -1,5 +1,5 @@
-Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
-	* _mssql.py:
+Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
+	* _mssql.pyx:
 		+ feature: add support for nullable ints and nullable bits in
 		           stored procedure parameters.
 		+ feature: add support for positional parameters in stored
@@ -14,10 +14,13 @@ Thu Apr 29 16:20:00 2010 Damien Churchill <damoxc@gmail.com>
 		           2^31 - 1 (raise exception).
 		+ bugfix:  use sprintf rather than python strings in the msg_handler
 		+ bugfix:  use sprintf rather than python strings in the err_handler
-	* pymssql:
+		+ bugfix:  make compatible with Cython 0.13
+	* pymssql.pyx:
 		+ feature: add initial support for callproc()
 		+ feature: add support for setting the application name
 		+ bugfix:  fix issue #7, thanks has.temp3
+		+ bugfix:  fix issue #10, rowcount property being incorrect
+		+ bugfix:  make compatible with Cython 0.13
 	* MANIFEST.in:
 		+ feature: include the tests
 	* version 1.9.909

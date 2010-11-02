@@ -339,6 +339,7 @@ cdef class Cursor:
             else:
                 self._source._conn.execute_query(operation, params)
             self.description = self._source._conn.get_header()
+            self._rownumber = self._source._conn.rows_affected
 
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
@@ -373,7 +374,7 @@ cdef class Cursor:
         converting the row if as_dict = False.
         """
         row = iter(self._source._conn).next()
-        self._rownumber += 1
+        self._rownumber = self._source._conn.rows_affected
         if self.as_dict:
             return row
         return tuple([row[r] for r in sorted(row) if type(r) == int])
@@ -423,7 +424,7 @@ cdef class Cursor:
             else:
                 rows = [tuple([row[r] for r in sorted(row.keys()) if \
                         type(r) == int]) for row in self._source._conn]
-            self._rownumber += len(rows)
+            self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError, e[0]
