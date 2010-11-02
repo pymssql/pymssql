@@ -30,7 +30,7 @@ DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
 DEF EXCOMM = 9
 
-from python_version cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
+from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
     import uuid
@@ -39,18 +39,13 @@ import decimal
 import datetime
 
 from sqlfront cimport *
-from stdio cimport fprintf, sprintf, FILE
-from stdlib cimport strlen, strcpy
-from python_mem cimport PyMem_Malloc, PyMem_Free
-from python_long cimport PY_LONG_LONG
 
-cdef extern from "stdio.h" nogil:
-    cdef FILE *stderr
+from libc.stdio cimport fprintf, sprintf, stderr, FILE
+from libc.string cimport strlen, strcpy, strncpy, memcpy
 
-cdef extern from "string.h":
-    
-    cdef char *strncpy(char *, char *, size_t)
-    cdef void *memcpy(void *, void *, size_t)
+from cpython cimport bool
+from cpython.mem cimport PyMem_Malloc, PyMem_Free 
+from cpython.long cimport PY_LONG_LONG
 
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
@@ -430,6 +425,7 @@ cdef class MSSQLConnection:
     
         cdef LOGINREC *login
         cdef RETCODE rtc
+        cdef char *_charset
 
         # support MS methods of connecting locally
         instance = ""
@@ -457,7 +453,8 @@ cdef class MSSQLConnection:
 
         # Set the character set name
         if charset:
-            strncpy(self._charset, charset, PYMSSQL_CHARSETBUFSIZE)
+            _charset = charset
+            strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
         
         # Set the login timeout
@@ -635,7 +632,7 @@ cdef class MSSQLConnection:
         cdef int *intValue
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
-        cdef char *strValue
+        cdef char *strValue, *tmp
         cdef BYTE *binValue
 
         if value is None:
@@ -708,7 +705,8 @@ cdef class MSSQLConnection:
                 value = value.encode(self._charset)
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
-            strcpy(strValue, value)
+            tmp = value
+            strcpy(strValue, tmp)
             dbValue[0] = <BYTE *>strValue
             return 0
 

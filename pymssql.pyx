@@ -25,6 +25,7 @@ __version__ = '2.0.0'
 
 import _mssql
 cimport _mssql
+from cpython cimport bool
 
 # comliant with DB SIG 2.0
 apilevel = '2.0'
