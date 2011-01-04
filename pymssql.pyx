@@ -257,6 +257,7 @@ cdef class Cursor:
     cdef int _batchsize
     cdef int _rownumber
     cdef bool as_dict
+    cdef object _returnvalue
 
     property connection:
         def __get__(self):
@@ -269,6 +270,10 @@ cdef class Cursor:
     property rowcount:
         def __get__(self):
             return self._rownumber
+
+    property returnvalue:
+        def __get__(self):
+            return self._returnvalue
 
     property rownumber:
         def __get__(self):
@@ -285,6 +290,7 @@ cdef class Cursor:
         self.description = None
         self._batchsize = 1
         self._rownumber = 0
+        self._returnvalue = None
         self.as_dict = as_dict
 
     def __iter__(self):
@@ -303,6 +309,7 @@ cdef class Cursor:
         :keyword parameters: The optional parameters for the procedure
         :type parameters: sequence
         """
+        self._returnvalue = None
         proc = self._source._conn.init_procedure(procname)
         for parameter in parameters:
             if type(parameter) is output:
@@ -314,12 +321,14 @@ cdef class Cursor:
                 param_value = parameter
                 param_output = False
 
-            db_type = DBTYPES.get(param_type.__name__)
-            if db_type == None:
+            try:
+                type_name = param_type.__name__
+                db_type = DBTYPES[type_name]
+            except (AttributeError, KeyError):
                 raise NotSupportedError('Unable to determine database type')
 
             proc.bind(param_value, db_type, output=param_output)
-        proc.execute()
+        self._returnvalue = proc.execute()
         return tuple([proc.parameters[p] for p in proc.parameters])
 
     def close(self):
