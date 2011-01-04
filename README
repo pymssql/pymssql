@@ -6,9 +6,11 @@ Building
 	
 	To build pymssql on Windows you firstly must have:
 
-		* Visual C++ >= 2005 (or some equivalent compiler)
-		* Python >= 2.5
-		* Cython >= 0.12
+		* MinGW
+            * If you wish to use Visual C++ >= 2005 (or some equivalent compiler) then you will have 
+              to compile FreeTDS yourself.
+		* Python >= 2.5 (From the Python website)
+		* Cython >= 0.13
 	
 	and then you can simple run:
 		
@@ -23,7 +25,7 @@ Building
 	
 		* gcc
 		* python-dev >= 2.5
-		* Cython >= 0.12
+		* Cython >= 0.13
 		* FreeTDS >= 0.82
 	
 Testing

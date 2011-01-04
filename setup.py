@@ -52,23 +52,18 @@ if sys.platform == 'win32':
     include_dirs = [os.path.join(freetds_dir, 'include')]
     library_dirs = [os.path.join(freetds_dir, 'lib')]
     libraries = [
-        'msvcrt',
-        'kernel32',
-        'user32',
-        'gdi32',
-        'winspool',
+        'libiconv',
+        'iconv',
+        'sybdb',
         'ws2_32',
-        'comdlg32',
-        'advapi32',
-        'shell32',
-        'ole32',
-        'oleaut32',
-        'uuid',
-        'odbc32',
-        'odbccp32',
-        'libTDS',
-        'dblib'
+        'wsock32',
+        'kernel32',
     ]
+    
+    _extra_compile_args.append('-Wl,-allow-multiple-definition')
+    _extra_compile_args.append('-Wl,-subsystem,windows-mthreads')
+    _extra_compile_args.append('-mwindows')
+    _extra_compile_args.append('-Wl,--strip-all')
 
 else:
     include_dirs = [
@@ -260,7 +255,7 @@ setup(
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
 	zip_safe = False,
-    setup_requires=["Cython>=0.12"],
+    setup_requires=["Cython>=0.13.1"],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
