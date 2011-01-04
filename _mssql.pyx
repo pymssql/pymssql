@@ -35,6 +35,7 @@ from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
     import uuid
 
+import socket
 import decimal
 import datetime
 
@@ -59,6 +60,7 @@ IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
 cdef object _decimal_context
+cdef bytes HOSTNAME = socket.gethostname()
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
@@ -364,7 +366,7 @@ cdef class MSSQLConnection:
         """
         
         def __get__(self):
-            return self.execute_scalar('SELECT @@IDENTITY')
+            return self.execute_scalar('SELECT SCOPE_IDENTITY()')
 
     property query_timeout:
         """
@@ -449,7 +451,7 @@ cdef class MSSQLConnection:
         DBSETLUSER(login, user)
         DBSETLPWD(login, password)
         DBSETLAPP(login, appname)
-        DBSETLHOST(login, server);
+        DBSETLHOST(login, HOSTNAME);
 
         # Add ourselves to the global connection list
         connection_object_list.append(self)

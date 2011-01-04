@@ -16,6 +16,8 @@ Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ bugfix:  use sprintf rather than python strings in the err_handler
 		+ bugfix:  make compatible with Cython 0.13
         + feature: remove the trusted parameter to connect()
+        + bugfix:  fix issue 15, not setting implicit_transactions on connect
+        + bugfix:  fix issue 32, setting the wrong hostname on login
 	* pymssql.pyx:
 		+ feature: add initial support for callproc()
 		+ feature: add support for setting the application name
