@@ -121,9 +121,17 @@ class build_ext(_build_ext):
 
         log.info('extracting FreeTDS')
         from zipfile import ZipFile
-        zip = ZipFile(os.path.join(win32, 'freetds.zip'))
-        zip.extractall(win32)
-        zip.close()
+        zip_file = ZipFile(os.path.join(win32, 'freetds.zip'))
+        for name in zip_file.namelist():
+            dest = os.path.join(win32, name)
+            destdir = os.path.dirname(dest)
+            if not os.path.isdir(destdir)
+                os.makedirs(destdir)
+            data = zip_file.read(n)
+            f = open(dest, 'wb')
+            f.write(data)
+            f.close()
+        zip_file.close()
         return _build_ext.run(self)
 
 class clean(_clean):

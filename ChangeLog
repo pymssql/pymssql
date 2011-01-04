@@ -29,6 +29,9 @@ Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 		           call.
 	* MANIFEST.in:
 		+ feature: include the tests
+	* setup.py:
+		+ bugfix:  fix issue #8, ZipFile don't has the attribute
+		           'extractall' error for python2.5
 	* version 1.9.909
 
 Wed Apr 28 11:10:00 2010 Damien Churchill <damoxc@gmail.com>
