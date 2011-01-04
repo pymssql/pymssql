@@ -454,8 +454,8 @@ cdef class Cursor:
         """
         pass
 
-def connect(server='.', user='sa', password='', database='', timeout=0,
-        login_timeout=60, trusted=False, charset=None, as_dict=False,
+def connect(server='.', user='', password='', database='', timeout=0,
+        login_timeout=60, charset=None, as_dict=False,
         host='', appname=None):
     """
     Constructor for creating a connection to the database. Returns a
@@ -499,8 +499,8 @@ def connect(server='.', user='sa', password='', database='', timeout=0,
         server = host
 
     try:
-        conn = _mssql.connect(server, user, password, trusted, charset,
-            database, appname)
+        conn = _mssql.connect(server, user, password, charset, database,
+            appname)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])

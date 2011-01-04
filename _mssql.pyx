@@ -422,7 +422,7 @@ cdef class MSSQLConnection:
         self.column_names = None
         self.column_types = None
 
-    def __init__(self, server="localhost", user="sa", password="", trusted=0,
+    def __init__(self, server="localhost", user="sa", password="",
             charset='', database='', appname=None):
         log("_mssql.MSSQLConnection.__init__()")
     
