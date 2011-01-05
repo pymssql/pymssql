@@ -125,7 +125,7 @@ class build_ext(_build_ext):
         for name in zip_file.namelist():
             dest = os.path.join(win32, name)
             destdir = os.path.dirname(dest)
-            if not os.path.isdir(destdir)
+            if not os.path.isdir(destdir):
                 os.makedirs(destdir)
             data = zip_file.read(n)
             f = open(dest, 'wb')
