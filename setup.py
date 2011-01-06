@@ -111,13 +111,13 @@ class build_ext(_build_ext):
         if not WINDOWS:
             return _build_ext.run(self)
 
-        freetds_dir = os.path.join(ROOT, 'win32', 'freetds')
+        win32 = os.path.join(ROOT, 'win32')
+        freetds_dir = os.path.join(win32, 'freetds')
 
         # If the directory exists, it's probably been extracted already.
         if os.path.isdir(freetds_dir):
-            return _build_ext.run(self)
-
-        win32 = os.path.join(ROOT, 'win32')
+            import shutil
+            shutil.rmtree(freetds_dir)
 
         log.info('extracting FreeTDS')
         from zipfile import ZipFile
