@@ -127,7 +127,7 @@ class build_ext(_build_ext):
             destdir = os.path.dirname(dest)
             if not os.path.isdir(destdir):
                 os.makedirs(destdir)
-            data = zip_file.read(n)
+            data = zip_file.read(name)
             f = open(dest, 'wb')
             f.write(data)
             f.close()
