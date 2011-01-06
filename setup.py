@@ -114,11 +114,6 @@ class build_ext(_build_ext):
         win32 = os.path.join(ROOT, 'win32')
         freetds_dir = os.path.join(win32, 'freetds')
 
-        # If the directory exists, it's probably been extracted already.
-        if os.path.isdir(freetds_dir):
-            import shutil
-            shutil.rmtree(freetds_dir)
-
         log.info('extracting FreeTDS')
         from zipfile import ZipFile
         zip_file = ZipFile(os.path.join(win32, 'freetds.zip'))
@@ -147,6 +142,16 @@ class clean(_clean):
                 if os.path.exists(c_source):
                     log.info('removing %s', c_source)
                     os.remove(c_source)
+
+        # Check if we need to remove the freetds directory
+        if WINDOWS:
+            win32 = os.path.join(ROOT, 'win32')
+            freetds_dir = os.path.join(win32, 'freetds')
+
+            # If the directory exists, remove it
+            if os.path.isdir(freetds_dir):
+                import shutil
+                shutil.rmtree(freetds_dir)
 
 class release(Command):
     """
