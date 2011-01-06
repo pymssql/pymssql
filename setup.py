@@ -128,7 +128,7 @@ class build_ext(_build_ext):
                 os.makedirs(dest)
             else:
                 f = open(dest, 'wb')
-                f.write(data)
+                f.write(zip_file.read(name))
                 f.close()
         zip_file.close()
         return _build_ext.run(self)
