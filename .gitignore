@@ -1,0 +1,4 @@
+build
+*.c
+*.so
+tests/tests.cfg
