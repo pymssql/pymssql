@@ -48,9 +48,10 @@ WINDOWS = False
 
 if sys.platform == 'win32':
     WINDOWS = True
-    freetds_dir = os.path.join(ROOT, 'win32', 'freetds')
-    include_dirs = [os.path.join(freetds_dir, 'include')]
-    library_dirs = [os.path.join(freetds_dir, 'lib')]
+    WIN32 = os.path.join(ROOT, 'win32')
+    FREETDS = os.path.join(WIN32, 'freetds')
+    include_dirs = [os.path.join(FREETDS, 'include')]
+    library_dirs = [os.path.join(FREETDS, 'lib')]
     libraries = [
         'libiconv',
         'iconv',
@@ -111,12 +112,13 @@ class build_ext(_build_ext):
         if not WINDOWS:
             return _build_ext.run(self)
 
-        win32 = os.path.join(ROOT, 'win32')
-        freetds_dir = os.path.join(win32, 'freetds')
+
+        if not os.path.isdir(FREETDS):
+            return _build_ext.run(self)
 
         log.info('extracting FreeTDS')
         from zipfile import ZipFile
-        zip_file = ZipFile(os.path.join(win32, 'freetds.zip'))
+        zip_file = ZipFile(os.path.join(WIN32, 'freetds.zip'))
         for name in zip_file.namelist():
             dest = os.path.normpath(os.path.join(win32, name))
             if name.endswith('/'):
@@ -145,13 +147,10 @@ class clean(_clean):
 
         # Check if we need to remove the freetds directory
         if WINDOWS:
-            win32 = os.path.join(ROOT, 'win32')
-            freetds_dir = os.path.join(win32, 'freetds')
-
             # If the directory exists, remove it
-            if os.path.isdir(freetds_dir):
+            if os.path.isdir(FREETDS):
                 import shutil
-                shutil.rmtree(freetds_dir)
+                shutil.rmtree(FREETDS)
 
 class release(Command):
     """
