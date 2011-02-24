@@ -30,6 +30,7 @@ Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ feature: fix raising exceptions when args[0] is not a string
 	* MANIFEST.in:
 		+ feature: include the tests
+		+ bugfix:  include ez_setup.py
 	* setup.py:
 		+ bugfix:  fix issue #8, ZipFile don't has the attribute
 		           'extractall' error for python2.5
