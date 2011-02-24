@@ -488,8 +488,7 @@ cdef class MSSQLConnection:
             "SET ANSI_WARNINGS ON;"             \
             "SET ANSI_NULL_DFLT_ON ON;"         \
             "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"         \
-            "SET IMPLICIT_TRANSACTIONS ON;"
+            "SET QUOTED_IDENTIFIER ON;"         
         )
         
         rtc = dbsqlexec(self.dbproc)

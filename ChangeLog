@@ -27,6 +27,7 @@ Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 		+ feature: remove the trusted parameter to connect()
 		+ feature: add returnvalue property with the result of a callproc()
 		           call.
+		+ feature: fix raising exceptions when args[0] is not a string
 	* MANIFEST.in:
 		+ feature: include the tests
 	* setup.py:

@@ -179,7 +179,7 @@ cdef class Connection:
         try:
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot start transation: %s' % e[0])
+            raise OperationalError('Cannot start transation: ' + str(e[0]))
 
     def __del__(self):
         if self.conn:
@@ -218,7 +218,7 @@ cdef class Connection:
             self._conn.execute_non_query('COMMIT TRAN')
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot commit transation: %s' % e[0])
+            raise OperationalError('Cannot commit transation: ' + str(e[0]))
 
     def cursor(self, as_dict=None):
         """
@@ -240,7 +240,7 @@ cdef class Connection:
             self._conn.execute_non_query('ROLLBACK TRAN')
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot roll back transation: %s' % e[0])
+            raise OperationalError('Cannot roll back transation: ' + str(e[0]))
             
 
 ##################
