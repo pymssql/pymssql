@@ -254,6 +254,7 @@ cdef class Cursor:
 
     cdef Connection conn
     cdef public tuple description
+    cdef int batchsize
     cdef int _batchsize
     cdef int _rownumber
     cdef bool as_dict
