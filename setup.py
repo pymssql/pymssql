@@ -113,7 +113,7 @@ class build_ext(_build_ext):
             return _build_ext.run(self)
 
 
-        if not os.path.isdir(FREETDS):
+        if os.path.isdir(FREETDS):
             return _build_ext.run(self)
 
         log.info('extracting FreeTDS')
