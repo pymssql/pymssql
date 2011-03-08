@@ -120,7 +120,7 @@ class build_ext(_build_ext):
         from zipfile import ZipFile
         zip_file = ZipFile(os.path.join(WIN32, 'freetds.zip'))
         for name in zip_file.namelist():
-            dest = os.path.normpath(os.path.join(win32, name))
+            dest = os.path.normpath(os.path.join(WIN32, name))
             if name.endswith('/'):
                 os.makedirs(dest)
             else:
