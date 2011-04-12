@@ -27,7 +27,6 @@ class TestConfig(object):
         except _mssql.MSSQLDatabaseException, e:
             # we get this when the name or IP can be obtained but the connection
             # can not be made
-            # e.args[0] is currently a tuple, but I think thats a bug
             if e.args[0][0] != 20009:
                 raise
         with open(config_dump_path, 'rb') as fh:
