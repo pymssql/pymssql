@@ -215,10 +215,13 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgstr, dberr, severity, dberrstr)
 
     if oserr != DBNOERR and oserr != 0:
-        error_type[0] = 'Net-Lib' if severity == EXCOMM else 'Operating System'
-        sprintf(mssql_message, '%s%s error during %s', error_type, oserrstr)
+        if severity == EXCOMM:
+            strcpy(error_type, 'Net-Lib')
+        else:
+            strcpy(error_type, 'Operating System')
+        sprintf(mssql_message, '%s error during %s', error_type, oserrstr)
 
-    #strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
+    strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
 
     return INT_CANCEL
 
@@ -484,12 +487,14 @@ cdef class MSSQLConnection:
         dbloginfree(login)
 
         if self.dbproc == NULL:
+            log("_mssql.MSSQLConnection.__init__() -> dbopen() returned NULL")
             connection_object_list.remove(self)
             maybe_raise_MSSQLDatabaseException(None)
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
 
         self._connected = 1
 
+        log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
         # Set some connection properties to some reasonable values
         dbcmd(self.dbproc,
             "SET ARITHABORT ON;"                \
