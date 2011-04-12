@@ -1,0 +1,9 @@
+syntax: glob
+build/*
+*.pyc
+*komodo*
+*.c
+dist/*
+*.egg-info*
+tests/tmp
+tests/tests.cfg

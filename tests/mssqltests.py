@@ -20,12 +20,13 @@ server = _parser.get(section, 'server')
 username = _parser.get(section, 'username')
 password = _parser.get(section, 'password')
 database = _parser.get(section, 'database')
+port = _parser.get(section, 'port', 1433)
 
 
 class MSSQLTestCase(unittest.TestCase):
     def setUp(self):
-        self.mssql = _mssql.connect(server, username, password)
+        self.mssql = _mssql.connect(server, username, password, port=port)
         self.mssql.select_db(database)
-    
+
     def tearDown(self):
         self.mssql.close()

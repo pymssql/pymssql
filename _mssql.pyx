@@ -35,6 +35,7 @@ from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
     import uuid
 
+import os
 import socket
 import decimal
 import datetime
@@ -45,7 +46,7 @@ from libc.stdio cimport fprintf, sprintf, stderr, FILE
 from libc.string cimport strlen, strcpy, strncpy, memcpy
 
 from cpython cimport bool
-from cpython.mem cimport PyMem_Malloc, PyMem_Free 
+from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from cpython.long cimport PY_LONG_LONG
 
 # Vars to store messages from the server in
@@ -132,7 +133,7 @@ cdef class MSSQLDatabaseException(MSSQLException):
     """
     Raised when an error occurs within the database.
     """
-    
+
     cdef readonly int number
     cdef readonly int severity
     cdef readonly int state
@@ -142,7 +143,7 @@ cdef class MSSQLDatabaseException(MSSQLException):
     cdef readonly char *procname
 
     property message:
-        
+
         def __get__(self):
             if self.procname:
                 return 'SQL Server message %d, severity %d, state %d, ' \
@@ -204,7 +205,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
         mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
         break
-    
+
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
@@ -218,7 +219,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         sprintf(mssql_message, '%s%s error during %s', error_type, oserrstr)
 
     #strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
-    
+
     return INT_CANCEL
 
 #####################
@@ -307,7 +308,7 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 
     if conn.dbproc == NULL:
         return SUCCEED
-    
+
     with nogil:
         rtc = dbcancel(conn.dbproc);
 
@@ -318,13 +319,13 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 ## MSSQL Row Iterator Class ##
 ##############################
 cdef class MSSQLRowIterator:
-    
+
     def __init__(self, connection):
         self.conn = connection
-    
+
     def __iter__(self):
         return self
-    
+
     def __next__(self):
         assert_connected(self.conn)
         clr_err(self.conn)
@@ -339,7 +340,7 @@ cdef class MSSQLConnection:
         """
         The current encoding in use.
         """
-        
+
         def __get__(self):
             if strlen(self._charset):
                 return self._charset
@@ -349,22 +350,22 @@ cdef class MSSQLConnection:
         """
         True if the connection to a database is open.
         """
-        
+
         def __get__(self):
             return self._connected
-    
+
     property identity:
         """
         Returns identity value of the last inserted row. If the previous
         operation did not involve inserting a row into a table with an
         identity column, None is returned.
-        
+
         ** Usage **
         >>> conn.execute_non_query("INSERT INTO table (name) VALUES ('John')")
         >>> print 'Last inserted row has ID = %s' % conn.identity
         Last inserted row has ID = 178
         """
-        
+
         def __get__(self):
             return self.execute_scalar('SELECT SCOPE_IDENTITY()')
 
@@ -387,13 +388,13 @@ cdef class MSSQLConnection:
 
             # if all is fine then set our attribute
             self._query_timeout = val
-    
+
     property rows_affected:
         """
         Number of rows affected by last query. For SELECT statements this
         value is only meaningful after reading all rows.
         """
-        
+
         def __get__(self):
             return self._rows_affected
 
@@ -425,9 +426,9 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='', database='', appname=None):
+            charset='', database='', appname=None, port='1433', tds_version='8.0'):
         log("_mssql.MSSQLConnection.__init__()")
-    
+
         cdef LOGINREC *login
         cdef RETCODE rtc
         cdef char *_charset
@@ -441,17 +442,25 @@ cdef class MSSQLConnection:
             server = "localhost"
 
         server = server + "\\" + instance if instance else server
-    
+
         login = dblogin()
         if login == NULL:
             raise MSSQLDriverException("Out of memory")
 
         appname = appname or "pymssql"
-    
+
         DBSETLUSER(login, user)
         DBSETLPWD(login, password)
         DBSETLAPP(login, appname)
-        DBSETLHOST(login, HOSTNAME);
+        DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
+
+        # FreeTDS doesn't currently support setting the HOST or PORT very well
+        # without using the FreeTDS config file.  We want to avoid that, so use
+        # environ variables instead.
+        os.environ['TDSHOST'] = server
+        if isinstance(port, int):
+            port = str(port)
+        os.environ['TDSPORT'] = port
 
         # Add ourselves to the global connection list
         connection_object_list.append(self)
@@ -461,23 +470,26 @@ cdef class MSSQLConnection:
             _charset = charset
             strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
-        
+
         # Set the login timeout
         dbsetlogintime(login_timeout)
-        
-        # Connect to the server
-        self.dbproc = dbopen(login, server)
+
+        # Connect to the server.  The second param, "server", won't really
+        # do anything b/c we have set TDSHOST and TDSPORT above.  Therefore,
+        # we can set it to anything, including NULL, but will set to a value
+        # that makes sense when the TDS dump files are reviewed.
+        self.dbproc = dbopen(login, '<pymssql dynamic>')
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
-        
+
         if self.dbproc == NULL:
             connection_object_list.remove(self)
             maybe_raise_MSSQLDatabaseException(None)
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
-        
+
         self._connected = 1
-        
+
         # Set some connection properties to some reasonable values
         dbcmd(self.dbproc,
             "SET ARITHABORT ON;"                \
@@ -488,16 +500,16 @@ cdef class MSSQLConnection:
             "SET ANSI_WARNINGS ON;"             \
             "SET ANSI_NULL_DFLT_ON ON;"         \
             "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"         
+            "SET QUOTED_IDENTIFIER ON;"
         )
-        
+
         rtc = dbsqlexec(self.dbproc)
         if (rtc == FAIL):
             raise MSSQLDriverException("Could not set connection properties")
-        
+
         db_cancel(self)
         clr_err(self)
-        
+
         if database:
             self.select_db(database)
 
@@ -513,20 +525,20 @@ cdef class MSSQLConnection:
     cpdef cancel(self):
         """
         cancel() -- cancel all pending results.
-        
+
         This function cancels all pending results from the last SQL operation.
         It can be called more than once in a row. No exception is raised in
         this case.
         """
         log("_mssql.MSSQLConnection.cancel()")
         cdef RETCODE rtc
-        
+
         assert_connected(self)
         clr_err(self)
-        
+
         rtc = db_cancel(self)
         check_and_raise(rtc, self)
-    
+
     cdef void clear_metadata(self):
         log("_mssql.MSSQLConnection.clear_metadata()")
         self.column_names = None
@@ -537,7 +549,7 @@ cdef class MSSQLConnection:
     def close(self):
         """
         close() -- close connection to an MS SQL Server.
-        
+
         This function tries to close the connection and free all memory used.
         It can be called more than once in a row. No exception is raised in
         this case.
@@ -545,12 +557,12 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.close()")
         if self == None:
             return None
-        
+
         if not self._connected:
             return None
 
         clr_err(self)
-        
+
         with nogil:
             dbclose(self.dbproc)
             self.dbproc = NULL
@@ -559,7 +571,7 @@ cdef class MSSQLConnection:
         PyMem_Free(self.last_msg_str)
         PyMem_Free(self._charset)
         connection_object_list.remove(self)
-    
+
     cdef object convert_db_value(self, BYTE *data, int type, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
@@ -604,7 +616,7 @@ cdef class MSSQLConnection:
 
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
-            
+
             return decimal.Decimal(_remove_locale(buf, len))
 
         elif type == SQLDATETIM4:
@@ -738,19 +750,19 @@ cdef class MSSQLConnection:
         results or rows prior to executing this command, they are silently
         discarded. This method accepts Python formatting. Please see
         execute_query() for more details.
-    
+
         This method is useful for INSERT, UPDATE, DELETE and for Data
         Definition Language commands, i.e. when you need to alter your database
         schema.
-    
+
         After calling this method, rows_affected property contains number of
         rows affected by the last SQL command.
         """
         log("_mssql.MSSQLConnection.execute_non_query()")
         cdef RETCODE rtc
-        
+
         self.format_and_run_query(query_string, params)
-        
+
         with nogil:
             dbresults(self.dbproc)
             self._rows_affected = dbcount(self.dbproc)
@@ -767,7 +779,7 @@ cdef class MSSQLConnection:
         are pending results or rows prior to executing this command, they
         are silently discarded. After calling this method you may iterate
         over the connection object to get rows returned by the query.
-    
+
         You can use Python formatting here and all values get properly
         quoted:
             conn.execute_query('SELECT * FROM empl WHERE id=%d', 13)
@@ -782,7 +794,7 @@ cdef class MSSQLConnection:
                 (tuple(xrange(4)),))
             conn.execute_query('SELECT * FROM empl WHERE id IN (%s)',\
                 (tuple([3,5,7,11]),))
-    
+
         This method is intented to be used on queries that return results,
         i.e. SELECT. After calling this method AND reading all rows from,
         result rows_affected property contains number of rows returned by
@@ -798,18 +810,18 @@ cdef class MSSQLConnection:
 
         This method sends a query to the MS SQL Server to which this object
         instance is connected, then returns first row of data from result.
-    
+
         An exception is raised on failure. If there are pending results or
         rows prior to executing this command, they are silently discarded.
-    
+
         This method accepts Python formatting. Please see execute_query()
         for details.
-    
+
         This method is useful if you want just a single row and don't want
         or don't need to iterate, as in:
-    
+
         conn.execute_row('SELECT * FROM employees WHERE id=%d', 13)
-    
+
         This method works exactly the same as 'iter(conn).next()'. Remaining
         rows, if any, can still be iterated after calling this method.
         """
@@ -824,16 +836,16 @@ cdef class MSSQLConnection:
         This method sends a query to the MS SQL Server to which this object
         instance is connected, then returns first column of first row from
         result. An exception is raised on failure. If there are pending
-    
+
         results or rows prior to executing this command, they are silently
         discarded.
-    
+
         This method accepts Python formatting. Please see execute_query()
         for details.
-    
+
         This method is useful if you want just a single value, as in:
             conn.execute_scalar('SELECT COUNT(*) FROM employees')
-    
+
         This method works in the same way as 'iter(conn).next()[0]'.
         Remaining rows, if any, can still be iterated after calling this
         method.
@@ -867,10 +879,10 @@ cdef class MSSQLConnection:
             if throw:
                 raise StopIteration
             return None
-        
+
         with nogil:
             rtc = dbnextrow(self.dbproc)
-        
+
         check_cancel_and_raise(rtc, self)
 
         if rtc == NO_MORE_ROWS:
@@ -882,26 +894,26 @@ cdef class MSSQLConnection:
             return None
 
         return self.get_row(rtc)
-    
+
     cdef fetch_next_row_dict(self, int throw):
         cdef int col
         log("_mssql.MSSQLConnection.fetch_next_row_dict()")
 
         row_dict = {}
         row = self.fetch_next_row(throw)
-        
+
         for col in xrange(1, self.num_columns + 1):
             name = self.column_names[col - 1]
             value = row[col - 1]
-            
+
             # Add key by column name, only if the column has a name
             if name:
                 row_dict[name] = value
-            
+
             row_dict[col - 1] = value
-    
+
         return row_dict
-    
+
     cdef format_and_run_query(self, query_string, params=None):
         """
         This is a helper function, which does most of the work needed by any
@@ -912,20 +924,20 @@ cdef class MSSQLConnection:
 
         # Cancel any pending results
         self.cancel()
-        
+
         if params:
             query_string = self.format_sql_command(query_string, params)
 
         # Prepare the query buffer
         dbcmd(self.dbproc, query_string)
-        
+
         # Execute the query
         rtc = db_sqlexec(self.dbproc)
         check_cancel_and_raise(rtc, self)
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        
+
         if params is None:
             return format
 
@@ -933,18 +945,18 @@ cdef class MSSQLConnection:
                 (bool, int, long, float, unicode, str,
                 datetime.datetime, datetime.date, dict, tuple)):
             raise ValueError("'params' arg can be only a tuple or a dictionary.")
-        
+
         if strlen(self._charset):
             quoted = _quote_data(params, self._charset)
         else:
             quoted = _quote_data(params)
 
         return format % quoted
-    
+
     def get_header(self):
         """
         get_header() -- get the Python DB-API compliant header information.
-        
+
         This method is infrastructure and doesn't need to be called by your
         code. It returns a list of 7-element tuples describing the current
         result header. Only name and DB-API compliant type is filled, rest
@@ -956,21 +968,21 @@ cdef class MSSQLConnection:
 
         if self.num_columns == 0:
             return None
-        
+
         header_tuple = []
         for col in xrange(1, self.num_columns + 1):
             col_name = self.column_names[col - 1]
             col_type = self.column_types[col - 1]
             header_tuple.append((col_name, col_type, None, None, None, None, None))
         return tuple(header_tuple)
-    
+
     cdef get_result(self):
         cdef int coltype
         log("_mssql.MSSQLConnection.get_result()")
-        
+
         if self.last_dbresults:
             return None
-        
+
         self.clear_metadata()
 
         # Since python doesn't have a do/while loop do it this way
@@ -983,16 +995,16 @@ cdef class MSSQLConnection:
         check_cancel_and_raise(self.last_dbresults, self)
 
         self._rows_affected = dbcount(self.dbproc)
-        
+
         if self.last_dbresults == NO_MORE_RESULTS:
             self.num_columns = 0
             return None
-        
+
         self.num_columns = dbnumcols(self.dbproc)
 
         column_names = list()
         column_types = list()
-        
+
         for col in xrange(1, self.num_columns + 1):
             column_names.append(dbcolname(self.dbproc, col))
             coltype = dbcoltype(self.dbproc, col)
@@ -1000,7 +1012,7 @@ cdef class MSSQLConnection:
 
         self.column_names = tuple(column_names)
         self.column_types = tuple(column_types)
-    
+
     cdef get_row(self, int row_info):
         cdef DBPROCESS *dbproc = self.dbproc
         cdef int col
@@ -1012,15 +1024,15 @@ cdef class MSSQLConnection:
         if PYMSSQL_DEBUG == 1:
             global _row_count
             _row_count += 1
-        
+
         record = tuple()
-        
+
         for col in xrange(1, self.num_columns + 1):
             with nogil:
                 data = get_data(dbproc, row_info, col)
                 col_type = get_type(dbproc, row_info, col)
                 len = get_length(dbproc, row_info, col)
-            
+
             if data == NULL:
                 record += (None,)
                 continue
@@ -1030,15 +1042,15 @@ cdef class MSSQLConnection:
                 fprintf(stderr, 'Processing row %d, column %d,' \
                     'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
                     data, col_type, len)
-            
+
             record += (self.convert_db_value(data, col_type, len),)
         return record
-    
+
     def init_procedure(self, procname):
         """
         init_procedure(procname) -- creates and returns a MSSQLStoredProcedure
         object.
-        
+
         This methods initilizes a stored procedure or function on the server
         and creates a MSSQLStoredProcedure object that allows parameters to
         be bound.
@@ -1049,35 +1061,35 @@ cdef class MSSQLConnection:
     def nextresult(self):
         """
         nextresult() -- move to the next result, skipping all pending rows.
-        
-        This method fetches and discards any rows remaining from the current 
+
+        This method fetches and discards any rows remaining from the current
         resultset, then it advances to the next (if any) resultset. Returns
         True if the next resultset is available, otherwise None.
         """
-        
+
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.nextresult()")
-        
+
         assert_connected(self)
         clr_err(self)
-        
-        rtc = dbnextrow(self.dbproc)        
+
+        rtc = dbnextrow(self.dbproc)
         check_cancel_and_raise(rtc, self)
-        
+
         while rtc != NO_MORE_ROWS:
             rtc = dbnextrow(self.dbproc)
             check_cancel_and_raise(rtc, self)
-        
+
         self.last_dbresults = 0
         self.get_result()
-        
+
         if self.last_dbresults != NO_MORE_RESULTS:
             return 1
-    
+
     def select_db(self, dbname):
         """
         select_db(dbname) -- Select the current database.
-        
+
         This function selects the given database. An exception is raised on
         failure.
         """
@@ -1085,7 +1097,7 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.select_db()")
 
         dbuse(self.dbproc, dbname)
-        
+
 ##################################
 ## MSSQL Stored Procedure Class ##
 ##################################
@@ -1105,7 +1117,7 @@ cdef class MSSQLStoredProcedure:
         """The parameters that have been bound to this procedure."""
         def __get__(self):
             return self.params
-    
+
     def __init__(self, bytes name, MSSQLConnection connection):
         cdef RETCODE rtc
         log("_mssql.MSSQLStoredProcedure.__init__()")
@@ -1113,9 +1125,9 @@ cdef class MSSQLStoredProcedure:
         # We firstly want to check if tdsver is >= 8 as anything less
         # doesn't support remote procedure calls.
         if connection.tds_version < 7:
-            raise MSSQLDriverException("Stored Procedures aren't " 
+            raise MSSQLDriverException("Stored Procedures aren't "
                 "supported with a TDS version less than 7.")
-        
+
         self.conn = connection
         self.dbproc = connection.dbproc
         self.procname = name
@@ -1141,7 +1153,7 @@ cdef class MSSQLStoredProcedure:
             p = n
             n = n.next
             PyMem_Free(p)
-            
+
     def bind(self, object value, int dbtype, bytes name=None,
             int output=False, int null=False, int max_length=-1):
         """
@@ -1297,7 +1309,7 @@ cdef char *get_last_msg_srv(MSSQLConnection conn):
 
 cdef char *get_last_msg_proc(MSSQLConnection conn):
     return conn.last_msg_proc if conn != None else _mssql_last_msg_proc
-    
+
 cdef int get_last_msg_no(MSSQLConnection conn):
     return conn.last_msg_no if conn != None else _mssql_last_msg_no
 
@@ -1314,7 +1326,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     if get_last_msg_severity(conn) < min_error_severity:
         return 0
-    
+
     error_msg = get_last_msg_str(conn)
     if len(error_msg) == 0:
         error_msg = "Unknown error"
@@ -1368,7 +1380,7 @@ cdef int get_api_coltype(int coltype):
 cdef char *_remove_locale(char *s, size_t buflen):
     cdef char c, *stripped = s
     cdef int i, x = 0, last_sep = -1
-    
+
     for i, c in enumerate(s[0:buflen]):
         if c in (',', '.'):
             last_sep = i
@@ -1376,10 +1388,10 @@ cdef char *_remove_locale(char *s, size_t buflen):
     for i, c in enumerate(s[0:buflen]):
         if (c >= '0' and c <= '9') or c in ('+', '-'):
             stripped[x] = c
-            x += 1 
+            x += 1
         elif i == last_sep:
             stripped[x] = c
-            x += 1 
+            x += 1
     stripped[x] = 0
     return stripped
 
@@ -1387,6 +1399,18 @@ def remove_locale(bytes value):
     cdef char *s = <char*>value
     cdef size_t l = strlen(s)
     return _remove_locale(s, l)
+
+cdef int _tds_ver_str_to_constant(bytes verstr) except -1:
+    """
+        http://www.freetds.org/userguide/choosingtdsprotocol.htm
+    """
+    if verstr == u'4.2':
+        return DBVERSION_42
+    if verstr == u'7.0':
+        return DBVERSION_70
+    if verstr == u'8.0':
+        return DBVERSION_80
+    raise MSSQLException('unrecognized tds version: %s' % verstr)
 
 #######################
 ## Quoting Functions ##
@@ -1488,7 +1512,7 @@ MssqlConnection = MSSQLConnection
 #####################
 def get_max_connections():
     """
-    Get maximum simultaneous connections db-lib will open to the server. 
+    Get maximum simultaneous connections db-lib will open to the server.
     """
     return dbgetmaxprocs()
 
@@ -1507,7 +1531,7 @@ cdef void init_mssql():
     rtc = dbinit()
     if rtc == FAIL:
         raise MSSQLDriverException("Could not initialize communication layer")
-    
+
     dberrhandle(err_handler)
     dbmsghandle(msg_handler)
 

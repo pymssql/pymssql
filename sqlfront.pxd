@@ -22,7 +22,7 @@ cdef extern from "sqlfront.h":
     ctypedef unsigned char BYTE
     ctypedef int RETCODE
     ctypedef short unsigned int DBUSMALLINT
-    
+
     ctypedef unsigned char DBBINARY
     ctypedef int           DBBIT
     ctypedef unsigned char DBBOOL
@@ -37,7 +37,7 @@ cdef extern from "sqlfront.h":
         DBINT mny4
     ctypedef unsigned char DBTINYINT
     ctypedef short int     DBSMALLINT
-    
+
     ctypedef struct        DBDATETIME:
         DBINT dtdays
         DBINT dttime
@@ -124,14 +124,14 @@ cdef extern from "sqlfront.h":
         SYBTEXT
         SYBVARBINARY
         SYBVARCHAR
-    
+
     ## Primary functions ##
-    # Get address of compute column data. 
+    # Get address of compute column data.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
     #               communications with the server.
-    #     computeid of COMPUTE clause to which we're referring. 
+    #     computeid of COMPUTE clause to which we're referring.
     #     column    Nth column in computeid, starting from 1.
     #
     #   Returns:
@@ -140,13 +140,13 @@ cdef extern from "sqlfront.h":
     #   Return values:
     #     NULL no such compute id or column.
     BYTE * dbadata(DBPROCESS *, int, int) nogil
-    
-    # Get address of compute column data. 
+
+    # Get address of compute column data.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
     #               communications with the server.
-    #     computeid of COMPUTE clause to which we're referring. 
+    #     computeid of COMPUTE clause to which we're referring.
     #     column    Nth column in computeid, starting from 1.
     #
     #   Returns:
@@ -157,12 +157,12 @@ cdef extern from "sqlfront.h":
     #      0 data is NULL.
     DBINT dbadlen(DBPROCESS *, int, int) nogil
 
-    # Get datatype for a compute column data. 
+    # Get datatype for a compute column data.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
     #               communications with the server.
-    #     computeid of COMPUTE clause to which we're referring. 
+    #     computeid of COMPUTE clause to which we're referring.
     #     column    Nth column in computeid, starting from 1.
     #
     #   Returns:
@@ -243,7 +243,7 @@ cdef extern from "sqlfront.h":
     #     failure, it will call any user-supplied error handler.
     DBINT dbconvert(DBPROCESS *, int, BYTE *, DBINT, int, BYTE *, DBINT)
 
-    
+
     # Get count of rows processed.
     #
     #   Parameters:
@@ -445,7 +445,7 @@ cdef extern from "sqlfront.h":
     RETCODE dbsqlexec(DBPROCESS *) nogil
 
     # Wait for results of a query from the server.
-    #   
+    #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
     #               communications with the server.
@@ -473,7 +473,7 @@ cdef extern from "sqlfront.h":
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
     #               communications with the server.
-    #     name      database to use. 
+    #     name      database to use.
     #
     #   Return values:
     #     SUCCEED query was processed without errors.
@@ -512,8 +512,8 @@ cdef extern from "sqlfront.h":
     #   Returns:
     #     Address of a return parameter value, or NULL if no such retnum.
     BYTE * dbretdata(DBPROCESS *, int) nogil
-    
-    # Get size of an output parameter filled by a stored procedure. 
+
+    # Get size of an output parameter filled by a stored procedure.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
@@ -523,8 +523,8 @@ cdef extern from "sqlfront.h":
     #   Returns:
     #     Size of a return parameter value, or NULL if no such retnum.
     int dbretlen(DBPROCESS *, int) nogil
-    
-    # Get name of an output parameter filled by a stored procedure. 
+
+    # Get name of an output parameter filled by a stored procedure.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
@@ -532,9 +532,9 @@ cdef extern from "sqlfront.h":
     #     retnum    Nth parameter between 1 and the return value from
     #               dbnumrets()
     #   Returns:
-    #     ASCII null-terminated string, NULL if no such retnum. 
+    #     ASCII null-terminated string, NULL if no such retnum.
     char * dbretname(DBPROCESS *, int) nogil
-    
+
     # Fetch status value returned by query or remote procedure call.
     #
     #   Parameters:
@@ -543,7 +543,7 @@ cdef extern from "sqlfront.h":
     #   Returns:
     #     The return value of the rpc call
     DBINT dbretstatus(DBPROCESS *) nogil
-    
+
     # Get datatype of a stored procedure's return parameter.
     #
     #   Parameters:
@@ -554,7 +554,7 @@ cdef extern from "sqlfront.h":
     #   Returns:
     #     SYB* datatype token, or -1 if retnum is out of range.
     int dbrettype(DBPROCESS *, int) nogil
-    
+
     # Initialize a remote procedure call.
     #
     #   Parameters:
@@ -567,8 +567,8 @@ cdef extern from "sqlfront.h":
     #     SUCCEED   normal
     #     FAIL      on error
     RETCODE dbrpcinit(DBPROCESS *, char *, DBSMALLINT) nogil
-    
-    # Add a parameter to a remote procedure call. 
+
+    # Add a parameter to a remote procedure call.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
@@ -593,7 +593,7 @@ cdef extern from "sqlfront.h":
     #     SUCCEED   normal
     #     FAIL      on error
     RETCODE dbrpcparam(DBPROCESS *, char *, BYTE, int, DBINT, DBINT, BYTE *) nogil
-    
+
     # Execute the procedure and free associated memory.
     #
     #   Parameters:
@@ -612,5 +612,6 @@ cdef extern from "sqlfront.h":
     RETCODE DBSETLPWD(LOGINREC *x, char *y)
     RETCODE DBSETLUSER(LOGINREC *x, char *y)
     RETCODE DBSETLCHARSET(LOGINREC *x, char *y)
+    RETCODE DBSETLVERSION(LOGINREC *login, BYTE version)
 
 ctypedef int LINE_T

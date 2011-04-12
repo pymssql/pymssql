@@ -1,3 +1,6 @@
+<next release> - <release date>
+    + feature: support hostname, port, tds_version connect params without freetds.config
+
 Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
 		+ feature: add support for nullable ints and nullable bits in
@@ -64,7 +67,7 @@ Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
 		+ feature: add support for varbinary types
 		+ feature: add support for passing in charset to _quote_data
-		+ bugfix: rename MSSQLConnection.next_result to 
+		+ bugfix: rename MSSQLConnection.next_result to
 		          MSSQLConnection.nextresult as before
 		+ bugfix: set the charset upon login
 		+ feature: rewrite _remove_locale using C types instead, 20x faster
