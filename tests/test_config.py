@@ -39,11 +39,10 @@ class TestConfig(object):
             user = 'bob',
             database = 'tempdb',
             )
-        assert 'server_name = <pymssql dynamic>' in config_dump
-        assert 'server_host_name = dontnameyourserverthis' in config_dump
         assert 'user_name = bob' in config_dump
         # it would be nice if this was the DB name, see test_dbsetldbname()
         assert 'database = \n' in config_dump
+        # test default port
         assert 'port = 1433' in config_dump
         # not sure why 7.1 version is used instead of 8.0 which is the
         # default
@@ -80,10 +79,6 @@ class TestConfig(object):
             assert False
         except _mssql.MSSQLException, e:
             assert 'unrecognized tds version: 1.0' == str(e)
-
-    def test_nonstandard_port(self):
-        config_dump = self.connect(port='1435')
-        assert 'port = 1435' in config_dump
 
     def test_tds_nonstandard_port_int(self):
         #it should convert it to a string

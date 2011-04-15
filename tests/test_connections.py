@@ -1,12 +1,3 @@
-"""
-    Some of these tests may seem redundent with test_config.py tests, but
-    there is a reason for that.  Just because FreeTDS shows the values in
-    the config dump doesn't mean the connection they make will actually use
-    them, so these tests supplement the config tests to help make sure
-    that the values we see in the config dumps are actually being used.
-
-    If they are not, then we should see connection errors in these tests.
-"""
 from __future__ import with_statement
 from os import path, makedirs, environ
 import shutil
