@@ -25,6 +25,7 @@ This is an effort to convert the pymssql low-level C module to Cython.
 #
 
 DEF PYMSSQL_DEBUG = 0
+DEF DEBUG_ERRORS = 0
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
@@ -184,7 +185,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     if severity < _min_error_severity:
         return INT_CANCEL
 
-    IF PYMSSQL_DEBUG == 1:
+    IF PYMSSQL_DEBUG == 1 or DEBUG_ERRORS == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
             "dberr = %d, oserr = %d, dberrstr = '%s',  oserrstr = '%s'); " \
             "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
@@ -457,13 +458,22 @@ cdef class MSSQLConnection:
         DBSETLAPP(login, appname)
         DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
-        # FreeTDS doesn't currently support setting the HOST or PORT very well
-        # without using the FreeTDS config file.  We want to avoid that, so use
-        # environ variables instead.
-        os.environ['TDSHOST'] = server
-        if isinstance(port, int):
-            port = str(port)
-        os.environ['TDSPORT'] = port
+        # add the port to the server string if it doesn't have one already and
+        # if we are not using an instance
+        if ':' not in server and not instance:
+            server = '%s:%s' % (server, port)
+
+        # override the HOST to be the portion without the server, otherwise
+        # FreeTDS chokes when server still has the port definition.
+        # BUT, a patch on the mailing list fixes the need for this.  I am
+        # leaving it here just to remind us how to fix the problem if the bug
+        # doesn't get fixed for a while.  But if it does get fixed, this code
+        # can be deleted.
+        # patch: http://lists.ibiblio.org/pipermail/freetds/2011q2/026997.html
+        #if ':' in server:
+        #    os.environ['TDSHOST'] = server.split(':', 1)[0]
+        #else:
+        #    os.environ['TDSHOST'] = server
 
         # Add ourselves to the global connection list
         connection_object_list.append(self)
@@ -477,11 +487,8 @@ cdef class MSSQLConnection:
         # Set the login timeout
         dbsetlogintime(login_timeout)
 
-        # Connect to the server.  The second param, "server", won't really
-        # do anything b/c we have set TDSHOST and TDSPORT above.  Therefore,
-        # we can set it to anything, including NULL, but will set to a value
-        # that makes sense when the TDS dump files are reviewed.
-        self.dbproc = dbopen(login, '<pymssql dynamic>')
+        # Connect to the server
+        self.dbproc = dbopen(login, server)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
