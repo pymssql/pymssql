@@ -31,6 +31,11 @@ Building
 Testing
 =======
 
+You will need to install two additional packages for testing:
+
+    nose
+    SQLAlchemy
+
 To run the tests simply go to the "tests" folder and execute:
 
 	python all.py
@@ -55,7 +60,7 @@ database = database
 # optional
 port = 1433
 # optional
-instance = 
+instance =
 
 [AllTestsWillRun]
 server = hostname
