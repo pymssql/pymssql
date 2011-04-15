@@ -7,7 +7,10 @@ _parser = ConfigParser.ConfigParser({
     'server': 'localhost',
     'username': 'sa',
     'password': '',
-    'database': 'tempdb'
+    'database': 'tempdb',
+    'port': '1433',
+    'ipaddress': '127.0.0.1',
+    'instance': '',
 })
 _parser.read('tests.cfg')
 
@@ -20,8 +23,9 @@ server = _parser.get(section, 'server')
 username = _parser.get(section, 'username')
 password = _parser.get(section, 'password')
 database = _parser.get(section, 'database')
-port = _parser.get(section, 'port', 1433)
-
+port = _parser.get(section, 'port')
+ipaddress = _parser.get(section, 'ipaddress')
+instance = _parser.get(section, 'instance')
 
 class MSSQLTestCase(unittest.TestCase):
     def setUp(self):

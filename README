@@ -3,31 +3,31 @@ Building
 
 	Windows
 	=======
-	
+
 	To build pymssql on Windows you firstly must have:
 
 		* MinGW
-            * If you wish to use Visual C++ >= 2005 (or some equivalent compiler) then you will have 
+            * If you wish to use Visual C++ >= 2005 (or some equivalent compiler) then you will have
               to compile FreeTDS yourself.
 		* Python >= 2.5 (From the Python website)
 		* Cython >= 0.13
-	
+
 	and then you can simple run:
-		
+
 		python setup.py build
-	
+
 	which will build pymssql in the normal python fashion.
 
 	Unix
 	====
 
 	To build on Unix you must have:
-	
+
 		* gcc
 		* python-dev >= 2.5
 		* Cython >= 0.13
 		* FreeTDS >= 0.82
-	
+
 Testing
 =======
 
@@ -41,18 +41,32 @@ file in the tests folder that gets read for server settings. This file
 should have the format:
 
 [DEFAULT]
+# in order for the tests to work correctly, the value for server
+# SHOULD NOT appear in any freetds.conf file.  Ideally, the test DB server
+# would be a non-default instance which allows full tests of the instance
+# and port parameters.
 server = hostname
+# IP Address should be included as well as it allows us to test connections
+# to the database in different ways.
+ipaddress = 192.168.1.1
 username = username
 password = password
 database = database
+# optional
+port = 1433
+# optional
+instance = 
 
-[SomeServer]
-server = someserver
+[AllTestsWillRun]
+server = hostname
+ipaddress = 192.168.1.1
+username = username
 username = someuser
 password = somepass
 database = somedb
+port = 1435
+instance = testinst
 
 When this file exists you can run any test specifying a server as the first argument to the command such as:
 
 	python all.py SomeServer
-
