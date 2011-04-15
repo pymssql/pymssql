@@ -7,3 +7,4 @@ dist/*
 *.egg-info*
 tests/tmp
 tests/tests.cfg
+*.so
