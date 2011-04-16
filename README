@@ -62,6 +62,10 @@ example:
 
     nosetests --pymssql-section=AllTestsWillRun
 
+to avoid slow tests:
+
+    nosetests -a '!slow'
+
 to select specific tests to run:
 
     nosetests test_types.py

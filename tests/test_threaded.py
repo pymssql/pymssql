@@ -1,7 +1,12 @@
-import _mssql
-import unittest
 import threading
-from mssqltests import server, username, password, database
+import unittest
+
+from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
+
+import _mssql
+
+from .helpers import mssqlconn
 
 class TestingThread(threading.Thread):
 
@@ -9,8 +14,7 @@ class TestingThread(threading.Thread):
         self.running = True
         self.exc = None
         try:
-            mssql = _mssql.connect(server, username, password)
-            mssql.select_db(database)
+            mssql = mssqlconn()
             for i in xrange(0, 1000):
                 mssql.execute_query('SELECT %d', (i,))
                 for row in mssql:
@@ -27,8 +31,7 @@ class TestingErrorThread(threading.Thread):
         self.running = True
         self.exc = None
         try:
-            mssql = _mssql.connect(server, username, password)
-            mssql.select_db(database)
+            mssql = mssqlconn()
             for i in xrange(0, 1000):
                 try:
                     mssql.execute_query('SELECT unknown_column')
@@ -46,8 +49,7 @@ class SprocTestingErrorThread(threading.Thread):
         self.running = True
         self.exc = None
         try:
-            mssql = _mssql.connect(server, username, password)
-            mssql.select_db(database)
+            mssql = mssqlconn()
             for i in xrange(0, 1000):
                 try:
                     proc = mssql.init_procedure('pymssqlErrorThreadTest')
@@ -61,7 +63,8 @@ class SprocTestingErrorThread(threading.Thread):
             self.running = False
 
 class ThreadedTests(unittest.TestCase):
-    
+
+    @attr('slow')
     def testThreadedUse(self):
         threads = []
         for i in xrange(0, 50):
@@ -79,6 +82,7 @@ class ThreadedTests(unittest.TestCase):
                     running = True
                     break
 
+    @attr('slow')
     def testErrorThreadedUse(self):
         threads = []
         for i in xrange(0, 2):
@@ -97,9 +101,8 @@ class ThreadedTests(unittest.TestCase):
                     break
 
     def testErrorSprocThreadedUse(self):
-
-        mssql = _mssql.connect(server, username, password)
-        mssql.select_db(database)
+        raise SkipTest # currently, this throws the error: There is already an object named 'pymssqlErrorThreadTest' in the database.DB-Lib error message 2714
+        mssql = mssqlconn()
         mssql.execute_non_query("""
         CREATE PROCEDURE [dbo].[pymssqlErrorThreadTest]
         AS

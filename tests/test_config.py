@@ -64,13 +64,15 @@ class TestConfig(object):
         assert 'minor_version = 0' in config_dump
 
     def test_tds_protocal_version_80(self):
-        # why do we get 7.1 if we request 8.0?  The below test fails currently
-        # hence the skip
-        raise SkipTest # test_tds_protocal_version_80
+        # follow-up: turns out 8.0 was erroneous.  MS named the new protocal
+        # 7.1 instead of 8.0, so FreeTDS will accept 8.0 but shows as 7.1.
+        # got that from the FreeTDS mailling list.  New FreeTDS docs,built from
+        # source, have a page that describes the protocal and that page lists
+        # versions 7.0, 7.1, and 7.2 among others.
 
         config_dump = self.connect(tds_version='8.0')
-        assert 'major_version = 8' in config_dump
-        assert 'minor_version = 0' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 1' in config_dump
 
     def test_tds_protocal_version_invalid(self):
         try:
