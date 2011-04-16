@@ -64,11 +64,10 @@ class TestTypes(object):
         self.hasheq(u'foobar', colval)
 
     def test_varchar_unicode(self):
-        raise SkipTest
         testval = u'foobär'
         colval = self.insert_and_select('comment_vch', testval, 's')
-        self.typeeq(u'foobar', colval)
-        eq_(u'foobar', colval)
+        self.typeeq(u'foobär', colval)
+        eq_(u'foobär', colval)
 
     def test_nvarchar_unicode(self):
         testval = u'foobär'
@@ -83,3 +82,5 @@ class TestTypes(object):
         colval = self.insert_and_select('data_image', testval, 's')
         self.typeeq(testval, colval)
         self.hasheq(testval, colval)
+        tlist = pickle.loads(colval)
+        eq_(tlist, [1, 2])

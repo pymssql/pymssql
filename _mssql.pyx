@@ -1442,7 +1442,11 @@ cdef _quote_simple_value(value, charset='utf8'):
         return "N'" + value.encode(charset).replace("'", "''") + "'"
 
     if type(value) is str:
-        return "'" + value.replace("'", "''") + "'"
+        if  True: #'\0' in value:
+        # binary data, hex encode it
+            return '0x' + value.encode('hex')
+        else:
+            return "'" + value.replace("'", "''") + "'"
 
     if type(value) is datetime.datetime:
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
