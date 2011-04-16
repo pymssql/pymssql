@@ -25,7 +25,7 @@ This is an effort to convert the pymssql low-level C module to Cython.
 #
 
 DEF PYMSSQL_DEBUG = 0
-DEF DEBUG_ERRORS = 0
+DEF PYMSSQL_DEBUG_ERRORS = 0
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
@@ -185,7 +185,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     if severity < _min_error_severity:
         return INT_CANCEL
 
-    IF PYMSSQL_DEBUG == 1 or DEBUG_ERRORS == 1:
+    IF PYMSSQL_DEBUG == 1 or PYMSSQL_DEBUG_ERRORS == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
             "dberr = %d, oserr = %d, dberrstr = '%s',  oserrstr = '%s'); " \
             "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
@@ -940,6 +940,8 @@ cdef class MSSQLConnection:
         if params:
             query_string = self.format_sql_command(query_string, params)
 
+        log(query_string)
+
         # Prepare the query buffer
         dbcmd(self.dbproc, query_string)
 
@@ -1438,15 +1440,22 @@ cdef _quote_simple_value(value, charset='utf8'):
     if type(value) in (int, long, float):
         return value
 
+    if isinstance(value, str):
+        # see if it can be decoded as ascii if there are no null bytes
+        if '\0' not in value:
+            try:
+                value.decode('ascii')
+                return "'" + value.replace("'", "''") + "'"
+            except UnicodeDecodeError:
+                pass
+
+        # will still be string type if there was a null byte in it or if the
+        # decoding failed.  In this case, just send it as hex.
+        if isinstance(value, str):
+            return '0x' + value.encode('hex')
+
     if type(value) is unicode:
         return "N'" + value.encode(charset).replace("'", "''") + "'"
-
-    if type(value) is str:
-        if  True: #'\0' in value:
-        # binary data, hex encode it
-            return '0x' + value.encode('hex')
-        else:
-            return "'" + value.replace("'", "''") + "'"
 
     if type(value) is datetime.datetime:
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
