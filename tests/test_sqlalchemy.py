@@ -38,6 +38,9 @@ saotbl.create(engine)
 class TestSA(object):
 
     def tearDown(self):
+        # issue rollback first, otherwise clearing the table might give us
+        # an error that the session is in a bad state
+        sess.rollback()
         sess.execute(SAObj.__table__.delete())
         sess.commit()
 
