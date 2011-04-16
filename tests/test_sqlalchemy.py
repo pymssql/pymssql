@@ -15,7 +15,7 @@ engine = sa.create_engine(
             port,
             database
         ),
-        echo=True
+        echo=False
     )
 
 meta = sa.MetaData()
