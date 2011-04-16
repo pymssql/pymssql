@@ -1,5 +1,9 @@
+Change Log
+==========
+
 <next release> - <release date>
     + feature: support hostname, port, tds_version connect params without freetds.config
+    - bug #46: better handling for byte strings that don't represent ascii data
 
 Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
