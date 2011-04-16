@@ -60,7 +60,7 @@ if sys.platform == 'win32':
         'wsock32',
         'kernel32',
     ]
-    
+
     _extra_compile_args.append('-Wl,-allow-multiple-definition')
     _extra_compile_args.append('-Wl,-subsystem,windows-mthreads')
     _extra_compile_args.append('-mwindows')
@@ -70,7 +70,7 @@ else:
     include_dirs = [
         '/usr/local/include', '/usr/local/include/freetds',  # first local install
         '/usr/include', '/usr/include/freetds',   # some generic Linux paths
-        '/usr/include/freetds_mssql',             # some versions of Mandriva 
+        '/usr/include/freetds_mssql',             # some versions of Mandriva
         '/usr/local/freetds/include',             # FreeBSD
         '/usr/pkg/freetds/include'	              # NetBSD
     ]
@@ -78,7 +78,7 @@ else:
         '/usr/local/lib', '/usr/local/lib/freetds',
         '/usr/lib64',
         '/usr/lib', '/usr/lib/freetds',
-        '/usr/lib/freetds_mssql', 
+        '/usr/lib/freetds_mssql',
         '/usr/local/freetds/lib',
         '/usr/pkg/freetds/lib'
     ]
@@ -134,7 +134,7 @@ class clean(_clean):
     """
     Subclass clean so it removes all the Cython generated C files.
     """
-    
+
     def run(self):
         _clean.run(self)
         for ext in self.distribution.ext_modules:
@@ -144,6 +144,10 @@ class clean(_clean):
                 if os.path.exists(c_source):
                     log.info('removing %s', c_source)
                     os.remove(c_source)
+                so_built = cy_source[:-3] + 'so'
+                if os.path.exists(so_built):
+                    log.info('removing %s', so_built)
+                    os.remove(so_built)
 
         # Check if we need to remove the freetds directory
         if WINDOWS:
@@ -173,7 +177,7 @@ class release(Command):
         self.username = None
         self.password = None
         self.store = None
-        
+
         if WINDOWS:
             self.release_windows()
         else:
@@ -185,7 +189,7 @@ class release(Command):
         sdist.formats = 'zip'
         sdist.ensure_finalized()
         sdist.run()
-        
+
         # generate a windows egg
         self.run_command('bdist_egg')
 
@@ -194,9 +198,9 @@ class release(Command):
         bdist.formats = 'zip,wininst'
         bdist.ensure_finalized()
         bdist.run()
-        
+
         (name, version, fullname) = self.get_info()
-        
+
         self.upload(fullname + '.zip', '%s %s source zipped' % (name, version))
         self.upload(fullname + '.win32.zip', '%s %s win32 zip installer' % (name, version))
         self.upload(fullname + '.win32-py2.6.exe', '%s %s windows installer' % (name, version))
@@ -208,11 +212,11 @@ class release(Command):
         sdist.formats = 'gztar,bztar'
         sdist.ensure_finalized()
         sdist.run()
-        
+
         (name, version, fullname) = self.get_info()
         self.upload(fullname + '.tar.gz', '%s %s source gzipped' % (name, version))
         self.upload(fullname + '.tar.bz2', '%s %s source bzipped' % (name, version))
-    
+
     def get_info(self):
         """
         Return the project name and version
@@ -225,19 +229,19 @@ class release(Command):
 
     def upload(self, filename, comment):
         from gc_upload import upload
-        
+
         if self.username is None:
             username = raw_input('Username: ')
             password = getpass.getpass('Password: ')
-            
+
             if self.store is None:
                 store = raw_input('Store credentials for later use? [Y/n]')
                 self.store = store in ('', 'y', 'Y')
-            
+
             if self.store:
                 self.username = username
                 self.password = password
-                
+
         else:
             username = self.username
             password = self.password
