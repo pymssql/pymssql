@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from mssqltests import server, username, password, database, port, ipaddress, instance
 
 engine = sa.create_engine(
-        'mssql+pymssql://%s:%s@%s:%s/%s' % (
+        'mssql+pymssql://%s:%s@%s:%s/%s?charset=UTF-8' % (
             username,
             password,
             server,
@@ -30,9 +30,10 @@ class SAObj(Base):
     name = sa.Column(sa.String(50))
     data = sa.Column(sa.PickleType)
 
-meta.create_all(engine)
-
 saotbl = SAObj.__table__
+
+saotbl.drop(engine)
+saotbl.create(engine)
 
 class TestSA(object):
 
@@ -73,5 +74,6 @@ class TestSA(object):
         sess.add(s)
         sess.commit()
         res = sess.execute(sa.select([saotbl.c.data]))
-        raise SkipTest # SA pickle columns cause us problems, delete this skip to see
-        print res.fetchone()
+        #raise SkipTest # SA pickle columns cause us problems, delete this skip to see
+        row = res.fetchone()
+        eq_(row['data'], ['one'])
