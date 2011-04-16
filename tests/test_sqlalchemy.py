@@ -5,15 +5,15 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from mssqltests import server, username, password, database, port, ipaddress, instance
+from .helpers import config
 
 engine = sa.create_engine(
         'mssql+pymssql://%s:%s@%s:%s/%s?charset=UTF-8' % (
-            username,
-            password,
-            server,
-            port,
-            database
+            config.user,
+            config.password,
+            config.server,
+            config.port,
+            config.database
         ),
         echo=False
     )

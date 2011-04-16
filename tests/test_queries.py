@@ -1,23 +1,21 @@
-import _mssql
-import unittest
-import mssqltests
 from datetime import datetime
 
-class QueryTests(mssqltests.MSSQLTestCase):
+import _mssql
 
-    def setUp(self):
-        super(QueryTests, self).setUp()
-        self.tableCreated = False
+from .helpers import mssqlconn, drop_table
+
+class QueryTests(object):
+
+    @classmethod
+    def setup_class(self):
+        self.mssql = mssqlconn()
         self.createTestTable()
 
     def tearDown(self):
-        if self.tableCreated:
-            self.dropTestTable()
-        super(QueryTests, self).tearDown()
+        clear_table(self.mssql, 'pymssql')
+        self.mssql.close()
 
     def createTestTable(self):
-        if self.tableCreated:
-            return
         try:
             self.mssql.execute_non_query("""
             CREATE TABLE pymssql (
@@ -40,9 +38,7 @@ class QueryTests(mssqltests.MSSQLTestCase):
             self.tableCreated = True
             self.testTableColCount = 15
         except _mssql.MSSQLDatabaseException, e:
-            if e.number == 2714:
-                self.tableCreated = True
-            else:
+            if e.number != 2714:
                 raise
 
     def dropTestTable(self):
@@ -75,7 +71,7 @@ class QueryTests(mssqltests.MSSQLTestCase):
                 894123.09
             );""" % (y, y, y, (y % 2), y, y)
             self.mssql.execute_non_query(query)
-    
+
     def test01SimpleSelect(self):
         query = 'SELECT getdate() as cur_date_info'
         self.mssql.execute_query(query)
@@ -112,9 +108,3 @@ class QueryTests(mssqltests.MSSQLTestCase):
 
         rows = tuple(self.mssql)
         self.assertEquals(rows[0][0], 'ret3')
-
-suite = unittest.TestSuite()
-suite.addTest(unittest.makeSuite(QueryTests))
-
-if __name__ == '__main__':
-    unittest.main()

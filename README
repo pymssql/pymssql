@@ -33,45 +33,38 @@ Testing
 
 You will need to install two additional packages for testing:
 
-    nose
-    SQLAlchemy
+    easy_install nose SQLAlchemy
 
-To run the tests simply go to the "tests" folder and execute:
+You should build the package with:
 
-	python all.py
+    python setup.py develop
 
-Which will go through and run all the tests with the default server
-settings. If you wish to change these settings you can create a 'tests.cfg'
-file in the tests folder that gets read for server settings. This file
-should have the format:
+You need to setup a tests.cfg file in tests/ with the correct DB connection
+information for your environement:
 
-[DEFAULT]
-# in order for the tests to work correctly, the value for server
-# SHOULD NOT appear in any freetds.conf file.  Ideally, the test DB server
-# would be a non-default instance which allows full tests of the instance
-# and port parameters.
-server = hostname
-# IP Address should be included as well as it allows us to test connections
-# to the database in different ways.
-ipaddress = 192.168.1.1
-username = username
-password = password
-database = database
-# optional
-port = 1433
-# optional
-instance =
+    cd tests/
+    cp tests.cfg.tpl tests.cfg
+    vim|emacs|notepad tests.cfg
 
-[AllTestsWillRun]
-server = hostname
-ipaddress = 192.168.1.1
-username = username
-username = someuser
-password = somepass
-database = somedb
-port = 1435
-instance = testinst
+To run the tests:
 
-When this file exists you can run any test specifying a server as the first argument to the command such as:
+    cd tests/
+    nosetests
 
-	python all.py SomeServer
+Which will go through and run all the tests with the settings from the DEFAULT
+section of tests.cfg.
+
+To run with a different tests.cfg section:
+
+    nosetests --pymssql-section=<secname>
+
+example:
+
+    nosetests --pymssql-section=AllTestsWillRun
+
+to select specific tests to run:
+
+    nosetests test_types.py
+    nosetests test_types.py test_sprocs.py
+    nosetests test_types.py:TestTypes
+    nosetests test_types.py:TestTypes.test_image

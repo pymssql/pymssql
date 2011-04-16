@@ -6,7 +6,14 @@ from nose.plugins.skip import SkipTest
 
 import _mssql
 
-from mssqltests import server, username, password, database, port, ipaddress, instance
+from .helpers import config
+server = config.server
+username = config.user
+password = config.password
+database = config.database
+port = config.port
+ipaddress = config.ipaddress
+instance = config.instance
 
 cdir = path.dirname(__file__)
 tmpdir = path.join(cdir, 'tmp')

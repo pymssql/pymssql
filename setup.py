@@ -269,7 +269,7 @@ setup(
     data_files = [
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
-	zip_safe = False,
+    zip_safe = False,
     setup_requires=["Cython>=0.13.1"],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
@@ -280,5 +280,11 @@ setup(
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
-                             libraries = libraries)]
+                             libraries = libraries)],
+    entry_points = {
+          'nose.plugins': [
+              'pymssql_config = tests.nose_plugin:ConfigPlugin'
+              ]
+          },
+
 )

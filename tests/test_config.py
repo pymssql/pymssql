@@ -6,8 +6,7 @@ from nose.plugins.skip import SkipTest
 
 import _mssql
 
-cdir = path.dirname(__file__)
-tmpdir = path.join(cdir, 'tmp')
+from .helpers import tmpdir
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
 
 def setup_module():
