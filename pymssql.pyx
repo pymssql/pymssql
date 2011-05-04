@@ -46,7 +46,7 @@ cdef object prog_errors = (
 )
 
 cdef class DBAPIType:
-    
+
     cdef tuple values
 
     def __init__(self, *values):
@@ -127,7 +127,7 @@ cdef class output:
         def __get__(self):
             return self._value
 
-    
+
     def __init__(self, param_type, value=None):
         self._type = param_type
         self._value = value
@@ -179,7 +179,7 @@ cdef class Connection:
         try:
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot start transation: ' + str(e[0]))
+            raise OperationalError('Cannot start transaction: ' + str(e[0]))
 
     def __del__(self):
         if self.conn:
@@ -218,7 +218,7 @@ cdef class Connection:
             self._conn.execute_non_query('COMMIT TRAN')
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot commit transation: ' + str(e[0]))
+            raise OperationalError('Cannot commit transaction: ' + str(e[0]))
 
     def cursor(self, as_dict=None):
         """
@@ -238,10 +238,26 @@ cdef class Connection:
 
         try:
             self._conn.execute_non_query('ROLLBACK TRAN')
+        except _mssql.MSSQLException, e:
+            # PEP 249 indicates that we have contract with the user that we will
+            # always have a transaction in place if autocommit is False.
+            # Therefore, it seems logical to ignore this exception since it
+            # indicates a situation we shouldn't ever encounter anyway.  However,
+            # it can happen when an error is severe enough to cause a
+            # "batch-abort".  In that case, SQL Server *implicitly* rolls back
+            # the transaction for us (how helpful!).  But there doesn't seem
+            # to be any way for us to know if an error is severe enough to cause
+            # a batch abort:
+            #   http://stackoverflow.com/questions/5877162/why-does-microsoft-sql-server-implicitly-rollback-when-a-create-statement-fails
+            #
+            # the alternative is to do 'select @@trancount' before each rollback
+            # but that is slower and doesn't seem to offer any benefit.
+            if 'The ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION' not in str(e):
+                raise
+        try:
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot roll back transation: ' + str(e[0]))
-            
+            raise OperationalError('Cannot begin transaction: ' + str(e[0]))
 
 ##################
 ## Cursor class ##
@@ -466,7 +482,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset=None, as_dict=False,
-        host='', appname=None):
+        host='', appname=None, port='1433'):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -489,6 +505,8 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type as_dict: boolean
     :keyword appname: Set the application name to use for the connection
     :type appname: string
+    :keyword port: the TCP port to use to connect to the server
+    :type appname: string
     """
 
     _mssql.login_timeout = login_timeout
@@ -510,14 +528,14 @@ def connect(server='.', user='', password='', database='', timeout=0,
 
     try:
         conn = _mssql.connect(server, user, password, charset, database,
-            appname)
+            appname, port)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e[0])
 
     except _mssql.MSSQLDriverException, e:
         raise InterfaceError(e[0])
-    
+
 
     if timeout != 0:
         conn.query_timeout = timeout
