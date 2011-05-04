@@ -951,21 +951,7 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-
-        if params is None:
-            return format
-
-        if not issubclass(type(params),
-                (bool, int, long, float, unicode, str,
-                datetime.datetime, datetime.date, dict, tuple)):
-            raise ValueError("'params' arg can be only a tuple or a dictionary.")
-
-        if strlen(self._charset):
-            quoted = _quote_data(params, self._charset)
-        else:
-            quoted = _quote_data(params)
-
-        return format % quoted
+        return _substitute_params(format, params, self._charset)
 
     def get_header(self):
         """
@@ -1511,6 +1497,24 @@ cdef _quote_data(data, charset='utf8'):
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
+cdef _substitute_params(toformat, params, charset):
+    print(toformat)
+
+    if params is None:
+        return toformat
+
+    if not issubclass(type(params),
+            (bool, int, long, float, unicode, str,
+            datetime.datetime, datetime.date, dict, tuple)):
+        raise ValueError("'params' arg can be only a tuple or a dictionary.")
+
+    if charset:
+        quoted = _quote_data(params, charset)
+    else:
+        quoted = _quote_data(params)
+
+    return toformat % quoted
+
 # We'll add these methods to the module to allow for unit testing of the
 # underlying C methods.
 def quote_simple_value(value):
@@ -1521,6 +1525,9 @@ def quote_or_flatten(data):
 
 def quote_data(data):
     return _quote_data(data)
+
+def substitute_params(toformat, params, charset='utf8'):
+    return _substitute_params(toformat, params, charset)
 
 ###########################
 ## Compatibility Aliases ##
