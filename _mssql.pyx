@@ -40,6 +40,7 @@ import os
 import socket
 import decimal
 import datetime
+import re
 
 from sqlfront cimport *
 
@@ -1420,11 +1421,11 @@ cdef _quote_simple_value(value, charset='utf8'):
     if value == None:
         return 'NULL'
 
-    if type(value) is bool:
-        return 1 if value else 0
+    if isinstance(value, bool):
+        return '1' if value else '0'
 
-    if type(value) in (int, long, float):
-        return value
+    if isinstance(value, (int, long, float)):
+        return str(value)
 
     if isinstance(value, str):
         # see if it can be decoded as ascii if there are no null bytes
@@ -1440,16 +1441,16 @@ cdef _quote_simple_value(value, charset='utf8'):
         if isinstance(value, str):
             return '0x' + value.encode('hex')
 
-    if type(value) is unicode:
+    if isinstance(value, unicode):
         return "N'" + value.encode(charset).replace("'", "''") + "'"
 
-    if type(value) is datetime.datetime:
+    if isinstance(value, datetime.datetime):
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
             value.year, value.month, value.day,
             value.hour, value.minute, value.second,
             value.microsecond / 1000)
 
-    if type(value) is datetime.date:
+    if isinstance(value, datetime.date):
         return "{d '%04d-%02d-%02d'} " % (
         value.year, value.month, value.day)
 
@@ -1497,9 +1498,9 @@ cdef _quote_data(data, charset='utf8'):
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
+_re_pos_param = re.compile(r'(%(s|d))')
+_re_name_param = re.compile(r'(%\(([A-Za-z0-9_]+)\)s)')
 cdef _substitute_params(toformat, params, charset):
-    print(toformat)
-
     if params is None:
         return toformat
 
@@ -1513,7 +1514,65 @@ cdef _substitute_params(toformat, params, charset):
     else:
         quoted = _quote_data(params)
 
-    return toformat % quoted
+    # positional string substitution now requires a tuple
+    if isinstance(quoted, basestring):
+        quoted = (quoted,)
+
+    if isinstance(params, dict):
+        """ assume name based substitutions """
+        offset = 0
+        for match in _re_name_param.finditer(toformat):
+            param_key = match.group(2)
+
+            if not params.has_key(param_key):
+                raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
+
+            # calculate string positions so we can keep track of the offset to
+            # be used in future substituations on this string.  This is
+            # necessary b/c the match start() and end() are based on the
+            # original string, but we modify the original string each time we
+            # loop, so we need to make an adjustment for the difference between
+            # the length of the placeholder and the length of the value being
+            # substituted
+            param_val = quoted[param_key]
+            param_val_len = len(param_val)
+            placeholder_len = len(match.group(1))
+            offset_adjust = param_val_len - placeholder_len
+
+            # do the string substitution
+            match_start = match.start(1) + offset
+            match_end = match.end(1) + offset
+            toformat = toformat[:match_start] + param_val + toformat[match_end:]
+
+            # adjust the offset for the next usage
+            offset += offset_adjust
+    else:
+        """ assume position based substitutions """
+        offset = 0
+        for count, match in enumerate(_re_pos_param.finditer(toformat)):
+            # calculate string positions so we can keep track of the offset to
+            # be used in future substituations on this string.  This is
+            # necessary b/c the match start() and end() are based on the
+            # original string, but we modify the original string each time we
+            # loop, so we need to make an adjustment for the difference between
+            # the length of the placeholder and the length of the value being
+            # substituted
+            try:
+                param_val = quoted[count]
+            except IndexError:
+                raise ValueError('more placeholders in sql than params available')
+            param_val_len = len(param_val)
+            placeholder_len = 2
+            offset_adjust = param_val_len - placeholder_len
+
+            # do the string substitution
+            match_start = match.start(1) + offset
+            match_end = match.end(1) + offset
+            toformat = toformat[:match_start] + param_val + toformat[match_end:]
+            #print(param_val, param_val_len, offset_adjust, match_start, match_end)
+            # adjust the offset for the next usage
+            offset += offset_adjust
+    return toformat
 
 # We'll add these methods to the module to allow for unit testing of the
 # underlying C methods.

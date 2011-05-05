@@ -36,7 +36,14 @@ class TestParameterSub(object):
         res = _mssql.substitute_params('SELECT * FROM empl WHERE name LIKE %s', 'J%')
         eq_(res, "SELECT * FROM empl WHERE name LIKE 'J%'")
 
-    def test_dict_params(self):
+    def test_single_dict_params(self):
+        res = _mssql.substitute_params(
+                'SELECT * FROM cust WHERE salesrep=%(name)s',
+                { 'name': 'John Doe'}
+            )
+        eq_(res, "SELECT * FROM cust WHERE salesrep='John Doe'")
+
+    def test_multi_dict_params(self):
         res = _mssql.substitute_params(
                 'SELECT * FROM empl WHERE (name=%(name)s AND city=%(city)s) or supervisor=%(name)s',
                 { 'name': 'John Doe', 'city': 'Nowhere' }
@@ -57,3 +64,25 @@ class TestParameterSub(object):
     def test_bare_percent_dict(self):
         res = _mssql.substitute_params('select 5 % %(divisor)s', {'divisor': 3})
         eq_(res, "select 5 % 3")
+
+    def test_missing_dict_param(self):
+        try:
+            res = _mssql.substitute_params(
+                'SELECT * FROM cust WHERE salesrep=%(name)s',
+                { 'foobar': 'John Doe'}
+            )
+            assert False, 'expected exception b/c dict did not contain replacement value'
+        except ValueError, e:
+            if 'params dictionary did not contain value for placeholder' not in str(e):
+                raise
+
+    def test_too_many_params(self):
+        try:
+            res = _mssql.substitute_params(
+                'SELECT * FROM cust WHERE salesrep=%s and foo=%s',
+                ('bar',)
+            )
+            assert False, 'expected exception b/c too many params in sql'
+        except ValueError, e:
+            if 'more placeholders in sql than params available' not in str(e):
+                raise
