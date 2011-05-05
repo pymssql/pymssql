@@ -1499,7 +1499,7 @@ cdef _quote_data(data, charset='utf8'):
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
 _re_pos_param = re.compile(r'(%(s|d))')
-_re_name_param = re.compile(r'(%\(([A-Za-z0-9_]+)\)s)')
+_re_name_param = re.compile(r'(%\(([^\)]+)\)s)')
 cdef _substitute_params(toformat, params, charset):
     if params is None:
         return toformat

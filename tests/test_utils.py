@@ -43,6 +43,13 @@ class TestParameterSub(object):
             )
         eq_(res, "SELECT * FROM cust WHERE salesrep='John Doe'")
 
+    def test_weird_key_names_dict_params(self):
+        res = _mssql.substitute_params(
+                'SELECT * FROM cust WHERE salesrep=%(n %s ##ame)s',
+                { 'n %s ##ame': 'John Doe'}
+            )
+        eq_(res, "SELECT * FROM cust WHERE salesrep='John Doe'")
+
     def test_multi_dict_params(self):
         res = _mssql.substitute_params(
                 'SELECT * FROM empl WHERE (name=%(name)s AND city=%(city)s) or supervisor=%(name)s',
