@@ -377,8 +377,12 @@ cdef class Cursor:
 
     def executemany(self, operation, params_seq):
         self.description = None
+        rownumber = 0
         for params in params_seq:
             self.execute(operation, params)
+            # support correct rowcount across multiple executes
+            rownumber += self._rownumber
+        self._rownumber = rownumber
 
     def nextset(self):
         try:
@@ -407,8 +411,8 @@ cdef class Cursor:
         return tuple([row[r] for r in sorted(row) if type(r) == int])
 
     def fetchone(self):
-        if self._source._conn.get_header() == None:
-            raise OperationalError('No data available')
+        if self.description is None:
+            raise OperationalError('Statement not executed or executed statement has no resultset')
 
         try:
             return self.getrow()
@@ -421,8 +425,8 @@ cdef class Cursor:
             raise InterfaceError, e[0]
 
     def fetchmany(self, size=None):
-        if self._source._conn.get_header() == None:
-            raise OperationalError('No data available')
+        if self.description is None:
+            raise OperationalError('Statement not executed or executed statement has no resultset')
 
         if size == None:
             size = self._batchsize
@@ -442,8 +446,8 @@ cdef class Cursor:
             raise InterfaceError, e[0]
 
     def fetchall(self):
-        if self._source._conn.get_header() == None:
-            raise OperationalError('No data available')
+        if self.description is None:
+            raise OperationalError('Statement not executed or executed statement has no resultset')
 
         try:
             if self.as_dict:

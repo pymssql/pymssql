@@ -1,8 +1,9 @@
+from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 
 import pymssql as pym
 
-from .helpers import pymssqlconn, PyTableBase
+from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase
 
 class TestDBAPI2(object):
     def test_version(self):
@@ -82,3 +83,9 @@ class TestTransaction(PyTableBase):
         # rollback should have resulted in user's insert getting rolled back
         # too
         eq_(self.row_count(), 0)
+
+class TestCursor(CursorBase):
+    dbmod = pym
+
+    def newconn(self):
+        self.conn = pymssqlconn()
