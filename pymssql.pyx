@@ -45,20 +45,21 @@ cdef object prog_errors = (
     4104    # multi-part identifier could not be bound
 )
 
-cdef class DBAPIType:
+class DBAPIType:
 
-    cdef tuple values
-
-    def __init__(self, *values):
-        self.values = values
+    def __init__(self, value):
+        self.value = value
 
     def __cmp__(self, other):
-        if other in self.values:
+        if other == self.value:
             return 0
-        if other < self.values:
+        if other < self.value:
             return 1
         else:
             return -1
+
+    def __repr__(self):
+        return '<DBAPIType %s>' % self.value
 
 STRING = DBAPIType(_mssql.STRING)
 BINARY = DBAPIType(_mssql.BINARY)
