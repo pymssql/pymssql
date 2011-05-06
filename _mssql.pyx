@@ -771,7 +771,7 @@ cdef class MSSQLConnection:
         After calling this method, rows_affected property contains number of
         rows affected by the last SQL command.
         """
-        log("_mssql.MSSQLConnection.execute_non_query()")
+        log("_mssql.MSSQLConnection.execute_non_query() BEGIN")
         cdef RETCODE rtc
 
         self.format_and_run_query(query_string, params)
@@ -782,6 +782,7 @@ cdef class MSSQLConnection:
 
         rtc = db_cancel(self)
         check_and_raise(rtc, self)
+        log("_mssql.MSSQLConnection.execute_non_query() END")
 
     cpdef execute_query(self, query_string, params=None):
         """
@@ -813,9 +814,10 @@ cdef class MSSQLConnection:
         result rows_affected property contains number of rows returned by
         last command (this is how MS SQL returns it).
         """
-        log("_mssql.MSSQLConnection.execute_query()")
+        log("_mssql.MSSQLConnection.execute_query() BEGIN")
         self.format_and_run_query(query_string, params)
         self.get_result()
+        log("_mssql.MSSQLConnection.execute_query() END")
 
     cpdef execute_row(self, query_string, params=None):
         """
@@ -883,30 +885,34 @@ cdef class MSSQLConnection:
 
     cdef fetch_next_row(self, int throw):
         cdef RETCODE rtc
-        log("_mssql.MSSQLConnection.fetch_next_row()")
+        log("_mssql.MSSQLConnection.fetch_next_row() BEGIN")
+        try:
+            self.get_result()
 
-        self.get_result()
+            if self.last_dbresults == NO_MORE_RESULTS:
+                log("_mssql.MSSQLConnection.fetch_next_row(): NO MORE RESULTS")
+                self.clear_metadata()
+                if throw:
+                    raise StopIteration
+                return None
 
-        if self.last_dbresults == NO_MORE_RESULTS:
-            self.clear_metadata()
-            if throw:
-                raise StopIteration
-            return None
+            with nogil:
+                rtc = dbnextrow(self.dbproc)
 
-        with nogil:
-            rtc = dbnextrow(self.dbproc)
+            check_cancel_and_raise(rtc, self)
 
-        check_cancel_and_raise(rtc, self)
+            if rtc == NO_MORE_ROWS:
+                log("_mssql.MSSQLConnection.fetch_next_row(): NO MORE ROWS")
+                self.clear_metadata()
+                # 'rows_affected' is nonzero only after all records are read
+                self._rows_affected = dbcount(self.dbproc)
+                if throw:
+                    raise StopIteration
+                return None
 
-        if rtc == NO_MORE_ROWS:
-            self.clear_metadata()
-            # 'rows_affected' is nonzero only after all records are read
-            self._rows_affected = dbcount(self.dbproc)
-            if throw:
-                raise StopIteration
-            return None
-
-        return self.get_row(rtc)
+            return self.get_row(rtc)
+        finally:
+            log("_mssql.MSSQLConnection.fetch_next_row() END")
 
     cdef fetch_next_row_dict(self, int throw):
         cdef int col
@@ -933,22 +939,25 @@ cdef class MSSQLConnection:
         execute_*() function. It returns NULL on error, None on success.
         """
         cdef RETCODE rtc
-        log("_mssql.MSSQLConnection.format_and_run_query()")
+        log("_mssql.MSSQLConnection.format_and_run_query() BEGIN")
 
-        # Cancel any pending results
-        self.cancel()
+        try:
+            # Cancel any pending results
+            self.cancel()
 
-        if params:
-            query_string = self.format_sql_command(query_string, params)
+            if params:
+                query_string = self.format_sql_command(query_string, params)
 
-        log(query_string)
+            log(query_string)
 
-        # Prepare the query buffer
-        dbcmd(self.dbproc, query_string)
+            # Prepare the query buffer
+            dbcmd(self.dbproc, query_string)
 
-        # Execute the query
-        rtc = db_sqlexec(self.dbproc)
-        check_cancel_and_raise(rtc, self)
+            # Execute the query
+            rtc = db_sqlexec(self.dbproc)
+            check_cancel_and_raise(rtc, self)
+        finally:
+            log("_mssql.MSSQLConnection.format_and_run_query() END")
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
@@ -964,55 +973,69 @@ cdef class MSSQLConnection:
         of the data is None, as permitted by the specs.
         """
         cdef int col
-        log("_mssql.MSSQLConnection.get_header()")
-        self.get_result()
+        log("_mssql.MSSQLConnection.get_header() BEGIN")
+        try:
+            self.get_result()
 
-        if self.num_columns == 0:
-            return None
+            if self.num_columns == 0:
+                log("_mssql.MSSQLConnection.get_header(): num_columns == 0")
+                return None
 
-        header_tuple = []
-        for col in xrange(1, self.num_columns + 1):
-            col_name = self.column_names[col - 1]
-            col_type = self.column_types[col - 1]
-            header_tuple.append((col_name, col_type, None, None, None, None, None))
-        return tuple(header_tuple)
+            header_tuple = []
+            for col in xrange(1, self.num_columns + 1):
+                col_name = self.column_names[col - 1]
+                col_type = self.column_types[col - 1]
+                header_tuple.append((col_name, col_type, None, None, None, None, None))
+            return tuple(header_tuple)
+        finally:
+            log("_mssql.MSSQLConnection.get_header() END")
 
     cdef get_result(self):
         cdef int coltype
-        log("_mssql.MSSQLConnection.get_result()")
+        cdef char log_message[200]
 
-        if self.last_dbresults:
-            return None
+        log("_mssql.MSSQLConnection.get_result() BEGIN")
 
-        self.clear_metadata()
+        try:
+            if self.last_dbresults:
+                log("_mssql.MSSQLConnection.get_result(): last_dbresults == True, return None")
+                return None
 
-        # Since python doesn't have a do/while loop do it this way
-        while True:
-            with nogil:
-                self.last_dbresults = dbresults(self.dbproc)
+            self.clear_metadata()
+
+            # Since python doesn't have a do/while loop do it this way
+            while True:
+                with nogil:
+                    self.last_dbresults = dbresults(self.dbproc)
+                self.num_columns = dbnumcols(self.dbproc)
+                if self.last_dbresults != SUCCEED or self.num_columns > 0:
+                    break
+            check_cancel_and_raise(self.last_dbresults, self)
+
+            self._rows_affected = dbcount(self.dbproc)
+
+            if self.last_dbresults == NO_MORE_RESULTS:
+                self.num_columns = 0
+                log("_mssql.MSSQLConnection.get_result(): NO_MORE_RESULTS, return None")
+                return None
+
             self.num_columns = dbnumcols(self.dbproc)
-            if self.last_dbresults != SUCCEED or self.num_columns > 0:
-                break
-        check_cancel_and_raise(self.last_dbresults, self)
 
-        self._rows_affected = dbcount(self.dbproc)
+            sprintf(log_message, "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
+            log(log_message)
 
-        if self.last_dbresults == NO_MORE_RESULTS:
-            self.num_columns = 0
-            return None
+            column_names = list()
+            column_types = list()
 
-        self.num_columns = dbnumcols(self.dbproc)
+            for col in xrange(1, self.num_columns + 1):
+                column_names.append(dbcolname(self.dbproc, col))
+                coltype = dbcoltype(self.dbproc, col)
+                column_types.append(get_api_coltype(coltype))
 
-        column_names = list()
-        column_types = list()
-
-        for col in xrange(1, self.num_columns + 1):
-            column_names.append(dbcolname(self.dbproc, col))
-            coltype = dbcoltype(self.dbproc, col)
-            column_types.append(get_api_coltype(coltype))
-
-        self.column_names = tuple(column_names)
-        self.column_types = tuple(column_types)
+            self.column_names = tuple(column_names)
+            self.column_types = tuple(column_types)
+        finally:
+            log("_mssql.MSSQLConnection.get_result() END")
 
     cdef get_row(self, int row_info):
         cdef DBPROCESS *dbproc = self.dbproc
