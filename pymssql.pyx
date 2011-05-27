@@ -45,6 +45,12 @@ cdef object prog_errors = (
     4104    # multi-part identifier could not be bound
 )
 
+# store a tuple of integrity error codes
+cdef object integrity_errors = (
+    2601,   # violate unique index
+    2627,   # violate UNIQUE KEY constraint
+)
+
 class DBAPIType:
 
     def __init__(self, value):
@@ -371,6 +377,8 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
                 raise ProgrammingError, e[0]
+            if e.number in integrity_errors:
+                raise IntegrityError, e[0]
             raise OperationalError, e[0]
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e[0]
