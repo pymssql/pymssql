@@ -47,6 +47,8 @@ cdef object prog_errors = (
 
 # store a tuple of integrity error codes
 cdef object integrity_errors = (
+    515,    # NULL insert
+    547,    # FK related
     2601,   # violate unique index
     2627,   # violate UNIQUE KEY constraint
 )
