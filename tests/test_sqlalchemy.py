@@ -32,7 +32,7 @@ class SAObj(Base):
 
 saotbl = SAObj.__table__
 
-saotbl.drop(engine)
+saotbl.drop(engine, checkfirst=True)
 saotbl.create(engine)
 
 class TestSA(object):
