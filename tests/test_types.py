@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import decimal
+from decimal import Decimal as D
 from hashlib import md5
 import pickle
 from StringIO import StringIO
@@ -6,7 +8,7 @@ from StringIO import StringIO
 from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 
-from .helpers import drop_table, mssqlconn, clear_table
+from .helpers import drop_table, mssqlconn, clear_table, config
 
 tblsql = """
 CREATE TABLE pymssql (
@@ -23,6 +25,7 @@ CREATE TABLE pymssql (
     data_image image,
     data_binary varbinary(40),
     decimal_no decimal(38,2),
+    decimal_no2 decimal(38,10),
     numeric_no numeric(38,8),
     stamp_time timestamp
 )
@@ -84,3 +87,43 @@ class TestTypes(object):
         self.hasheq(testval, colval)
         tlist = pickle.loads(colval)
         eq_(tlist, [1, 2])
+
+    def test_decimal(self):
+        # test rounding down
+        origval = D('1.2345')
+        expect = D('1.23')
+        colval = self.insert_and_select('decimal_no', origval, 's')
+        self.typeeq(expect, colval)
+        eq_(expect, colval)
+
+    def test_dicimal_context_protection(self):
+        origval = D('1.2345')
+        colval = self.insert_and_select('decimal_no', origval, 's')
+
+        # make sure our manipulation of the decimal values doesn't affect the
+        # default decimal context
+        eq_(decimal.getcontext().prec, config.orig_decimal_prec)
+
+    def test_decimal_rounding_up(self):
+        # test rounding up
+        origval = D('1.235')
+        expect = D('1.24')
+        colval = self.insert_and_select('decimal_no', origval, 's')
+        self.typeeq(expect, colval)
+        eq_(expect, colval)
+
+    def test_decimal_smaller_precision(self):
+        # smaller precision than column
+        origval = D('1.2345')
+        expect = D('1.2345000000')
+        colval = self.insert_and_select('decimal_no2', origval, 's')
+        self.typeeq(expect, colval)
+        eq_(expect, colval)
+
+    def test_numeric(self):
+        # should be handled the same as a decimal column, so only one test
+        origval = D('1.2345')
+        expect = D('1.23450000')
+        colval = self.insert_and_select('numeric_no', origval, 's')
+        self.typeeq(expect, colval)
+        eq_(expect, colval)

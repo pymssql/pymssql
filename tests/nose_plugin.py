@@ -1,3 +1,4 @@
+import decimal
 import ConfigParser
 import os
 
@@ -48,6 +49,7 @@ class ConfigPlugin(Plugin):
         th.config.port = _parser.get(section, 'port')
         th.config.ipaddress = _parser.get(section, 'ipaddress')
         th.config.instance = _parser.get(section, 'instance')
+        th.config.orig_decimal_prec = decimal.getcontext().prec
 
     def begin(self):
         clear_db()

@@ -62,7 +62,6 @@ cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
-cdef object _decimal_context
 cdef bytes HOSTNAME = socket.gethostname()
 
 # List to store the connection objects in
@@ -624,13 +623,12 @@ cdef class MSSQLConnection:
             else:
                 precision = dbcol.Scale
 
-            prevPrecision = _decimal_context.prec
-            _decimal_context.prec = precision
-
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
-            return decimal.Decimal(_remove_locale(buf, len))
+            with decimal.localcontext() as ctx:
+                ctx.prec = precision
+                return decimal.Decimal(_remove_locale(buf, len))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
@@ -1447,7 +1445,7 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, bool):
         return '1' if value else '0'
 
-    if isinstance(value, (int, long, float)):
+    if isinstance(value, (int, long, float, decimal.Decimal)):
         return str(value)
 
     if isinstance(value, str):
@@ -1529,7 +1527,7 @@ cdef _substitute_params(toformat, params, charset):
 
     if not issubclass(type(params),
             (bool, int, long, float, unicode, str,
-            datetime.datetime, datetime.date, dict, tuple)):
+            datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
         raise ValueError("'params' arg can be only a tuple or a dictionary.")
 
     if charset:
@@ -1640,7 +1638,6 @@ def set_max_connections(int limit):
     dbsetmaxprocs(limit)
 
 cdef void init_mssql():
-    global _decimal_context
     cdef RETCODE rtc
     rtc = dbinit()
     if rtc == FAIL:
@@ -1648,7 +1645,5 @@ cdef void init_mssql():
 
     dberrhandle(err_handler)
     dbmsghandle(msg_handler)
-
-    _decimal_context = decimal.getcontext()
 
 init_mssql()
