@@ -31,6 +31,8 @@ Building
 Testing
 =======
 
+*** ALL DATA IN TESTING DBS WILL BE DELETED !!!! ***
+
 You will need to install two additional packages for testing:
 
     easy_install nose SQLAlchemy

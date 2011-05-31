@@ -240,3 +240,24 @@ class CursorBase(DBAPIBase):
         self.conn.commit()
         eq_(self.t1.count(), 3)
         eq_(cur.rowcount, 2)
+
+def clear_db():
+    conn = mssqlconn()
+    mapping = {
+        'P': 'drop procedure [%(name)s]',
+        'C': 'alter table [%(parent_name)s] drop constraint [%(name)s]',
+        ('FN', 'IF', 'TF'): 'drop function [%(name)s]',
+        'V': 'drop view [%(name)s]',
+        'F': 'alter table [%(parent_name)s] drop constraint [%(name)s]',
+        'U': 'drop table [%(name)s]',
+    }
+    delete_sql = []
+    to_repeat_sql = []
+    for type, drop_sql in mapping.iteritems():
+        sql = 'select name, object_name( parent_object_id ) as parent_name '\
+            'from sys.objects where type in (\'%s\')' % '", "'.join(type)
+        conn.execute_query(sql)
+        for row in conn:
+            delete_sql.append(drop_sql % dict(row))
+    for sql in delete_sql:
+        conn.execute_non_query(sql)

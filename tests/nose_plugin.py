@@ -4,7 +4,7 @@ import os
 from nose.plugins import Plugin
 
 import tests.helpers as th
-from .helpers import cfgpath
+from .helpers import cfgpath, clear_db
 
 _parser = ConfigParser.ConfigParser({
     'server': 'localhost',
@@ -48,3 +48,6 @@ class ConfigPlugin(Plugin):
         th.config.port = _parser.get(section, 'port')
         th.config.ipaddress = _parser.get(section, 'ipaddress')
         th.config.instance = _parser.get(section, 'instance')
+
+    def begin(self):
+        clear_db()
