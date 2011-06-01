@@ -29,6 +29,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '.pyrex'))
 
 try:
     from setuptools import setup, Extension
+    from setuptools.command.develop import develop as STDevelopCmd
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
@@ -252,6 +253,12 @@ class release(Command):
         if not url:
             log.error('upload to googlecode failed: %s', reason)
 
+class DevelopCmd(STDevelopCmd):
+    def run(self):
+        # add in the nose plugin only when we are using the develop command
+        self.distribution.entry_points['nose.plugins'] = ['pymssql_config = tests.nose_plugin:ConfigPlugin']
+        STDevelopCmd.run(self)
+
 setup(
     name  = 'pymssql',
     version = '1.9.909',
@@ -264,7 +271,8 @@ setup(
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
-        'release': release
+        'release': release,
+        'develop': DevelopCmd
     },
     data_files = [
         ('', ['_mssql.pyx', 'pymssql.pyx'])
@@ -281,10 +289,9 @@ setup(
                              include_dirs = include_dirs,
                              library_dirs = library_dirs,
                              libraries = libraries)],
-    entry_points = {
-          'nose.plugins': [
-              'pymssql_config = tests.nose_plugin:ConfigPlugin'
-              ]
-          },
+
+    # don't remove this, otherwise the customization above in DevelopCmd
+    # will break.  You can safely add to it though, if needed.
+    entry_points = {}
 
 )
