@@ -63,6 +63,11 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 0' in config_dump
 
+    def test_tds_protocal_version_71(self):
+        config_dump = self.connect(tds_version='7.1')
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 1' in config_dump
+
     def test_tds_protocal_version_80(self):
         # follow-up: turns out 8.0 was erroneous.  MS named the new protocal
         # 7.1 instead of 8.0, so FreeTDS will accept 8.0 but shows as 7.1.

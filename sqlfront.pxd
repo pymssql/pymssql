@@ -97,6 +97,8 @@ cdef extern from "sqlfront.h":
     ## Version Constants ##
     int DBVERSION_42
     int DBVERSION_70
+    int DBVERSION_71
+    int DBVERSION_72
     int DBVERSION_80
 
     ## Type Constants ##

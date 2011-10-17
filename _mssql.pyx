@@ -430,7 +430,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='', database='', appname=None, port='1433', tds_version='8.0'):
+            charset='', database='', appname=None, port='1433', tds_version='7.1'):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -1430,6 +1430,10 @@ cdef int _tds_ver_str_to_constant(bytes verstr) except -1:
         return DBVERSION_42
     if verstr == u'7.0':
         return DBVERSION_70
+    if verstr == u'7.1':
+        return DBVERSION_71
+    if verstr == u'7.2':
+        return DBVERSION_72
     if verstr == u'8.0':
         return DBVERSION_80
     raise MSSQLException('unrecognized tds version: %s' % verstr)
