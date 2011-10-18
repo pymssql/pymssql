@@ -5,4 +5,6 @@ include *.pxd
 include win32/freetds.zip
 recursive-include .pyrex *
 recursive-include nagios-plugin *
-recursive-include tests *
+recursive-include tests *.py
+include tests/tests.cfg.tpl
+recursive-include freetds *
