@@ -8,3 +8,4 @@ dist/*
 tests/tmp
 tests/tests.cfg
 *.so
+dist

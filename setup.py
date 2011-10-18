@@ -39,6 +39,7 @@ from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
 from Cython.Distutils import build_ext as _build_ext
+import struct
 
 _extra_compile_args = [
     '-DMSDBLIB'
@@ -46,6 +47,9 @@ _extra_compile_args = [
 
 ROOT = os.path.dirname(__file__)
 WINDOWS = False
+
+# 32 bit or 64 bit system?
+BITNESS = struct.calcsize("P") * 8
 
 if sys.platform == 'win32':
     WINDOWS = True
@@ -68,22 +72,14 @@ if sys.platform == 'win32':
     _extra_compile_args.append('-Wl,--strip-all')
 
 else:
+    FREETDS = os.path.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
     include_dirs = [
-        '/usr/local/include', '/usr/local/include/freetds',  # first local install
-        '/usr/include', '/usr/include/freetds',   # some generic Linux paths
-        '/usr/include/freetds_mssql',             # some versions of Mandriva
-        '/usr/local/freetds/include',             # FreeBSD
-        '/usr/pkg/freetds/include'	              # NetBSD
+        os.path.join(FREETDS, 'include')
     ]
     library_dirs = [
-        '/usr/local/lib', '/usr/local/lib/freetds',
-        '/usr/lib64',
-        '/usr/lib', '/usr/lib/freetds',
-        '/usr/lib/freetds_mssql',
-        '/usr/local/freetds/lib',
-        '/usr/pkg/freetds/lib'
+        os.path.join(FREETDS, 'lib')
     ]
-    libraries = [ "sybdb" ]   # on Mandriva you may have to change it to sybdb_mssql
+    libraries = [ 'sybdb', 'rt' ]
 
 if sys.platform == 'darwin':
     fink = '/sw/'
@@ -261,7 +257,7 @@ class DevelopCmd(STDevelopCmd):
 
 setup(
     name  = 'pymssql',
-    version = '1.9.909',
+    version = '2.0.0b1',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',
@@ -278,7 +274,7 @@ setup(
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
     zip_safe = False,
-    setup_requires=["Cython>=0.13.1"],
+    setup_requires=["Cython>=0.15.1"],
     ext_modules = [Extension('_mssql', ['_mssql.pyx'],
                              extra_compile_args = _extra_compile_args,
                              include_dirs = include_dirs,
