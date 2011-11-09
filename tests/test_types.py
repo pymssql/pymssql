@@ -80,13 +80,31 @@ class TestTypes(object):
 
     def test_image(self):
         buf = StringIO()
-        pickle.dump([1, 2], buf, -1)
+        longstr = 'a'*4000
+        pickle.dump([1, 2, longstr], buf, -1)
         testval = buf.getvalue()
         colval = self.insert_and_select('data_image', testval, 's')
         self.typeeq(testval, colval)
         self.hasheq(testval, colval)
         tlist = pickle.loads(colval)
-        eq_(tlist, [1, 2])
+        eq_(tlist, [1, 2, longstr])
+
+    def test_image_gt_4KB(self):
+        """
+            test_image_gt_4KB
+
+            By default, SQL server sets TEXTSIZE = 4096 bytes.  We up that by
+            default and want to make sure it applies.
+        """
+        buf = StringIO()
+        longstr = 'a'*5000
+        pickle.dump([1, 2, longstr], buf, -1)
+        testval = buf.getvalue()
+        colval = self.insert_and_select('data_image', testval, 's')
+        self.typeeq(testval, colval)
+        self.hasheq(testval, colval)
+        tlist = pickle.loads(colval)
+        eq_(tlist, [1, 2, longstr])
 
     def test_decimal(self):
         # test rounding down

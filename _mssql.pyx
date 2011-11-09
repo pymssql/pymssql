@@ -512,7 +512,9 @@ cdef class MSSQLConnection:
             "SET ANSI_WARNINGS ON;"             \
             "SET ANSI_NULL_DFLT_ON ON;"         \
             "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"
+            "SET QUOTED_IDENTIFIER ON;"         \
+            # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+            "SET TEXTSIZE 2147483647;"
         )
 
         rtc = dbsqlexec(self.dbproc)
