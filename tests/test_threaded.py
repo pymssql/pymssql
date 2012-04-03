@@ -8,8 +8,6 @@ import _mssql
 
 from .helpers import mssqlconn
 
-raise SkipTest # threading tests cause python to crash
-
 class TestingThread(threading.Thread):
 
     def run(self):
