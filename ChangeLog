@@ -15,6 +15,7 @@ Change Log
     - bug: fix pymssql.DBAPIType so that comparisons work as expected
     - bug: fetch*() functions would erroneously raise OperationalError when rows exhausted
     - bug #47: fix threaded tests crashing
+    - bug #79: fix prevision problem with floats (dieterv77)
 
 Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:

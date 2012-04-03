@@ -145,3 +145,13 @@ class TestTypes(object):
         colval = self.insert_and_select('numeric_no', origval, 's')
         self.typeeq(expect, colval)
         eq_(expect, colval)
+
+    def test_float_precision(self):
+        #origval and expect are not exactly the same, but they test
+        # equal and that is what we are getting at,  They should have
+        # the same value out to the 16th digit.
+        origval = 1.23456789012345670
+        expect = 1.23456789012345671
+        colval = self.insert_and_select('float_no', origval, 's')
+        self.typeeq(expect, colval)
+        eq_(expect, colval)

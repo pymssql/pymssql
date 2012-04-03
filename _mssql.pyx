@@ -615,7 +615,7 @@ cdef class MSSQLConnection:
             return float(<float>(<DBREAL *>data)[0])
 
         elif type == SQLFLT8:
-            return float(<float>(<DBFLT8 *>data)[0])
+            return float(<double>(<DBFLT8 *>data)[0])
 
         elif type in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
             dbcol.SizeOfStruct = sizeof(dbcol)
@@ -1451,7 +1451,10 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, bool):
         return '1' if value else '0'
 
-    if isinstance(value, (int, long, float, decimal.Decimal)):
+    if isinstance(value, float):
+        return repr(value)
+
+    if isinstance(value, (int, long, decimal.Decimal)):
         return str(value)
 
     if isinstance(value, str):
