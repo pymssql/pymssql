@@ -3,6 +3,8 @@ Change Log
 
 <next release> - <release date>
 -------------------------------
+    + feature: put compiled FreeTDS for Windows in pymmsql source, add build
+	instructions to README, better Visual Studio support (#61)
     + feature: support hostname, port, tds_version connect params without freetds.config
     + feature: make pymssql.Cursor.rownumber give accurate results for executemany()
     + feature: bundle FreeTDS libraries & use static libary includes to avoid

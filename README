@@ -1,32 +1,107 @@
 Building
 ========
 
-	Windows
-	=======
+    To build pymssql you should have:
 
-	To build pymssql on Windows you firstly must have:
+        * python >= 2.5 (including development files, i.e. pyton-dev packages)
+        * Cython >= 0.15
+        * FreeTDS >= 0.91
 
-		* MinGW
-            * If you wish to use Visual C++ >= 2005 (or some equivalent compiler) then you will have
-              to compile FreeTDS yourself.
-		* Python >= 2.5 (From the Python website)
-		* Cython >= 0.13
+    MinGW
+    =====
 
-	and then you can simple run:
+    Add to the above requirements:
 
-		python setup.py build
+        * MinGW
 
-	which will build pymssql in the normal python fashion.
+    then you can run:
 
-	Unix
-	====
+        python setup.py build -c mingw32
 
-	To build on Unix you must have:
+    which will build pymssql in the normal python fashion.
 
-		* gcc
-		* python-dev >= 2.5
-		* Cython >= 0.13
-		* FreeTDS >= 0.82
+    MS Visual C++
+    =============
+
+    Environment Setup:
+    ------------------
+
+        The commands below should be ran inside a Visual Studio command prompt
+        or a command prompt window where the vcsvars*.bat file has been previously
+        run so it can set the needed environment vars.
+
+    Building FreeTDS:
+    -----------------
+
+        Build FreeTDS from the current or stable tarball:
+
+        http://ibiblio.org/pub/Linux/ALPHA/freetds/current/
+        http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/
+
+        Use nmake (included with VS C++) to build FreeTDS.  To do that,
+
+        Define in the environment or on the command line:
+
+              1. CONFIGURATION = debug/release
+              2. PLATFORM = win32/x64
+
+            These will determine what is built and where outputs are placed.
+
+            Example invocations:
+
+                nmake.exe -f Nmakefile -nologo PLATFORM=win32 CONFIGURATION=debug
+                nmake.exe -f Nmakefile -nologo build-win32d
+
+        Fixing build errors:  I ran into a couple build errors when using VS 2008, see
+        the following links for resolutions.
+
+        http://www.freetds.org/userguide/osissues.htm
+        http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
+
+        When this is done, the follwing files should be available (dependening on
+        CONFIGURATION and PLATFORM) used above:
+
+        src\dblib\<PLATFORM>\<CONFIGURATION>\db-lib.lib
+        src\tds\<PLATFORM>\<CONFIGURATION>\tds.lib
+
+        for example:
+
+        src\dblib\win32\release\db-lib.lib
+        src\dblib\win32\release\tds.lib
+
+        Those files should then be copied to:
+
+        <pymssql root>\freetds\vs2008_<bitness>\lib\
+
+        for example:
+
+        <pymssql root>\freetds\vs2008_32\lib\
+        <pymssql root>\freetds\vs2008_64\lib\
+
+        The location obviously depends on whether you are wanting a 32 or 64 bit
+        build.
+
+        *NOTE*: This process is currently only tested with Visual Studio 2008 targeting a
+        32-bit build.  If you run into problems, please post to the mailing list.
+
+        Then you can simply run:
+
+            python setup.py build
+
+        or other setup.py commands as needed.
+
+    Unix
+    ====
+
+        To build on Unix you must also have:
+
+            * gcc
+
+        Then you can simply run:
+
+            python setup.py build
+
+        or other setup.py commands as needed.
 
 Testing
 =======

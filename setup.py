@@ -22,10 +22,11 @@
 #
 
 import os
+import os.path as osp
 import sys
 import getpass
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '.pyrex'))
+sys.path.append(osp.join(osp.dirname(__file__), '.pyrex'))
 
 try:
     from setuptools import setup, Extension
@@ -45,7 +46,7 @@ _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
-ROOT = os.path.dirname(__file__)
+ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 
 # 32 bit or 64 bit system?
@@ -53,31 +54,15 @@ BITNESS = struct.calcsize("P") * 8
 
 if sys.platform == 'win32':
     WINDOWS = True
-    WIN32 = os.path.join(ROOT, 'win32')
-    FREETDS = os.path.join(WIN32, 'freetds')
-    include_dirs = [os.path.join(FREETDS, 'include')]
-    library_dirs = [os.path.join(FREETDS, 'lib')]
-    libraries = [
-        'libiconv',
-        'iconv',
-        'sybdb',
-        'ws2_32',
-        'wsock32',
-        'kernel32',
-    ]
-
-    _extra_compile_args.append('-Wl,-allow-multiple-definition')
-    _extra_compile_args.append('-Wl,-subsystem,windows-mthreads')
-    _extra_compile_args.append('-mwindows')
-    _extra_compile_args.append('-Wl,--strip-all')
-
+    include_dirs = []
+    library_dirs = []
 else:
-    FREETDS = os.path.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+    FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
     include_dirs = [
-        os.path.join(FREETDS, 'include')
+        osp.join(FREETDS, 'include')
     ]
     library_dirs = [
-        os.path.join(FREETDS, 'lib')
+        osp.join(FREETDS, 'lib')
     ]
     libraries = [ 'sybdb', 'rt' ]
 
@@ -104,28 +89,53 @@ class build_ext(_build_ext):
     hasn't already been done.
     """
 
-    def run(self):
-        # Not running on windows means we don't want to do this
-        if not WINDOWS:
-            return _build_ext.run(self)
+    def build_extensions(self):
+        global library_dirs, include_dirs
 
-
-        if os.path.isdir(FREETDS):
-            return _build_ext.run(self)
-
-        log.info('extracting FreeTDS')
-        from zipfile import ZipFile
-        zip_file = ZipFile(os.path.join(WIN32, 'freetds.zip'))
-        for name in zip_file.namelist():
-            dest = os.path.normpath(os.path.join(WIN32, name))
-            if name.endswith('/'):
-                os.makedirs(dest)
+        if WINDOWS:
+            # Detect the compiler so we can specify the correct command line switches
+            # and libraries
+            from distutils.cygwinccompiler import Mingw32CCompiler
+            extra_cc_args = []
+            # Distutils bug: self.compiler can be a string or a CCompiler
+            # subclass instance, see http://bugs.python.org/issue6377
+            if isinstance(self.compiler, str):
+                compiler = self.compiler
+            elif isinstance(self.compiler, Mingw32CCompiler):
+                compiler = 'mingw32'
+                freetds_dir = 'ming'
+                extra_cc_args = [
+                    '-Wl,-allow-multiple-definition',
+                    '-Wl,-subsystem,windows-mthreads',
+                    '-mwindows',
+                    '-Wl,--strip-all'
+                ]
+                libraries = [
+                    'libiconv', 'iconv',
+                    'sybdb',
+                    'ws2_32', 'wsock32', 'kernel32',
+                ]
             else:
-                f = open(dest, 'wb')
-                f.write(zip_file.read(name))
-                f.close()
-        zip_file.close()
-        return _build_ext.run(self)
+                compiler = 'msvc'
+                freetds_dir = 'vs2008'
+                libraries = [
+                    'db-lib', 'tds',
+                    'ws2_32', 'wsock32', 'kernel32', 'shell32',
+                ]
+
+            FREETDS = osp.join(ROOT, 'freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            for e in self.extensions:
+                e.extra_compile_args.extend(extra_cc_args)
+                e.libraries.extend(libraries)
+                e.include_dirs.append(osp.join(FREETDS, 'include'))
+                e.library_dirs.append(osp.join(FREETDS, 'lib'))
+                print e.include_dirs
+
+        else:
+            libraries = [ "sybdb" ]   # on Mandriva you may have to change it to sybdb_mssql
+            for e in self.extensions:
+                e.libraries.extend(libraries)
+        _build_ext.build_extensions(self)
 
 class clean(_clean):
     """
@@ -138,18 +148,18 @@ class clean(_clean):
             cy_sources = [s for s in ext.sources if s.endswith('.pyx')]
             for cy_source in cy_sources:
                 c_source = cy_source[:-3] + 'c'
-                if os.path.exists(c_source):
+                if osp.exists(c_source):
                     log.info('removing %s', c_source)
                     os.remove(c_source)
                 so_built = cy_source[:-3] + 'so'
-                if os.path.exists(so_built):
+                if osp.exists(so_built):
                     log.info('removing %s', so_built)
                     os.remove(so_built)
 
         # Check if we need to remove the freetds directory
         if WINDOWS:
             # If the directory exists, remove it
-            if os.path.isdir(FREETDS):
+            if osp.isdir(FREETDS):
                 import shutil
                 shutil.rmtree(FREETDS)
 
@@ -243,7 +253,7 @@ class release(Command):
             username = self.username
             password = self.password
 
-        filename = os.path.join('dist', filename)
+        filename = osp.join('dist', filename)
         log.info('uploading %s to googlecode', filename)
         (status, reason, url) = upload(filename, 'pymssql', username, password, comment)
         if not url:
@@ -275,16 +285,18 @@ setup(
     ],
     zip_safe = False,
     setup_requires=["Cython>=0.15.1"],
-    ext_modules = [Extension('_mssql', ['_mssql.pyx'],
-                             extra_compile_args = _extra_compile_args,
-                             include_dirs = include_dirs,
-                             library_dirs = library_dirs,
-                             libraries = libraries),
-                   Extension('pymssql', ['pymssql.pyx'],
-                             extra_compile_args = _extra_compile_args,
-                             include_dirs = include_dirs,
-                             library_dirs = library_dirs,
-                             libraries = libraries)],
+    ext_modules = [
+        Extension('_mssql', ['_mssql.pyx'],
+            extra_compile_args = _extra_compile_args,
+            include_dirs = include_dirs,
+            library_dirs = library_dirs
+        ),
+        Extension('pymssql', ['pymssql.pyx'],
+            extra_compile_args = _extra_compile_args,
+            include_dirs = include_dirs,
+            library_dirs = library_dirs
+        ),
+    ],
 
     # don't remove this, otherwise the customization above in DevelopCmd
     # will break.  You can safely add to it though, if needed.
