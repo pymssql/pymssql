@@ -1492,15 +1492,15 @@ cdef _quote_or_flatten(data, charset='utf8'):
     if not issubclass(type(data), (list, tuple)):
         raise ValueError('expected a simple type, a tuple or a list')
 
-    string = ''
+    quoted = []
     for value in data:
         value = _quote_simple_value(value, charset)
 
         if value is None:
             raise ValueError('found an unsupported type')
 
-        string += '%s,' % value
-    return string[:-1]
+        quoted.append(value)
+    return '(' + ','.join(quoted) + ')'
 
 # This function is supposed to take a simple value, tuple or dictionary,
 # normally passed in via the params argument in the execute_* methods. It

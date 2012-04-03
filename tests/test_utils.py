@@ -26,11 +26,15 @@ class TestParameterSub(object):
         eq_(res, sql)
 
     def test_tuple_with_in(self):
-        res = _mssql.substitute_params('SELECT * FROM empl WHERE id IN (%s)', ((5, 6),))
+        res = _mssql.substitute_params('SELECT * FROM empl WHERE id IN %s', ((5, 6),))
         eq_(res, "SELECT * FROM empl WHERE id IN (5,6)")
 
-        res = _mssql.substitute_params('SELECT * FROM empl WHERE id IN (%s)', (('foo', 'bar'),))
+        res = _mssql.substitute_params('SELECT * FROM empl WHERE id IN %s', (('foo', 'bar'),))
         eq_(res, "SELECT * FROM empl WHERE id IN ('foo','bar')")
+
+        # single item
+        res = _mssql.substitute_params('SELECT * FROM empl WHERE id IN %s', (('foo',),))
+        eq_(res, "SELECT * FROM empl WHERE id IN ('foo')")
 
     def test_percent_in_param(self):
         res = _mssql.substitute_params('SELECT * FROM empl WHERE name LIKE %s', 'J%')
@@ -59,7 +63,7 @@ class TestParameterSub(object):
 
     def test_single_and_tuple(self):
         res = _mssql.substitute_params(
-                'SELECT * FROM cust WHERE salesrep=%s AND id IN (%s)',
+                'SELECT * FROM cust WHERE salesrep=%s AND id IN %s',
                 ('John Doe', (1, 2, 3))
             )
         eq_(res, "SELECT * FROM cust WHERE salesrep='John Doe' AND id IN (1,2,3)")
