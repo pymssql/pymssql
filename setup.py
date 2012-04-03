@@ -129,7 +129,6 @@ class build_ext(_build_ext):
                 e.libraries.extend(libraries)
                 e.include_dirs.append(osp.join(FREETDS, 'include'))
                 e.library_dirs.append(osp.join(FREETDS, 'lib'))
-                print e.include_dirs
 
         else:
             libraries = [ "sybdb" ]   # on Mandriva you may have to change it to sybdb_mssql
