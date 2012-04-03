@@ -9,3 +9,4 @@ tests/tmp
 tests/tests.cfg
 *.so
 dist
+*.pyd
