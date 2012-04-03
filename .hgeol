@@ -1,0 +1,28 @@
+[patterns]
+**.html_tmpl = native
+**.css = native
+**.js = native
+**.py = native
+**.txt = native
+**.html = native
+**.py_tmpl = native
+**.cfg = native
+**.in_tmpl = native
+**.tpl = native
+MANIFEST.in = native
+**.sql = native
+**.php = native
+**.xml = native
+**.yaml = native
+**.bat = native
+**.ini = native
+**.c = native
+**.mako = native
+**.rst = native
+**.dtd = native
+**.xsl = native
+**.log = native
+
+
+[eol]
+only-consistent = False
