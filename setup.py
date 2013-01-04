@@ -39,8 +39,11 @@ except ImportError:
 from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
+from distutils import ccompiler
 from Cython.Distutils import build_ext as _build_ext
 import struct
+
+compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
     '-DMSDBLIB'
@@ -64,7 +67,9 @@ else:
     library_dirs = [
         osp.join(FREETDS, 'lib')
     ]
-    libraries = [ 'sybdb', 'rt' ]
+    libraries = [ 'sybdb' ]
+    if compiler.has_function('clock_gettime', libraries=['rt']):
+        libraries.append('rt')
 
 if sys.platform == 'darwin':
     fink = '/sw/'
@@ -90,7 +95,7 @@ class build_ext(_build_ext):
     """
 
     def build_extensions(self):
-        global library_dirs, include_dirs
+        global library_dirs, include_dirs, libraries
 
         if WINDOWS:
             # Detect the compiler so we can specify the correct command line switches
@@ -131,7 +136,6 @@ class build_ext(_build_ext):
                 e.library_dirs.append(osp.join(FREETDS, 'lib'))
 
         else:
-            libraries = [ "sybdb" ]   # on Mandriva you may have to change it to sybdb_mssql
             for e in self.extensions:
                 e.libraries.extend(libraries)
         _build_ext.build_extensions(self)
