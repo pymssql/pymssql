@@ -36,6 +36,12 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
 
+#
+# Force `setup_requires` stuff like Cython to be installed before proceeding
+#
+from setuptools.dist import Distribution
+Distribution(dict(setup_requires='Cython>=0.13.1'))
+
 from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
