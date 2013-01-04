@@ -11,3 +11,4 @@ tests/tests.cfg
 dist
 *.pyd
 *.swp
+*.egg
