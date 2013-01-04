@@ -10,3 +10,4 @@ tests/tests.cfg
 *.so
 dist
 *.pyd
+*.swp
