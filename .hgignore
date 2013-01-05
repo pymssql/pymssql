@@ -12,3 +12,4 @@ dist
 *.pyd
 *.swp
 *.egg
+.tox
