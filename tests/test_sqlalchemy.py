@@ -44,27 +44,6 @@ class TestSA(object):
         sess.execute(SAObj.__table__.delete())
         sess.commit()
 
-    def test_long_identifiers(self):
-
-        class LongIdent(Base):
-            """
-                This test definition will cause the tests to fail until the line:
-
-                max_identifier_length = 30
-
-                is removed from:
-
-                sqlalchemy.dialects.mssql.pymssql
-            """
-            __tablename__ = 'sa_test_long_idents_greater_than_30_chars_bc_of_old_pymssql_limit'
-            id = sa.Column(sa.Integer, primary_key=True)
-            name = sa.Column(sa.String(50))
-        try:
-            LongIdent.__table__.create(engine)
-            assert False, 'SQLALchemy is no longer limiting identifier lengths!'
-        except sa.exc.IdentifierError:
-            pass
-
     def test_basic_usage(self):
         s = SAObj(name='foobar')
         sess.add(s)
