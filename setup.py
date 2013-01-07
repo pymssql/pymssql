@@ -66,7 +66,10 @@ if sys.platform == 'win32':
     include_dirs = []
     library_dirs = []
 else:
-    FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+    if sys.platform == 'darwin':
+        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+    else:
+        FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
     include_dirs = [
         osp.join(FREETDS, 'include')
     ]
