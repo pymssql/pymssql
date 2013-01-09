@@ -1548,6 +1548,9 @@ cdef _substitute_params(toformat, params, charset):
     if isinstance(quoted, basestring):
         quoted = (quoted,)
 
+    if isinstance(toformat, unicode):
+        toformat = toformat.encode(charset)
+
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
