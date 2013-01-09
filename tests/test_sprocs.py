@@ -6,7 +6,7 @@ from nose.tools import eq_
 
 import _mssql
 
-from .helpers import mssqlconn
+from .helpers import mssqlconn, pymssqlconn
 
 FIXED_TYPES = (
     'BigInt',
@@ -133,6 +133,137 @@ class TestFixedTypeConversion(object):
         proc.bind(None, _mssql.SQLINT1, '@otinyint', output=True)
         proc.execute()
         eq_(input, proc.parameters['@otinyint'])
+
+class TestCallProcFancy(object):
+    # "Fancy" because we test some exotic cases like passing None or Unicode
+    # strings to a called procedure
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        cursor = self.pymssql.cursor()
+
+        cursor.execute("""
+        CREATE PROCEDURE [dbo].[someProcWithOneParam]
+        	@some_arg NVARCHAR(64)
+        AS
+        BEGIN
+        	SELECT @some_arg + N'!', N'%(str1)s ' + @some_arg + N' %(str2)s'
+        END
+        """ % {
+            'str1': u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439'.encode('utf-8'),
+            'str2': u'\u041c\u0438\u0440'.encode('utf-8'),
+        }
+        )
+
+    def tearDown(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute('DROP PROCEDURE [dbo].[someProcWithOneParam]')
+        self.pymssql.close()
+
+    def testCallProcWithNone(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'someProcWithOneParam',
+            (None,))
+
+        # For some reason, fetchone doesn't work
+        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
+        # a, b = cursor.fetchone()
+
+        for a, b in cursor:
+            eq_(a, None)
+            eq_(b, None)
+
+    def testCallProcWithAsciiString(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'someProcWithOneParam',
+            ('hello',))
+
+        # For some reason, fetchone doesn't work
+        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
+        # a, b = cursor.fetchone()
+
+        for a, b in cursor:
+            eq_(a, 'hello!')
+            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+
+    def testCallProcWithUnicodeStringWithNoFunnyCharacters(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'someProcWithOneParam',
+            (u'hello',))
+
+        # For some reason, fetchone doesn't work
+        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
+        # a, b = cursor.fetchone()
+
+        for a, b in cursor:
+            eq_(a, u'hello!')
+            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+
+    # This is failing for me - the Unicode params somehow gets rendered to a
+    # blank string. I am not sure if this is another bug or a user error on my
+    # part...?
+    #
+    def testCallProcWithUnicodeStringWithRussianCharacters(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'someProcWithOneParam',
+            (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',))  # Russian string
+
+        # For some reason, fetchone doesn't work
+        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
+        # a, b = cursor.fetchone()
+
+        for a, b in cursor:
+            eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
+            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
+
+    def testExecuteWithNone(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute(
+            u'someProcWithOneParam %s',
+            (None,))  # Russian string
+
+        a, b = cursor.fetchone()
+
+        eq_(a, None)
+        eq_(b, None)
+
+    def testExecuteWithAsciiString(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute(
+            u'someProcWithOneParam %s',
+            ('hello',))  # Russian string
+
+        a, b = cursor.fetchone()
+
+        eq_(a, 'hello!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+
+    def testExecuteWithUnicodeStringWithNoFunnyCharacters(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute(
+            u'someProcWithOneParam %s',
+            (u'hello',))  # Russian string
+
+        a, b = cursor.fetchone()
+
+        eq_(a, u'hello!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+
+    def testExecuteWithUnicodeWithRussianCharacters(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute(
+            u'someProcWithOneParam %s',
+            (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',))  # Russian string
+
+        a, b = cursor.fetchone()
+
+        eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
+
 
 class TestStringTypeConversion(object):
 

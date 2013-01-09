@@ -78,11 +78,14 @@ DECIMAL = DBAPIType(_mssql.DECIMAL)
 cdef dict DBTYPES = {
     'bool': _mssql.SQLBITN,
     'str': _mssql.SQLVARCHAR,
+    'unicode': _mssql.SQLVARCHAR,
     'int': _mssql.SQLINTN,
     'long': _mssql.SQLINT8,
     'Decimal': _mssql.SQLDECIMAL,
     'datetime': _mssql.SQLDATETIME,
-    'date': _mssql.SQLDATETIME
+    'date': _mssql.SQLDATETIME,
+    #Dump type for work vith None
+    'NoneType': _mssql.SQLVARCHAR,
 }
 
 # exception hierarchy
@@ -351,7 +354,7 @@ cdef class Cursor:
                 type_name = param_type.__name__
                 db_type = DBTYPES[type_name]
             except (AttributeError, KeyError):
-                raise NotSupportedError('Unable to determine database type')
+                raise NotSupportedError('Unable to determine database type from python %s type' % type_name)
 
             proc.bind(param_value, db_type, output=param_output)
         self._returnvalue = proc.execute()
