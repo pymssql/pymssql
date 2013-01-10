@@ -224,6 +224,12 @@ class CursorBase(DBAPIBase):
         cur.fetchall()
         eq_(cur.rowcount, 5)
 
+    def test_as_dict(self):
+        # test for http://code.google.com/p/pymssql/issues/detail?id=92
+        cur = self.conn.cursor(as_dict=True)
+        cur.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
+        eq_(cur.fetchall(), [{'first_name': u'foo', 'last_name': u'bar'}])
+
     def test_fetchmany(self):
         cur = self.conn.cursor()
         cur.execute('select * from test')

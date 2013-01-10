@@ -119,6 +119,10 @@ class ProgrammingError(DatabaseError):
 class NotSupportedError(DatabaseError):
     pass
 
+def row2dict(row):
+    """Filter dict so it only has string keys; used when as_dict == True"""
+    return dict([(k, v) for k, v in row.items() if hasattr(k, 'startswith')])
+
 # stored procedure output parameter
 cdef class output:
 
@@ -420,7 +424,7 @@ cdef class Cursor:
         row = iter(self._source._conn).next()
         self._rownumber = self._source._conn.rows_affected
         if self.as_dict:
-            return row
+            return row2dict(row)
         return tuple([row[r] for r in sorted(row) if type(r) == int])
 
     def fetchone(self):
@@ -464,7 +468,7 @@ cdef class Cursor:
 
         try:
             if self.as_dict:
-                rows = [row for row in self._source._conn]
+                rows = [row2dict(row) for row in self._source._conn]
             else:
                 rows = [tuple([row[r] for r in sorted(row.keys()) if \
                         type(r) == int]) for row in self._source._conn]
