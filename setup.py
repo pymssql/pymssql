@@ -35,6 +35,7 @@ except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
+    from setuptools.command.develop import develop as STDevelopCmd
 
 # Work around Setuptools' broken (Cython-unaware) monkeypatching
 # to support Pyrex. This monkeypatching makes the Cython step get skipped if
