@@ -1146,7 +1146,7 @@ cdef class MSSQLStoredProcedure:
         cdef RETCODE rtc
         log("_mssql.MSSQLStoredProcedure.__init__()")
 
-        # We firstly want to check if tdsver is >= 8 as anything less
+        # We firstly want to check if tdsver is >= 7 as anything less
         # doesn't support remote procedure calls.
         if connection.tds_version < 7:
             raise MSSQLDriverException("Stored Procedures aren't "
