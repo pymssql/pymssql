@@ -53,7 +53,7 @@ class TestConfig(object):
         # the DB in the config dump for debugging purposes
         raise SkipTest # test_dbsetldbname
 
-    def test_tds_protocal_version_42(self):
+    def test_tds_protocol_version_42(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='4.2'
@@ -61,7 +61,7 @@ class TestConfig(object):
         assert 'major_version = 4' in config_dump
         assert 'minor_version = 2' in config_dump
 
-    def test_tds_protocal_version_70(self):
+    def test_tds_protocol_version_70(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.0'
@@ -69,7 +69,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 0' in config_dump
 
-    def test_tds_protocal_version_71(self):
+    def test_tds_protocol_version_71(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.1'
@@ -77,11 +77,11 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
-    def test_tds_protocal_version_80(self):
-        # follow-up: turns out 8.0 was erroneous.  MS named the new protocal
+    def test_tds_protocol_version_80(self):
+        # follow-up: turns out 8.0 was erroneous.  MS named the new protocol
         # 7.1 instead of 8.0, so FreeTDS will accept 8.0 but shows as 7.1.
         # got that from the FreeTDS mailling list.  New FreeTDS docs,built from
-        # source, have a page that describes the protocal and that page lists
+        # source, have a page that describes the protocol and that page lists
         # versions 7.0, 7.1, and 7.2 among others.
 
         config_dump = self.connect(
@@ -91,7 +91,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
-    def test_tds_protocal_version_invalid(self):
+    def test_tds_protocol_version_invalid(self):
         try:
             self.connect(tds_version='1.0')
             assert False
