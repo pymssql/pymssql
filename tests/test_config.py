@@ -54,17 +54,26 @@ class TestConfig(object):
         raise SkipTest # test_dbsetldbname
 
     def test_tds_protocal_version_42(self):
-        config_dump = self.connect(tds_version='4.2')
+        config_dump = self.connect(
+            server='dontnameyourserverthis',
+            tds_version='4.2'
+            )
         assert 'major_version = 4' in config_dump
         assert 'minor_version = 2' in config_dump
 
     def test_tds_protocal_version_70(self):
-        config_dump = self.connect(tds_version='7.0')
+        config_dump = self.connect(
+            server='dontnameyourserverthis',
+            tds_version='7.0'
+            )
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 0' in config_dump
 
     def test_tds_protocal_version_71(self):
-        config_dump = self.connect(tds_version='7.1')
+        config_dump = self.connect(
+            server='dontnameyourserverthis',
+            tds_version='7.1'
+            )
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
@@ -75,7 +84,10 @@ class TestConfig(object):
         # source, have a page that describes the protocal and that page lists
         # versions 7.0, 7.1, and 7.2 among others.
 
-        config_dump = self.connect(tds_version='8.0')
+        config_dump = self.connect(
+            server='dontnameyourserverthis',
+            tds_version='8.0'
+            )
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
