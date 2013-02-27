@@ -101,15 +101,19 @@ class ThreadedTests(unittest.TestCase):
                     break
 
     def testErrorSprocThreadedUse(self):
-        raise SkipTest # currently, this throws the error: There is already an object named 'pymssqlErrorThreadTest' in the database.DB-Lib error message 2714
+        spname = 'pymssqlErrorThreadTest'
         mssql = mssqlconn()
+        try:
+            mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
+        except:
+            pass
         mssql.execute_non_query("""
-        CREATE PROCEDURE [dbo].[pymssqlErrorThreadTest]
+        CREATE PROCEDURE [dbo].[%s]
         AS
         BEGIN
             SELECT unknown_column FROM unknown_table;
         END
-        """)
+        """ % spname)
 
         threads = []
         for i in xrange(0, 5):
@@ -128,7 +132,7 @@ class ThreadedTests(unittest.TestCase):
                         running = True
                         break
         finally:
-            mssql.execute_non_query("DROP PROCEDURE [dbo].[pymssqlThreadTest]")
+            mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
             mssql.close()
 
 suite = unittest.TestSuite()
