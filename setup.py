@@ -89,7 +89,7 @@ else:
     library_dirs = [
         osp.join(FREETDS, 'lib')
     ]
-    libraries = [ 'sybdb' ]
+    libraries = [ 'sybdb', 'ct' ]
     if compiler.has_function('clock_gettime', libraries=['rt']):
         libraries.append('rt')
 

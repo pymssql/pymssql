@@ -579,3 +579,23 @@ def set_max_connections(int limit):
     :type limit: int
     """
     _mssql.set_max_connections(limit)
+
+cdef extern from "ctpublic.h":
+    ctypedef int      CS_INT
+    ctypedef void     CS_VOID
+    struct            CS_CONTEXT
+    ctypedef CS_INT   CS_RETCODE
+
+    int CS_GET, CS_VERSION
+
+    CS_RETCODE ct_config(CS_CONTEXT * ctx, CS_INT action, CS_INT property,
+                         CS_VOID * buffer, CS_INT buflen, CS_INT * outlen)
+
+def get_freetds_version():
+    cdef CS_CONTEXT *ctx
+    cdef char buf[256]
+    cdef int outlen
+
+    ret = ct_config(ctx, CS_GET, CS_VERSION, buf, 256, &outlen)
+    return buf
+
