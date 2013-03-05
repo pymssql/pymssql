@@ -596,7 +596,7 @@ cdef extern from "ctpublic.h":
                          CS_VOID * buffer, CS_INT buflen, CS_INT * outlen)
 
 def get_freetds_version():
-    cdef CS_CONTEXT *ctx
+    cdef CS_CONTEXT *ctx = NULL
     cdef char buf[256]
     cdef int outlen
 
