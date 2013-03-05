@@ -586,7 +586,8 @@ cdef extern from "sybdb.h":
 cdef extern from "ctpublic.h":
     ctypedef int      CS_INT
     ctypedef void     CS_VOID
-    struct            CS_CONTEXT
+    struct            _CS_CONTEXT
+    ctypedef _CS_CONTEXT CS_CONTEXT
     ctypedef CS_INT   CS_RETCODE
 
     int CS_GET, CS_VERSION
