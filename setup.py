@@ -80,36 +80,40 @@ if sys.platform == 'win32':
     include_dirs = []
     library_dirs = []
 else:
+    include_dirs = []
+    library_dirs = []
+
     if sys.platform == 'darwin':
         FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
     else:
         FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
-    include_dirs = [
-        osp.join(FREETDS, 'include')
-    ]
-    library_dirs = [
-        osp.join(FREETDS, 'lib')
-    ]
+
+    if osp.exists(FREETDS):
+        include_dirs.append(osp.join(FREETDS, 'include'))
+        library_dirs.append(osp.join(FREETDS, 'lib'))
+
     libraries = [ 'sybdb', 'ct' ]
     if compiler.has_function('clock_gettime', libraries=['rt']):
         libraries.append('rt')
 
 if sys.platform == 'darwin':
     fink = '/sw/'
-    include_dirs.insert(0, fink + 'include')
-    library_dirs.insert(0, fink + 'lib')
+    if osp.exists(fink):
+        include_dirs.insert(0, fink + 'include')
+        library_dirs.insert(0, fink + 'lib')
 
-    # some mac ports paths
-    include_dirs += [
-        '/opt/local/include',
-        '/opt/local/include/freetds',
-        '/opt/local/freetds/include'
-    ]
-    library_dirs += [
-        '/opt/local/lib',
-        '/opt/local/lib/freetds',
-        '/opt/local/freetds/lib'
-    ]
+    if osp.exists('/opt/local'):
+        # some mac ports paths
+        include_dirs += [
+            '/opt/local/include',
+            '/opt/local/include/freetds',
+            '/opt/local/freetds/include'
+        ]
+        library_dirs += [
+            '/opt/local/lib',
+            '/opt/local/lib/freetds',
+            '/opt/local/freetds/lib'
+        ]
 
 class build_ext(_build_ext):
     """
