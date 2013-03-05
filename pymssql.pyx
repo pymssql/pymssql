@@ -580,6 +580,9 @@ def set_max_connections(int limit):
     """
     _mssql.set_max_connections(limit)
 
+cdef extern from "sybdb.h":
+    char *dbversion()
+
 cdef extern from "ctpublic.h":
     ctypedef int      CS_INT
     ctypedef void     CS_VOID
@@ -599,3 +602,5 @@ def get_freetds_version():
     ret = ct_config(ctx, CS_GET, CS_VERSION, buf, 256, &outlen)
     return buf
 
+def get_dbversion():
+    return dbversion()
