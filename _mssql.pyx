@@ -165,9 +165,8 @@ min_error_severity = 6
 DEF NUMERIC_BUF_SZ = 45
 
 cdef void log(char * message, ...):
-    if PYMSSQL_DEBUG != 1:
-        return
-    fprintf(stderr, "+++ %s\n", message)
+    if PYMSSQL_DEBUG == 1:
+        fprintf(stderr, "+++ %s\n", message)
 
 ###################
 ## Error Handler ##
