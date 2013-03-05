@@ -414,8 +414,6 @@ cdef class Cursor:
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e[0]
 
-        return None
-
     cdef getrow(self):
         """
         Helper method used by fetchone and fetchmany to fetch and handle
