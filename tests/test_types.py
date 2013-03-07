@@ -114,7 +114,7 @@ class TestTypes(object):
         self.typeeq(expect, colval)
         eq_(expect, colval)
 
-    def test_dicimal_context_protection(self):
+    def test_decimal_context_protection(self):
         origval = D('1.2345')
         colval = self.insert_and_select('decimal_no', origval, 's')
 
