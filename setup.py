@@ -26,6 +26,15 @@ import os.path as osp
 import sys
 import getpass
 
+# Hack to prevent stupid TypeError: 'NoneType' object is not callable error on
+# exit of python setup.py test in multiprocessing/util.py _exit_function when
+# running python setup.py test (see
+# http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html)
+try:
+    import multiprocessing
+except ImportError:
+    pass
+
 sys.path.append(osp.join(osp.dirname(__file__), '.pyrex'))
 
 try:
@@ -314,6 +323,7 @@ setup(
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
     zip_safe = False,
+    test_suite='nose.collector',
     setup_requires=["Cython>=0.15.1"],
     ext_modules = [
         Extension('_mssql', ['_mssql.pyx'],
