@@ -19,11 +19,11 @@ class TestConfig(object):
         try:
             _mssql.connect(**kwargs)
             assert False
-        except _mssql.MSSQLDriverException, e:
+        except _mssql.MSSQLDriverException as e:
             # we get this when the name of the server is not valid
             if 'Connection to the database failed' not in str(e):
                 raise
-        except _mssql.MSSQLDatabaseException, e:
+        except _mssql.MSSQLDatabaseException as e:
             # we get this when the name or IP can be obtained but the connection
             # can not be made
             if e.args[0][0] != 20009:
@@ -38,15 +38,15 @@ class TestConfig(object):
             user = 'bob',
             database = 'tempdb',
             )
-        assert 'user_name = bob' in config_dump
+        assert b'user_name = bob' in config_dump
         # it would be nice if this was the DB name, see test_dbsetldbname()
-        assert 'database = \n' in config_dump
+        assert b'database = \n' in config_dump
         # test default port
-        assert 'port = 1433' in config_dump
+        assert b'port = 1433' in config_dump
         # not sure why 7.1 version is used instead of 8.0 which is the
         # default
-        assert 'major_version = 7' in config_dump
-        assert 'minor_version = 1' in config_dump
+        assert b'major_version = 7' in config_dump
+        assert b'minor_version = 1' in config_dump
 
     def test_dbsetldbname(self):
         # sybdb.h defines DBSETLDBNAME, we should try to use that to get
@@ -58,24 +58,24 @@ class TestConfig(object):
             server='dontnameyourserverthis',
             tds_version='4.2'
             )
-        assert 'major_version = 4' in config_dump
-        assert 'minor_version = 2' in config_dump
+        assert b'major_version = 4' in config_dump
+        assert b'minor_version = 2' in config_dump
 
     def test_tds_protocol_version_70(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.0'
             )
-        assert 'major_version = 7' in config_dump
-        assert 'minor_version = 0' in config_dump
+        assert b'major_version = 7' in config_dump
+        assert b'minor_version = 0' in config_dump
 
     def test_tds_protocol_version_71(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.1'
             )
-        assert 'major_version = 7' in config_dump
-        assert 'minor_version = 1' in config_dump
+        assert b'major_version = 7' in config_dump
+        assert b'minor_version = 1' in config_dump
 
     def test_tds_protocol_version_80(self):
         # follow-up: turns out 8.0 was erroneous.  MS named the new protocol
@@ -88,17 +88,17 @@ class TestConfig(object):
             server='dontnameyourserverthis',
             tds_version='8.0'
             )
-        assert 'major_version = 7' in config_dump
-        assert 'minor_version = 1' in config_dump
+        assert b'major_version = 7' in config_dump
+        assert b'minor_version = 1' in config_dump
 
     def test_tds_protocol_version_invalid(self):
         try:
             self.connect(tds_version='1.0')
             assert False
-        except _mssql.MSSQLException, e:
+        except _mssql.MSSQLException as e:
             assert 'unrecognized tds version: 1.0' == str(e)
 
     def test_tds_nonstandard_port_int(self):
         #it should convert it to a string
         config_dump = self.connect(port=1435)
-        assert 'port = 1435' in config_dump
+        assert b'port = 1435' in config_dump
