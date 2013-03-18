@@ -88,6 +88,11 @@ cdef dict DBTYPES = {
     'NoneType': _mssql.SQLVARCHAR,
 }
 
+try:
+    StandardError
+except NameError:
+    StandardError = Exception
+
 # exception hierarchy
 class Warning(StandardError):
     pass
