@@ -83,7 +83,7 @@ class TestParameterSub(object):
                 { 'foobar': 'John Doe'}
             )
             assert False, 'expected exception b/c dict did not contain replacement value'
-        except ValueError, e:
+        except ValueError as e:
             if 'params dictionary did not contain value for placeholder' not in str(e):
                 raise
 
@@ -94,6 +94,6 @@ class TestParameterSub(object):
                 ('bar',)
             )
             assert False, 'expected exception b/c too many params in sql'
-        except ValueError, e:
+        except ValueError as e:
             if 'more placeholders in sql than params available' not in str(e):
                 raise
