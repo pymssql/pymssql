@@ -1544,7 +1544,7 @@ cdef _substitute_params(toformat, params, charset):
         quoted = _quote_data(params)
 
     # positional string substitution now requires a tuple
-    if isinstance(quoted, basestring):
+    if hasattr(quoted, 'startswith'):
         quoted = (quoted,)
 
     if isinstance(toformat, unicode):
