@@ -164,6 +164,13 @@ min_error_severity = 6
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
 
+cdef bytes ensure_bytes(s, encoding='utf-8'):
+    try:
+        decoded = s.decode(encoding)
+        return decoded.encode(encoding)
+    except AttributeError:
+        return s.encode(encoding)
+
 cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
@@ -346,7 +353,7 @@ cdef class MSSQLConnection:
 
         def __get__(self):
             if strlen(self._charset):
-                return self._charset
+                return self._charset.decode('ascii') if PY_MAJOR_VERSION == 3 else self._charset
             return None
 
     property connected:
@@ -952,6 +959,11 @@ cdef class MSSQLConnection:
         execute_*() function. It returns NULL on error, None on success.
         """
         cdef RETCODE rtc
+
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes query_string_bytes
+        cdef char *query_string_cstr
+
         log("_mssql.MSSQLConnection.format_and_run_query() BEGIN")
 
         try:
@@ -961,10 +973,14 @@ cdef class MSSQLConnection:
             if params:
                 query_string = self.format_sql_command(query_string, params)
 
-            log(query_string)
+            # For Python 3, we need to convert unicode to byte strings
+            query_string_bytes = ensure_bytes(query_string, self.charset)
+            query_string_cstr = query_string_bytes
+
+            log(query_string_cstr)
 
             # Prepare the query buffer
-            dbcmd(self.dbproc, query_string)
+            dbcmd(self.dbproc, query_string_cstr)
 
             # Execute the query
             rtc = db_sqlexec(self.dbproc)
