@@ -497,8 +497,11 @@ cdef class MSSQLConnection:
         # Set the login timeout
         dbsetlogintime(login_timeout)
 
+        cdef bytes server_bytes = server.encode('utf-8')
+        cdef char *server_cstr = server_bytes
+
         # Connect to the server
-        self.dbproc = dbopen(login, server)
+        self.dbproc = dbopen(login, server_cstr)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
