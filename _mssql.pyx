@@ -452,9 +452,17 @@ cdef class MSSQLConnection:
 
         appname = appname or "pymssql"
 
-        DBSETLUSER(login, user)
-        DBSETLPWD(login, password)
-        DBSETLAPP(login, appname)
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes user_bytes = user.encode('utf-8')
+        cdef char *user_cstr = user_bytes
+        cdef bytes password_bytes = password.encode('utf-8')
+        cdef char *password_cstr = password_bytes
+        cdef bytes appname_bytes = appname.encode('utf-8')
+        cdef char *appname_cstr = appname_bytes
+
+        DBSETLUSER(login, user_cstr)
+        DBSETLPWD(login, password_cstr)
+        DBSETLAPP(login, appname_cstr)
         DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
         # add the port to the server string if it doesn't have one already and
@@ -1423,7 +1431,7 @@ def remove_locale(bytes value):
     cdef size_t l = strlen(s)
     return _remove_locale(s, l)
 
-cdef int _tds_ver_str_to_constant(bytes verstr) except -1:
+cdef int _tds_ver_str_to_constant(verstr) except -1:
     """
         http://www.freetds.org/userguide/choosingtdsprotocol.htm
     """
