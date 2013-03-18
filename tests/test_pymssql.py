@@ -52,7 +52,7 @@ class TestTransaction(PyTableBase):
         eq_(self.row_count(), 1)
         try:
             cur.execute('insert into notable values (%s)', '123')
-        except pym.ProgrammingError, e:
+        except pym.ProgrammingError as e:
             if 'notable' not in str(e):
                 raise
             # encountered an error, so we want to rollback
@@ -75,7 +75,7 @@ class TestTransaction(PyTableBase):
         eq_(self.row_count(), 1)
         try:
             cur.execute("CREATE TABLE badschema.t1 ( test1 CHAR(5) NOT NULL)")
-        except pym.OperationalError, e:
+        except pym.OperationalError as e:
             if 'badschema' not in str(e):
                 raise
             # encountered an error, so we want to rollback
