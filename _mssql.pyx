@@ -62,7 +62,7 @@ cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
-cdef bytes HOSTNAME = socket.gethostname()
+cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
