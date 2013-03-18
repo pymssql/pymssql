@@ -485,9 +485,12 @@ cdef class MSSQLConnection:
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 
+        cdef bytes charset_bytes
+
         # Set the character set name
         if charset:
-            _charset = charset
+            charset_bytes = charset.encode('utf-8')
+            _charset = charset_bytes
             strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
 
