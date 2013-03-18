@@ -61,7 +61,7 @@ class TestFixedTypeConversion(object):
 
 
     def testBigInt(self):
-        input = 123456789L
+        input = 123456789
         proc = self.mssql.init_procedure('pymssqlTestBigInt')
         proc.bind(input, _mssql.SQLINT8, '@ibigint')
         proc.bind(None, _mssql.SQLINT8, '@obigint', output=True)
@@ -142,18 +142,21 @@ class TestCallProcFancy(object):
         self.pymssql = pymssqlconn()
         cursor = self.pymssql.cursor()
 
-        cursor.execute("""
+        sql = u"""
         CREATE PROCEDURE [dbo].[someProcWithOneParam]
         	@some_arg NVARCHAR(64)
         AS
         BEGIN
-        	SELECT @some_arg + N'!', N'%(str1)s ' + @some_arg + N' %(str2)s'
+        	SELECT @some_arg + N'!',
+                   N'%(str1)s ' + @some_arg + N' %(str2)s'
         END
         """ % {
-            'str1': u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439'.encode('utf-8'),
-            'str2': u'\u041c\u0438\u0440'.encode('utf-8'),
+            'str1': u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',
+            'str2': u'\u041c\u0438\u0440',
         }
-        )
+        sql = sql.encode('utf-8')
+
+        cursor.execute(sql)
 
     def tearDown(self):
         cursor = self.pymssql.cursor()

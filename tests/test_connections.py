@@ -29,13 +29,13 @@ class TestCons(object):
         environ['TDSDUMPCONFIG'] = config_dump_path
         environ['TDSDUMP'] = dump_path
         _mssql.connect(**kwargs)
-        with open(config_dump_path, 'rb') as fh:
+        with open(config_dump_path, 'r') as fh:
             return fh.read()
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
-        assert 'server_name = %s' % server in cdump
         assert 'server_host_name = %s' % server in cdump
+        assert 'server_name = %s' % server in cdump
         assert 'user_name = %s' % username in cdump
         assert 'port = %s' % port in cdump
 
