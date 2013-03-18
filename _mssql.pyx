@@ -1133,7 +1133,11 @@ cdef class MSSQLConnection:
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.select_db()")
 
-        dbuse(self.dbproc, dbname)
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes dbname_bytes = dbname.encode('ascii')
+        cdef char *dbname_cstr = dbname_bytes
+
+        dbuse(self.dbproc, dbname_cstr)
 
 ##################################
 ## MSSQL Stored Procedure Class ##
