@@ -1,5 +1,10 @@
 import decimal
-import ConfigParser
+try:
+    # Python 2
+    from ConfigParser import ConfigParser
+except ImportError:
+    # Python 3
+    from configparser import ConfigParser
 import os
 
 from nose.plugins import Plugin
@@ -7,7 +12,7 @@ from nose.plugins import Plugin
 import tests.helpers as th
 from .helpers import cfgpath, clear_db
 
-_parser = ConfigParser.ConfigParser({
+_parser = ConfigParser({
     'server': 'localhost',
     'username': 'sa',
     'password': '',
