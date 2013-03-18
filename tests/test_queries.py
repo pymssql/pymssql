@@ -1,23 +1,26 @@
 from datetime import datetime
+import unittest
 
 import _mssql
 
 from .helpers import mssqlconn, drop_table
 
-class QueryTests(object):
+class QueryTests(unittest.TestCase):
 
     @classmethod
-    def setup_class(self):
-        self.mssql = mssqlconn()
-        self.createTestTable()
+    def setup_class(cls):
+        cls.mssql = mssqlconn()
+        cls.createTestTable()
 
-    def tearDown(self):
-        clear_table(self.mssql, 'pymssql')
-        self.mssql.close()
+    @classmethod
+    def teardown_class(cls):
+        cls.dropTestTable()
+        cls.mssql.close()
 
-    def createTestTable(self):
+    @classmethod
+    def createTestTable(cls):
         try:
-            self.mssql.execute_non_query("""
+            cls.mssql.execute_non_query("""
             CREATE TABLE pymssql (
                 pk_id int IDENTITY (1, 1) NOT NULL,
                 real_no real,
@@ -35,18 +38,19 @@ class QueryTests(object):
                 numeric_no numeric(38,8),
                 stamp_time timestamp
             )""")
-            self.tableCreated = True
-            self.testTableColCount = 15
-        except _mssql.MSSQLDatabaseException, e:
+            cls.tableCreated = True
+            cls.testTableColCount = 15
+        except _mssql.MSSQLDatabaseException as e:
             if e.number != 2714:
                 raise
 
-    def dropTestTable(self):
-        self.mssql.execute_non_query('DROP TABLE pymssql')
-        self.tableCreated = False
+    @classmethod
+    def dropTestTable(cls):
+        cls.mssql.execute_non_query('DROP TABLE pymssql')
+        cls.tableCreated = False
 
     def insertSampleData(self):
-        for x in xrange(10):
+        for x in range(10):
             y = x + 1
             query = """
             INSERT INTO pymssql (
