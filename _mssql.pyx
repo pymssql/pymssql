@@ -1217,7 +1217,7 @@ cdef class MSSQLStoredProcedure:
             n = n.next
             PyMem_Free(p)
 
-    def bind(self, object value, int dbtype, bytes name=None,
+    def bind(self, object value, int dbtype, str param_name=None,
             int output=False, int null=False, int max_length=-1):
         """
         bind(value, data_type, param_name = None, output = False,
@@ -1228,7 +1228,8 @@ cdef class MSSQLStoredProcedure:
         cdef int length = -1
         cdef RETCODE rtc
         cdef BYTE status, *data
-        cdef char *param_name
+        cdef bytes param_name_bytes
+        cdef char *param_name_cstr
         cdef _mssql_parameter_node *pn
         log("_mssql.MSSQLStoredProcedure.bind()")
 
@@ -1280,12 +1281,13 @@ cdef class MSSQLStoredProcedure:
         if status != DBRPCRETURN:
             max_length = -1
 
-        if name:
-            param_name = name
+        if param_name:
+            param_name_bytes = param_name.encode('ascii')
+            param_name_cstr = param_name_bytes
             if self.had_positional:
                 raise MSSQLDriverException('Cannot bind named parameter after positional')
         else:
-            param_name = ''
+            param_name_cstr = ''
             self.had_positional = True
 
         IF PYMSSQL_DEBUG == 1:
@@ -1295,14 +1297,14 @@ cdef class MSSQLStoredProcedure:
                 length, data)
 
         with nogil:
-            rtc = dbrpcparam(self.dbproc, param_name, status, dbtype,
+            rtc = dbrpcparam(self.dbproc, param_name_cstr, status, dbtype,
                 max_length, length, data)
         check_cancel_and_raise(rtc, self.conn)
 
         # Store the value in the parameters dictionary for returning
         # later, by name if that has been supplied.
-        if name:
-            self.params[name] = value
+        if param_name:
+            self.params[param_name] = value
         self.params[self.param_count] = value
         if output:
             self.output_indexes.append(self.param_count)
