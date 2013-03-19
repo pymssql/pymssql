@@ -645,12 +645,16 @@ cdef class MSSQLConnection:
             else:
                 precision = dbcol.Scale
 
+            # Python 3 doesn't like decimal.localcontext() with prec == 0
+            if precision == 0:
+                return int(buf)
+
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
             with decimal.localcontext() as ctx:
                 ctx.prec = precision
-                return decimal.Decimal(_remove_locale(buf, len))
+                return decimal.Decimal(_remove_locale(buf, len).decode(self._charset))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
