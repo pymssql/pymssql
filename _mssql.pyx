@@ -1480,33 +1480,39 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
 cdef _quote_simple_value(value, charset='utf8'):
 
     if value == None:
-        return 'NULL'
+        return b'NULL'
 
     if isinstance(value, bool):
         return '1' if value else '0'
 
     if isinstance(value, float):
-        return repr(value)
+        return repr(value).encode(charset)
 
     if isinstance(value, (int, long, decimal.Decimal)):
-        return str(value)
+        return str(value).encode(charset)
 
-    if isinstance(value, str):
+    if isinstance(value, unicode):
+        return ("N'" + value.replace("'", "''") + "'").encode(charset)
+
+    if isinstance(value, (str, bytes)):
         # see if it can be decoded as ascii if there are no null bytes
-        if '\0' not in value:
+        if b'\0' not in value:
             try:
                 value.decode('ascii')
                 return "'" + value.replace("'", "''") + "'"
             except UnicodeDecodeError:
                 pass
 
+        # Python 3: handle bytes
+        # @todo - Marc - hack hack hack
+        if isinstance(value, bytes):
+            import binascii
+            return b'0x' + binascii.hexlify(value)
+
         # will still be string type if there was a null byte in it or if the
         # decoding failed.  In this case, just send it as hex.
         if isinstance(value, str):
             return '0x' + value.encode('hex')
-
-    if isinstance(value, unicode):
-        return "N'" + value.encode(charset).replace("'", "''") + "'"
 
     if isinstance(value, datetime.datetime):
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
@@ -1569,9 +1575,9 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str,
+            (bool, int, long, float, unicode, str, bytes,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
-        raise ValueError("'params' arg can be only a tuple or a dictionary.")
+        raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
         quoted = _quote_data(params, charset)
@@ -1588,10 +1594,10 @@ cdef _substitute_params(toformat, params, charset):
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
-        for match in _re_name_param.finditer(toformat):
+        for match in _re_name_param.finditer(toformat.decode(charset)):
             param_key = match.group(2)
 
-            if not params.has_key(param_key):
+            if not param_key in params:
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
 
             # calculate string positions so we can keep track of the offset to
@@ -1616,7 +1622,7 @@ cdef _substitute_params(toformat, params, charset):
     else:
         """ assume position based substitutions """
         offset = 0
-        for count, match in enumerate(_re_pos_param.finditer(toformat)):
+        for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
             # calculate string positions so we can keep track of the offset to
             # be used in future substituations on this string.  This is
             # necessary b/c the match start() and end() are based on the
