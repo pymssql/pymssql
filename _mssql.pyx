@@ -990,7 +990,7 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        return _substitute_params(format, params, self._charset)
+        return _substitute_params(format, params, self.charset)
 
     def get_header(self):
         """
