@@ -427,10 +427,11 @@ cdef class Cursor:
         Helper method used by fetchone and fetchmany to fetch and handle
         converting the row if as_dict = False.
         """
-        row = iter(self._source._conn).next()
+        row = next(iter(self._source._conn))
         self._rownumber = self._source._conn.rows_affected
         if self.as_dict:
             return row2dict(row)
+        row = dict([(k, v) for k, v in row.items() if isinstance(k, int)])
         return tuple([row[r] for r in sorted(row) if type(r) == int])
 
     def fetchone(self):
