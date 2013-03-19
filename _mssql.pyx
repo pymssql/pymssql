@@ -1504,7 +1504,7 @@ cdef _quote_simple_value(value, charset='utf8'):
         if b'\0' not in value:
             try:
                 value.decode('ascii')
-                return "'" + value.replace("'", "''") + "'"
+                return b"'" + value.replace(b"'", b"''") + b"'"
             except UnicodeDecodeError:
                 pass
 
