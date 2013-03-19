@@ -1115,7 +1115,7 @@ cdef class MSSQLConnection:
         be bound.
         """
         log("_mssql.MSSQLConnection.init_procedure()")
-        return MSSQLStoredProcedure(procname, self)
+        return MSSQLStoredProcedure(procname.encode(self.charset), self)
 
     def nextresult(self):
         """
