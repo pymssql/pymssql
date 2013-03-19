@@ -477,8 +477,10 @@ cdef class Cursor:
             if self.as_dict:
                 rows = [row2dict(row) for row in self._source._conn]
             else:
+                rows = [dict([(k, v) for k, v in row.items() if isinstance(k, int)])
+                        for row in self._source._conn]
                 rows = [tuple([row[r] for r in sorted(row.keys()) if \
-                        type(r) == int]) for row in self._source._conn]
+                        type(r) == int]) for row in rows]
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
