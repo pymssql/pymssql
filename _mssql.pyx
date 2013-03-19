@@ -1313,7 +1313,7 @@ cdef class MSSQLStoredProcedure:
     def execute(self):
         cdef RETCODE rtc
         cdef int output_count, i, type, length
-        cdef char *name
+        cdef char *param_name_bytes
         cdef BYTE *data
         log("_mssql.MSSQLStoredProcedure.execute()")
 
@@ -1341,13 +1341,14 @@ cdef class MSSQLStoredProcedure:
             for i in xrange(1, output_count + 1):
                 with nogil:
                     type = dbrettype(self.dbproc, i)
-                    name = dbretname(self.dbproc, i)
+                    param_name_bytes = dbretname(self.dbproc, i)
                     length = dbretlen(self.dbproc, i)
                     data = dbretdata(self.dbproc, i)
 
                 value = self.conn.convert_db_value(data, type, length)
-                if strlen(name):
-                    self.params[name] = value
+                if strlen(param_name_bytes):
+                    param_name = param_name_bytes.decode('utf-8')
+                    self.params[param_name] = value
                 self.params[self.output_indexes[i-1]] = value
 
         # Get the return value from the procedure ready for return.
