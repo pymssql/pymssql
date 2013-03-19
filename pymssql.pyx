@@ -393,12 +393,12 @@ cdef class Cursor:
 
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
-                raise ProgrammingError, e[0]
+                raise ProgrammingError, e.args[0]
             if e.number in integrity_errors:
-                raise IntegrityError, e[0]
-            raise OperationalError, e[0]
+                raise IntegrityError, e.args[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def executemany(self, operation, params_seq):
         self.description = None
