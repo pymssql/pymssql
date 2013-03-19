@@ -338,7 +338,7 @@ cdef class Cursor:
         """
         return self
 
-    def callproc(self, bytes procname, parameters=()):
+    def callproc(self, str procname, parameters=()):
         """
         Call a stored procedure with the given name.
 
