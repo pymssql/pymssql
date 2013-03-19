@@ -738,7 +738,8 @@ cdef class MSSQLConnection:
                 raise TypeError('value can only be a date or datetime')
 
             value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
-                str(value.microsecond / 1000)
+                str(value.microsecond // 1000)
+            value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
@@ -752,11 +753,11 @@ cdef class MSSQLConnection:
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLVARCHAR, SQLCHAR, SQLTEXT):
-            if type(value) not in (str, unicode):
-                raise TypeError('value can only be str or unicode')
+            if not hasattr(value, 'startswith'):
+                raise TypeError('value must be a string type')
 
             if strlen(self._charset) > 0 and type(value) is unicode:
-                value = value.encode(self._charset)
+                value = value.encode(self.charset)
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
