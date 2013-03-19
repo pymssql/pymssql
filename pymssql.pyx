@@ -66,6 +66,9 @@ class DBAPIType:
         else:
             return -1
 
+    def __eq__(self, other):
+        return (other == self.value)
+
     def __repr__(self):
         return '<DBAPIType %s>' % self.value
 
