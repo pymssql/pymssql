@@ -22,8 +22,8 @@ FIXED_TYPES = (
 
 VARIABLE_TYPES = (
     ('Char', 4),
-    ('Text',None),
-    ('VarChar', 4)
+    ('VarChar', 4),
+    ('Text', None)  # Leave this one in the last position in case it fails (see https://code.google.com/p/pymssql/issues/detail?id=113#c2)
 )
 
 class TestFixedTypeConversion(object):
