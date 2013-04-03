@@ -713,7 +713,7 @@ cdef class MSSQLConnection:
                 raise TypeError('value can only be a date or datetime')
 
             value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
-                str(value.microsecond / 1000)
+                "%03d" % (value.microsecond / 1000)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
@@ -1474,7 +1474,7 @@ cdef _quote_simple_value(value, charset='utf8'):
         return "N'" + value.encode(charset).replace("'", "''") + "'"
 
     if isinstance(value, datetime.datetime):
-        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%d'}" % (
+        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
             value.year, value.month, value.day,
             value.hour, value.minute, value.second,
             value.microsecond / 1000)

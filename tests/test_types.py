@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import decimal
 from decimal import Decimal as D
 from hashlib import md5
@@ -105,6 +106,13 @@ class TestTypes(object):
         self.hasheq(testval, colval)
         tlist = pickle.loads(colval)
         eq_(tlist, [1, 2, longstr])
+
+    def test_datetime(self):
+        # Test for issue at https://code.google.com/p/pymssql/issues/detail?id=118
+        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
+        colval = self.insert_and_select('stamp_datetime', testval, 's')
+        self.typeeq(testval, colval)
+        eq_(testval, colval)
 
     def test_decimal(self):
         # test rounding down
