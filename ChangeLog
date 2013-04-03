@@ -1,8 +1,66 @@
 Change Log
 ==========
 
-<next release> - <release date>
--------------------------------
+Version 2.0.0b1-dev-20130403 - 2013-04-03 - Marc Abramowitz <msabramo@gmail.com>
+--------------------------------------------------------------------------------
+	* Added tag 2.0.0b1-dev-20130403 for changeset 5d0c980ef8b8
+	(b2b2748f7f88)
+	* Fix issue 118 ("datetime conversion to sql is not converting
+	sub-seconds correctly") - Pad microseconds to 3 digits so it gets
+	converted correctly. Thanks, Ken Robbins (kenneth.robbins at gmail)!
+	(5d0c980ef8b8)
+	* Make tests/test_queries.py actually run tests. It looked like it was
+	half-finished and not working. This fills it out and makes it work and
+	actually test a few things. (5373541eb899)
+	* setup.py: Make it possible to use `python setup.py test`
+	(3c32acb41251)
+	* Bunch of fixes to eliminate build/install warnings (adb0fc75bfd0,
+	fe6cb9aa5120, 446f0005e638, e8d4b19d87b1, 90b2aa2ea01f, 7bb29af4b22c)
+	* Add `pymssql.get_dbversion` function that wraps the dbversion
+	function in FreeTDS. (1158a5d2be9c)
+	* Add a `get_freetds_version` function (a4286224dcf2)
+	* Fix issue 109 ("Failure to pass Unicode characters to callproc;
+	failing test:
+	tests.test_sprocs.TestCallProcFancy.testCallProcWithUnicodeStringWithRussianCharacters"):
+	Skip test because it fails with some versions of FreeTDS but passes
+	with others. (d05341273673)
+	* Fix issue 116 ("A few tests fail if running on a system that has SQL
+	Server available on port 1433") (0fc4086447fe)
+	* Modify tests/test_config.py to use server='dontnameyourserverthis'
+	when doing various tests so it doesn't try to connect to a SQL
+	Server listening on localhost:1433 (0fc4086447fe)
+	* tox.ini: Add {posargs:-w tests -v} to nosetests invocation so that
+	we can pass arguments to tox -- e.g.: to run only specific tests
+	(a105878d500d)
+	* tox.ini: Add "ipdb" to deps, because the IPython debugger is very
+	nice for debugging why tests are failing (be9ee40156cb)
+	* Fix issue 114 ("Fix SP name handling in threaded test so we can
+	actually run it.") (6ac2b75747ad)
+	* Fix issue 100 (Error when executing setup.py {build,develop} on a
+	system with no setuptools: "name 'STDevelopCmd' is not defined")
+	(5222ee37b2ab)
+	* Issue 45 ("Make SQLAlchemy tests part of our testing process"): Add
+	tests/run_sqlalchemy_tests.py for running the SQLAlchemy test suite
+	with pymssql using the server configured in tests/tests.cfg
+	(999d9dbe791b)
+	* Fix issue 92 ("Cursor fetch* methods return redundant keys for
+	column names and column numbers.") (08ae783880dd)
+	* tests/test_connection_as_dict.py:
+	bug 18 ("FetchAll fails to return rows when running against a
+	connection instantiated with as_dict=True."): Add a test which
+	illustrates that the issue is resolved. (058d761cc761)
+	* Fix issue 60 ("cursor.execute raise UnicodeDecodeError if query and
+	params in unicode"): Add patch from tonal.promsoft and add tests.
+	(49210c03a6cf)
+	* Add *.c to MANIFEST.in so they get included in sdist and end-users
+	don't need to run Cython. (25c1a84aac0c)
+	* Fix issue 56 ("callproc do not accept None and unicode string in
+	parameters"): Add patch from tonal.promsoft and add tests
+	(939eb7939136)
+  * version 2.0.0b1-dev-20130403
+
+Version 2.0.0b1-dev-20130108 - 2013-01-08 - Marc Abramowitz <msabramo@gmail.com>
+--------------------------------------------------------------------------------
     * change: put compiled FreeTDS for Windows in pymmsql source, add build
 	instructions to README, better Visual Studio support (#61)
     + feature: support hostname, port, tds_version connect params without freetds.config
@@ -16,6 +74,24 @@ Change Log
     - bug: fetch*() functions would erroneously raise OperationalError when rows exhausted
     - bug #47: fix threaded tests crashing
     - bug #79: fix prevision problem with floats (dieterv77)
+		- bug #14: Add setup.py voodoo that undoes setuptools monkeypatching
+		that causes `pip install` to not work with setuptools unless pyrex
+		is installed. (86a73a19d5bd)
+		- bug #106 (OS X: "Symbol not found: _dbadata" error when importing
+		pymssql): Fix OS X build by modifying setup.py so that on OS X we
+		don't attempt to link with the bundled FreeTDS *Linux* library.
+		(88d15d125586)
+		+ feature: Add support for running tox (http://tox.testrun.org/) to
+		test across multiple Python versions. (5fa7a6548b31)
+		- bug #44: Remove test_long_identifiers from test_sqlalchemy.py
+		because SQLAlchemy removed the 30 character limit on identifiers.
+		(6585d44eea33)
+		- feature: Add setup.py voodoo so that Cython can automatially be
+		downloaded if it's not installed instead of an ImportError
+		(bb459dd7fd7e)
+		- bug #105: Link with librt on Unix platforms that have it (like
+		Linux, but not FreeBSD or OS X) to prevent 'undefined symbol:
+		clock_gettime' error when importing pymssql. (2b255b1c035f)
 
 Tue Nov 02 09:33:00 2010 Damien Churchill <damoxc@gmail.com>
 	* _mssql.pyx:
