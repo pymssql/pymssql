@@ -91,7 +91,7 @@ class TableManager(object):
         sql = "if object_id('%s') is not null drop table %s" % (self.tname, self.tname)
         try:
             self.execute(sql)
-        except Exception, e:
+        except Exception as e:
             self.conn.rollback()
             if 'syntax error' not in str(e):
                 raise
@@ -193,7 +193,7 @@ class CursorBase(DBAPIBase):
         eq_(res[0], 1)
         res = cur.fetchone()
         eq_(res[0], 2)
-        for x in xrange(0, 5):
+        for x in range(0, 5):
             if cur.fetchone() is None:
                 # make sure another call is also None and no execption is raised
                 assert cur.fetchone() is None
@@ -259,7 +259,7 @@ def clear_db():
     }
     delete_sql = []
     to_repeat_sql = []
-    for type, drop_sql in mapping.iteritems():
+    for type, drop_sql in mapping.items():
         sql = 'select name, object_name( parent_object_id ) as parent_name '\
             'from sys.objects where type in (\'%s\')' % '", "'.join(type)
         conn.execute_query(sql)

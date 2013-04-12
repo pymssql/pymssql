@@ -66,6 +66,9 @@ class DBAPIType:
         else:
             return -1
 
+    def __eq__(self, other):
+        return (other == self.value)
+
     def __repr__(self):
         return '<DBAPIType %s>' % self.value
 
@@ -87,6 +90,11 @@ cdef dict DBTYPES = {
     #Dump type for work vith None
     'NoneType': _mssql.SQLVARCHAR,
 }
+
+try:
+    StandardError
+except NameError:
+    StandardError = Exception
 
 # exception hierarchy
 class Warning(StandardError):
@@ -333,7 +341,7 @@ cdef class Cursor:
         """
         return self
 
-    def callproc(self, bytes procname, parameters=()):
+    def callproc(self, str procname, parameters=()):
         """
         Call a stored procedure with the given name.
 
@@ -385,12 +393,12 @@ cdef class Cursor:
 
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
-                raise ProgrammingError, e[0]
+                raise ProgrammingError, e.args[0]
             if e.number in integrity_errors:
-                raise IntegrityError, e[0]
-            raise OperationalError, e[0]
+                raise IntegrityError, e.args[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def executemany(self, operation, params_seq):
         self.description = None
@@ -419,10 +427,11 @@ cdef class Cursor:
         Helper method used by fetchone and fetchmany to fetch and handle
         converting the row if as_dict = False.
         """
-        row = iter(self._source._conn).next()
+        row = next(iter(self._source._conn))
         self._rownumber = self._source._conn.rows_affected
         if self.as_dict:
             return row2dict(row)
+        row = dict([(k, v) for k, v in row.items() if isinstance(k, int)])
         return tuple([row[r] for r in sorted(row) if type(r) == int])
 
     def fetchone(self):
@@ -468,8 +477,10 @@ cdef class Cursor:
             if self.as_dict:
                 rows = [row2dict(row) for row in self._source._conn]
             else:
+                rows = [dict([(k, v) for k, v in row.items() if isinstance(k, int)])
+                        for row in self._source._conn]
                 rows = [tuple([row[r] for r in sorted(row.keys()) if \
-                        type(r) == int]) for row in self._source._conn]
+                        type(r) == int]) for row in rows]
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:

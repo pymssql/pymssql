@@ -15,12 +15,12 @@ class TestingThread(threading.Thread):
         self.exc = None
         try:
             mssql = mssqlconn()
-            for i in xrange(0, 1000):
+            for i in range(0, 1000):
                 mssql.execute_query('SELECT %d', (i,))
                 for row in mssql:
                     assert row[0] == i
             mssql.close()
-        except Exception, e:
+        except Exception as e:
             self.exc = e
         finally:
             self.running = False
@@ -32,13 +32,13 @@ class TestingErrorThread(threading.Thread):
         self.exc = None
         try:
             mssql = mssqlconn()
-            for i in xrange(0, 1000):
+            for i in range(0, 1000):
                 try:
                     mssql.execute_query('SELECT unknown_column')
                 except:
                     pass
             mssql.close()
-        except Exception, e:
+        except Exception as e:
             self.exc = e
         finally:
             self.running = False
@@ -50,14 +50,14 @@ class SprocTestingErrorThread(threading.Thread):
         self.exc = None
         try:
             mssql = mssqlconn()
-            for i in xrange(0, 1000):
+            for i in range(0, 1000):
                 try:
                     proc = mssql.init_procedure('pymssqlErrorThreadTest')
                     proc.execute()
                 except:
                     pass
             mssql.close()
-        except Exception, e:
+        except Exception as e:
             self.exc = e
         finally:
             self.running = False
@@ -67,7 +67,7 @@ class ThreadedTests(unittest.TestCase):
     @attr('slow')
     def testThreadedUse(self):
         threads = []
-        for i in xrange(0, 50):
+        for i in range(0, 50):
             thread = TestingThread()
             thread.start()
             threads.append(thread)
@@ -85,7 +85,7 @@ class ThreadedTests(unittest.TestCase):
     @attr('slow')
     def testErrorThreadedUse(self):
         threads = []
-        for i in xrange(0, 2):
+        for i in range(0, 2):
             thread = TestingErrorThread()
             thread.start()
             threads.append(thread)
@@ -116,7 +116,7 @@ class ThreadedTests(unittest.TestCase):
         """ % spname)
 
         threads = []
-        for i in xrange(0, 5):
+        for i in range(0, 5):
             thread = SprocTestingErrorThread()
             thread.start()
             threads.append(thread)

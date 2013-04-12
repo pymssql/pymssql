@@ -4,7 +4,17 @@ import decimal
 from decimal import Decimal as D
 from hashlib import md5
 import pickle
-from StringIO import StringIO
+import sys
+
+def get_bytes_buffer():
+    try:
+        # Python 2
+        from StringIO import StringIO
+        return StringIO()
+    except ImportError:
+        # Python 3
+        from io import BytesIO
+        return BytesIO()
 
 from nose.plugins.skip import SkipTest
 from nose.tools import eq_
@@ -45,6 +55,12 @@ class TestTypes(object):
         clear_table(self.conn, self.tname)
 
     def hasheq(self, v1, v2):
+        if sys.version_info >= (3, ):
+            if hasattr(v1, 'encode'):
+                v1 = v1.encode('utf-8')
+            if hasattr(v2, 'encode'):
+                v2 = v2.encode('utf-8')
+
         hd1 = md5(v1).hexdigest()
         hd2 = md5(v2).hexdigest()
         assert hd1 == hd2, '%s (%s) != %s (%s)' % (v1, hd1, v2, hd2)
@@ -80,7 +96,7 @@ class TestTypes(object):
         eq_(testval, colval)
 
     def test_image(self):
-        buf = StringIO()
+        buf = get_bytes_buffer()
         longstr = 'a'*4000
         pickle.dump([1, 2, longstr], buf, -1)
         testval = buf.getvalue()
@@ -97,7 +113,7 @@ class TestTypes(object):
             By default, SQL server sets TEXTSIZE = 4096 bytes.  We up that by
             default and want to make sure it applies.
         """
-        buf = StringIO()
+        buf = get_bytes_buffer()
         longstr = 'a'*5000
         pickle.dump([1, 2, longstr], buf, -1)
         testval = buf.getvalue()

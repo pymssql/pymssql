@@ -62,7 +62,7 @@ cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
-cdef bytes HOSTNAME = socket.gethostname()
+cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
@@ -163,6 +163,13 @@ min_error_severity = 6
 
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
+
+cdef bytes ensure_bytes(s, encoding='utf-8'):
+    try:
+        decoded = s.decode(encoding)
+        return decoded.encode(encoding)
+    except AttributeError:
+        return s.encode(encoding)
 
 cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
@@ -346,7 +353,7 @@ cdef class MSSQLConnection:
 
         def __get__(self):
             if strlen(self._charset):
-                return self._charset
+                return self._charset.decode('ascii') if PY_MAJOR_VERSION == 3 else self._charset
             return None
 
     property connected:
@@ -452,9 +459,17 @@ cdef class MSSQLConnection:
 
         appname = appname or "pymssql"
 
-        DBSETLUSER(login, user)
-        DBSETLPWD(login, password)
-        DBSETLAPP(login, appname)
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes user_bytes = user.encode('utf-8')
+        cdef char *user_cstr = user_bytes
+        cdef bytes password_bytes = password.encode('utf-8')
+        cdef char *password_cstr = password_bytes
+        cdef bytes appname_bytes = appname.encode('utf-8')
+        cdef char *appname_cstr = appname_bytes
+
+        DBSETLUSER(login, user_cstr)
+        DBSETLPWD(login, password_cstr)
+        DBSETLAPP(login, appname_cstr)
         DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
         # add the port to the server string if it doesn't have one already and
@@ -477,17 +492,23 @@ cdef class MSSQLConnection:
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 
+        cdef bytes charset_bytes
+
         # Set the character set name
         if charset:
-            _charset = charset
+            charset_bytes = charset.encode('utf-8')
+            _charset = charset_bytes
             strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
 
         # Set the login timeout
         dbsetlogintime(login_timeout)
 
+        cdef bytes server_bytes = server.encode('utf-8')
+        cdef char *server_cstr = server_bytes
+
         # Connect to the server
-        self.dbproc = dbopen(login, server)
+        self.dbproc = dbopen(login, server_cstr)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
@@ -624,12 +645,16 @@ cdef class MSSQLConnection:
             else:
                 precision = dbcol.Scale
 
+            # Python 3 doesn't like decimal.localcontext() with prec == 0
+            if precision == 0:
+                return int(buf)
+
             len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
             with decimal.localcontext() as ctx:
                 ctx.prec = precision
-                return decimal.Decimal(_remove_locale(buf, len))
+                return decimal.Decimal(_remove_locale(buf, len).decode(self._charset))
 
         elif type == SQLDATETIM4:
             dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
@@ -713,7 +738,8 @@ cdef class MSSQLConnection:
                 raise TypeError('value can only be a date or datetime')
 
             value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
-                "%03d" % (value.microsecond / 1000)
+                "%03d" % (value.microsecond // 1000)
+            value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
@@ -727,11 +753,11 @@ cdef class MSSQLConnection:
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLVARCHAR, SQLCHAR, SQLTEXT):
-            if type(value) not in (str, unicode):
-                raise TypeError('value can only be str or unicode')
+            if not hasattr(value, 'startswith'):
+                raise TypeError('value must be a string type')
 
             if strlen(self._charset) > 0 and type(value) is unicode:
-                value = value.encode(self._charset)
+                value = value.encode(self.charset)
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
@@ -938,6 +964,11 @@ cdef class MSSQLConnection:
         execute_*() function. It returns NULL on error, None on success.
         """
         cdef RETCODE rtc
+
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes query_string_bytes
+        cdef char *query_string_cstr
+
         log("_mssql.MSSQLConnection.format_and_run_query() BEGIN")
 
         try:
@@ -947,10 +978,14 @@ cdef class MSSQLConnection:
             if params:
                 query_string = self.format_sql_command(query_string, params)
 
-            log(query_string)
+            # For Python 3, we need to convert unicode to byte strings
+            query_string_bytes = ensure_bytes(query_string, self.charset)
+            query_string_cstr = query_string_bytes
+
+            log(query_string_cstr)
 
             # Prepare the query buffer
-            dbcmd(self.dbproc, query_string)
+            dbcmd(self.dbproc, query_string_cstr)
 
             # Execute the query
             rtc = db_sqlexec(self.dbproc)
@@ -960,7 +995,7 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        return _substitute_params(format, params, self._charset)
+        return _substitute_params(format, params, self.charset)
 
     def get_header(self):
         """
@@ -1027,7 +1062,8 @@ cdef class MSSQLConnection:
             column_types = list()
 
             for col in xrange(1, self.num_columns + 1):
-                column_names.append(dbcolname(self.dbproc, col))
+                column_name = dbcolname(self.dbproc, col).decode(self._charset)
+                column_names.append(column_name)
                 coltype = dbcoltype(self.dbproc, col)
                 column_types.append(get_api_coltype(coltype))
 
@@ -1079,7 +1115,7 @@ cdef class MSSQLConnection:
         be bound.
         """
         log("_mssql.MSSQLConnection.init_procedure()")
-        return MSSQLStoredProcedure(procname, self)
+        return MSSQLStoredProcedure(procname.encode(self.charset), self)
 
     def nextresult(self):
         """
@@ -1119,7 +1155,11 @@ cdef class MSSQLConnection:
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.select_db()")
 
-        dbuse(self.dbproc, dbname)
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes dbname_bytes = dbname.encode('ascii')
+        cdef char *dbname_cstr = dbname_bytes
+
+        dbuse(self.dbproc, dbname_cstr)
 
 ##################################
 ## MSSQL Stored Procedure Class ##
@@ -1177,7 +1217,7 @@ cdef class MSSQLStoredProcedure:
             n = n.next
             PyMem_Free(p)
 
-    def bind(self, object value, int dbtype, bytes name=None,
+    def bind(self, object value, int dbtype, str param_name=None,
             int output=False, int null=False, int max_length=-1):
         """
         bind(value, data_type, param_name = None, output = False,
@@ -1188,7 +1228,8 @@ cdef class MSSQLStoredProcedure:
         cdef int length = -1
         cdef RETCODE rtc
         cdef BYTE status, *data
-        cdef char *param_name
+        cdef bytes param_name_bytes
+        cdef char *param_name_cstr
         cdef _mssql_parameter_node *pn
         log("_mssql.MSSQLStoredProcedure.bind()")
 
@@ -1240,12 +1281,13 @@ cdef class MSSQLStoredProcedure:
         if status != DBRPCRETURN:
             max_length = -1
 
-        if name:
-            param_name = name
+        if param_name:
+            param_name_bytes = param_name.encode('ascii')
+            param_name_cstr = param_name_bytes
             if self.had_positional:
                 raise MSSQLDriverException('Cannot bind named parameter after positional')
         else:
-            param_name = ''
+            param_name_cstr = ''
             self.had_positional = True
 
         IF PYMSSQL_DEBUG == 1:
@@ -1255,14 +1297,14 @@ cdef class MSSQLStoredProcedure:
                 length, data)
 
         with nogil:
-            rtc = dbrpcparam(self.dbproc, param_name, status, dbtype,
+            rtc = dbrpcparam(self.dbproc, param_name_cstr, status, dbtype,
                 max_length, length, data)
         check_cancel_and_raise(rtc, self.conn)
 
         # Store the value in the parameters dictionary for returning
         # later, by name if that has been supplied.
-        if name:
-            self.params[name] = value
+        if param_name:
+            self.params[param_name] = value
         self.params[self.param_count] = value
         if output:
             self.output_indexes.append(self.param_count)
@@ -1271,7 +1313,7 @@ cdef class MSSQLStoredProcedure:
     def execute(self):
         cdef RETCODE rtc
         cdef int output_count, i, type, length
-        cdef char *name
+        cdef char *param_name_bytes
         cdef BYTE *data
         log("_mssql.MSSQLStoredProcedure.execute()")
 
@@ -1299,13 +1341,14 @@ cdef class MSSQLStoredProcedure:
             for i in xrange(1, output_count + 1):
                 with nogil:
                     type = dbrettype(self.dbproc, i)
-                    name = dbretname(self.dbproc, i)
+                    param_name_bytes = dbretname(self.dbproc, i)
                     length = dbretlen(self.dbproc, i)
                     data = dbretdata(self.dbproc, i)
 
                 value = self.conn.convert_db_value(data, type, length)
-                if strlen(name):
-                    self.params[name] = value
+                if strlen(param_name_bytes):
+                    param_name = param_name_bytes.decode('utf-8')
+                    self.params[param_name] = value
                 self.params[self.output_indexes[i-1]] = value
 
         # Get the return value from the procedure ready for return.
@@ -1423,7 +1466,7 @@ def remove_locale(bytes value):
     cdef size_t l = strlen(s)
     return _remove_locale(s, l)
 
-cdef int _tds_ver_str_to_constant(bytes verstr) except -1:
+cdef int _tds_ver_str_to_constant(verstr) except -1:
     """
         http://www.freetds.org/userguide/choosingtdsprotocol.htm
     """
@@ -1445,33 +1488,39 @@ cdef int _tds_ver_str_to_constant(bytes verstr) except -1:
 cdef _quote_simple_value(value, charset='utf8'):
 
     if value == None:
-        return 'NULL'
+        return b'NULL'
 
     if isinstance(value, bool):
         return '1' if value else '0'
 
     if isinstance(value, float):
-        return repr(value)
+        return repr(value).encode(charset)
 
     if isinstance(value, (int, long, decimal.Decimal)):
-        return str(value)
+        return str(value).encode(charset)
 
-    if isinstance(value, str):
+    if isinstance(value, unicode):
+        return ("N'" + value.replace("'", "''") + "'").encode(charset)
+
+    if isinstance(value, (str, bytes)):
         # see if it can be decoded as ascii if there are no null bytes
-        if '\0' not in value:
+        if b'\0' not in value:
             try:
                 value.decode('ascii')
-                return "'" + value.replace("'", "''") + "'"
+                return b"'" + value.replace(b"'", b"''") + b"'"
             except UnicodeDecodeError:
                 pass
+
+        # Python 3: handle bytes
+        # @todo - Marc - hack hack hack
+        if isinstance(value, bytes):
+            import binascii
+            return b'0x' + binascii.hexlify(value)
 
         # will still be string type if there was a null byte in it or if the
         # decoding failed.  In this case, just send it as hex.
         if isinstance(value, str):
             return '0x' + value.encode('hex')
-
-    if isinstance(value, unicode):
-        return "N'" + value.encode(charset).replace("'", "''") + "'"
 
     if isinstance(value, datetime.datetime):
         return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
@@ -1502,7 +1551,7 @@ cdef _quote_or_flatten(data, charset='utf8'):
             raise ValueError('found an unsupported type')
 
         quoted.append(value)
-    return '(' + ','.join(quoted) + ')'
+    return b'(' + b','.join(quoted) + b')'
 
 # This function is supposed to take a simple value, tuple or dictionary,
 # normally passed in via the params argument in the execute_* methods. It
@@ -1534,9 +1583,9 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str,
+            (bool, int, long, float, unicode, str, bytes,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
-        raise ValueError("'params' arg can be only a tuple or a dictionary.")
+        raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
         quoted = _quote_data(params, charset)
@@ -1544,7 +1593,7 @@ cdef _substitute_params(toformat, params, charset):
         quoted = _quote_data(params)
 
     # positional string substitution now requires a tuple
-    if isinstance(quoted, basestring):
+    if hasattr(quoted, 'startswith'):
         quoted = (quoted,)
 
     if isinstance(toformat, unicode):
@@ -1553,10 +1602,10 @@ cdef _substitute_params(toformat, params, charset):
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
-        for match in _re_name_param.finditer(toformat):
+        for match in _re_name_param.finditer(toformat.decode(charset)):
             param_key = match.group(2)
 
-            if not params.has_key(param_key):
+            if not param_key in params:
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
 
             # calculate string positions so we can keep track of the offset to
@@ -1581,7 +1630,7 @@ cdef _substitute_params(toformat, params, charset):
     else:
         """ assume position based substitutions """
         offset = 0
-        for count, match in enumerate(_re_pos_param.finditer(toformat)):
+        for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
             # calculate string positions so we can keep track of the offset to
             # be used in future substituations on this string.  This is
             # necessary b/c the match start() and end() are based on the
