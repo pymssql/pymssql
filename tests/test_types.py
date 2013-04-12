@@ -68,9 +68,13 @@ class TestTypes(object):
     def typeeq(self, v1, v2):
         eq_(type(v1), type(v2))
 
-    def insert_and_select(self, cname, value, vartype):
-        inssql = 'insert into %s (%s) values (%%%s)' % (self.tname, cname, vartype)
-        self.conn.execute_non_query(inssql, value)
+    def insert_and_select(self, cname, value, vartype, params_as_dict=False):
+        if params_as_dict:
+            inssql = 'insert into %s (%s) values (%%(value)%s)' % (self.tname, cname, vartype)
+            self.conn.execute_non_query(inssql, dict(value=value))
+        else:
+            inssql = 'insert into %s (%s) values (%%%s)' % (self.tname, cname, vartype)
+            self.conn.execute_non_query(inssql, value)
         self.conn.execute_query('select %s from pymssql' % cname)
         rows = tuple(self.conn)
         eq_(len(rows), 1)
@@ -127,6 +131,12 @@ class TestTypes(object):
         # Test for issue at https://code.google.com/p/pymssql/issues/detail?id=118
         testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
         colval = self.insert_and_select('stamp_datetime', testval, 's')
+        self.typeeq(testval, colval)
+        eq_(testval, colval)
+
+    def test_datetime_params_as_dict(self):
+        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
+        colval = self.insert_and_select('stamp_datetime', testval, 's', params_as_dict=True)
         self.typeeq(testval, colval)
         eq_(testval, colval)
 
