@@ -203,7 +203,7 @@ cdef class Connection:
         try:
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot start transaction: ' + str(e[0]))
+            raise OperationalError('Cannot start transaction: ' + str(e.args[0]))
 
     def __del__(self):
         if self.conn:
@@ -242,7 +242,7 @@ cdef class Connection:
             self._conn.execute_non_query('COMMIT TRAN')
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot commit transaction: ' + str(e[0]))
+            raise OperationalError('Cannot commit transaction: ' + str(e.args[0]))
 
     def cursor(self, as_dict=None):
         """
@@ -281,7 +281,7 @@ cdef class Connection:
         try:
             self._conn.execute_non_query('BEGIN TRAN')
         except Exception, e:
-            raise OperationalError('Cannot begin transaction: ' + str(e[0]))
+            raise OperationalError('Cannot begin transaction: ' + str(e.args[0]))
 
 ##################
 ## Cursor class ##
@@ -418,9 +418,9 @@ cdef class Cursor:
             return 1
 
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     cdef getrow(self):
         """
@@ -444,9 +444,9 @@ cdef class Cursor:
         except StopIteration:
             return None
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def fetchmany(self, size=None):
         if self.description is None:
@@ -465,9 +465,9 @@ cdef class Cursor:
                     break
             return rows
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def fetchall(self):
         if self.description is None:
@@ -484,9 +484,9 @@ cdef class Cursor:
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def __next__(self):
         try:
@@ -495,9 +495,9 @@ cdef class Cursor:
             return row
 
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e[0]
+            raise OperationalError, e.args[0]
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e[0]
+            raise InterfaceError, e.args[0]
 
     def setinputsizes(self, sizes=None):
         """
@@ -562,10 +562,10 @@ def connect(server='.', user='', password='', database='', timeout=0,
             appname, port)
 
     except _mssql.MSSQLDatabaseException, e:
-        raise OperationalError(e[0])
+        raise OperationalError(e.args[0])
 
     except _mssql.MSSQLDriverException, e:
-        raise InterfaceError(e[0])
+        raise InterfaceError(e.args[0])
 
 
     if timeout != 0:
