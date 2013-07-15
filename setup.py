@@ -74,7 +74,6 @@ import struct
 compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
-    '-Wno-parentheses-equality',
     '-DMSDBLIB'
 ]
 
