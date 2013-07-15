@@ -512,7 +512,7 @@ cdef class Cursor:
         pass
 
 def connect(server='.', user='', password='', database='', timeout=0,
-        login_timeout=60, charset=None, as_dict=False,
+        login_timeout=60, charset='UTF-8', as_dict=False,
         host='', appname=None, port='1433'):
     """
     Constructor for creating a connection to the database. Returns a
