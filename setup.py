@@ -95,10 +95,11 @@ else:
 
     FREETDS = None
 
-    if sys.platform == 'darwin':
-        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
-    elif SYSTEM == 'Linux':
-        FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+    if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
+        if sys.platform == 'darwin':
+            FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        elif SYSTEM == 'Linux':
+            FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
 
     if FREETDS and osp.exists(FREETDS):
         print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
