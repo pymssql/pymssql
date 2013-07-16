@@ -25,6 +25,7 @@ import os
 import os.path as osp
 import sys
 import getpass
+import platform
 
 # Hack to prevent stupid TypeError: 'NoneType' object is not callable error on
 # exit of python setup.py test in multiprocessing/util.py _exit_function when
@@ -79,6 +80,7 @@ _extra_compile_args = [
 
 ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
+SYSTEM = platform.system()
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -91,12 +93,14 @@ else:
     include_dirs = []
     library_dirs = []
 
+    FREETDS = None
+
     if sys.platform == 'darwin':
         FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
-    else:
+    elif SYSTEM == 'Linux':
         FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
 
-    if osp.exists(FREETDS):
+    if FREETDS and osp.exists(FREETDS):
         print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
         include_dirs.append(osp.join(FREETDS, 'include'))
         library_dirs.append(osp.join(FREETDS, 'lib'))
