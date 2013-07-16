@@ -97,8 +97,11 @@ else:
         FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
 
     if osp.exists(FREETDS):
+        print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
         include_dirs.append(osp.join(FREETDS, 'include'))
         library_dirs.append(osp.join(FREETDS, 'lib'))
+    else:
+        print('setup.py: Not using bundled FreeTDS')
 
     libraries = [ 'sybdb', 'ct' ]
     if compiler.has_function('clock_gettime', libraries=['rt']):
@@ -122,6 +125,9 @@ if sys.platform == 'darwin':
             '/opt/local/lib/freetds',
             '/opt/local/freetds/lib'
         ]
+
+print('setup.py: include_dirs = %r' % include_dirs)
+print('setup.py: library_dirs = %r' % library_dirs)
 
 class build_ext(_build_ext):
     """
