@@ -21,6 +21,7 @@
 #   Boston, MA    02110-1301, USA.
 #
 
+import contextlib
 import os
 import os.path as osp
 import sys
@@ -72,6 +73,29 @@ from distutils import ccompiler
 from Cython.Distutils import build_ext as _build_ext
 import struct
 
+@contextlib.contextmanager
+def stdchannel_redirected(stdchannel, dest_filename):
+    """
+    A context manager to temporarily redirect stdout or stderr
+
+    e.g.:
+
+    with stdchannel_redirected(sys.stderr, os.devnull):
+        ...
+    """
+
+    try:
+        oldstdchannel = os.dup(stdchannel.fileno())
+        dest_file = open(dest_filename, 'w')
+        os.dup2(dest_file.fileno(), stdchannel.fileno())
+
+        yield
+    finally:
+        if oldstdchannel is not None:
+            os.dup2(oldstdchannel, stdchannel.fileno())
+        if dest_file is not None:
+            dest_file.close()
+
 compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
@@ -109,8 +133,10 @@ else:
         print('setup.py: Not using bundled FreeTDS')
 
     libraries = [ 'sybdb', 'ct' ]
-    if compiler.has_function('clock_gettime', libraries=['rt']):
-        libraries.append('rt')
+
+    with stdchannel_redirected(sys.stderr, os.devnull):
+        if compiler.has_function('clock_gettime', libraries=['rt']):
+            libraries.append('rt')
 
 if sys.platform == 'darwin':
     fink = '/sw/'
