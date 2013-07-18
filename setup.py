@@ -157,8 +157,10 @@ if sys.platform == 'darwin':
             '/opt/local/freetds/lib'
         ]
 
-print('setup.py: include_dirs = %r' % include_dirs)
-print('setup.py: library_dirs = %r' % library_dirs)
+if sys.platform != 'win32':
+    # Windows uses a different piece of code to detect these
+    print('setup.py: include_dirs = %r' % include_dirs)
+    print('setup.py: library_dirs = %r' % library_dirs)
 
 class build_ext(_build_ext):
     """
