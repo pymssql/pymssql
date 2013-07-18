@@ -233,13 +233,6 @@ class clean(_clean):
                     log.info('removing %s', so_built)
                     os.remove(so_built)
 
-        # Check if we need to remove the freetds directory
-        if WINDOWS:
-            # If the directory exists, remove it
-            if osp.isdir(FREETDS):
-                import shutil
-                shutil.rmtree(FREETDS)
-
 class release(Command):
     """
     Setuptools command to run all the required commands to perform
