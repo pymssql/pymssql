@@ -96,6 +96,11 @@ def stdchannel_redirected(stdchannel, dest_filename):
         if dest_file is not None:
             dest_file.close()
 
+def add_dir_if_exists(filtered_dirs, *dirs):
+    for d in dirs:
+        if osp.exists(d):
+            filtered_dirs.append(d)
+
 compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
@@ -139,23 +144,26 @@ else:
             libraries.append('rt')
 
 if sys.platform == 'darwin':
-    fink = '/sw/'
+    fink = '/sw'
     if osp.exists(fink):
-        include_dirs.insert(0, fink + 'include')
-        library_dirs.insert(0, fink + 'lib')
+        add_dir_if_exists(include_dirs, osp.join(fink, 'include'))
+        add_dir_if_exists(library_dirs, osp.join(fink, 'lib'))
 
-    if osp.exists('/opt/local'):
+    macports = '/opt/local'
+    if osp.exists(macports):
         # some mac ports paths
-        include_dirs += [
-            '/opt/local/include',
-            '/opt/local/include/freetds',
-            '/opt/local/freetds/include'
-        ]
-        library_dirs += [
-            '/opt/local/lib',
-            '/opt/local/lib/freetds',
-            '/opt/local/freetds/lib'
-        ]
+        add_dir_if_exists(
+            include_dirs,
+            osp.join(macports, 'include'),
+            osp.join(macports, 'include/freetds'),
+            osp.join(macports, 'freetds/include')
+        )
+        add_dir_if_exists(
+            library_dirs,
+            osp.join(macports, 'lib'),
+            osp.join(macports, 'lib/freetds'),
+            osp.join(macports, 'freetds/lib')
+        )
 
 if sys.platform != 'win32':
     # Windows uses a different piece of code to detect these
