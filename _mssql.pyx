@@ -585,7 +585,7 @@ cdef class MSSQLConnection:
         PyMem_Free(self._charset)
         connection_object_list.remove(self)
 
-    cdef object convert_db_value(self, BYTE *data, int type, int length):
+    cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
         cdef int len
@@ -595,61 +595,61 @@ cdef class MSSQLConnection:
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
-        if type == SQLBIT:
+        if dbtype == SQLBIT:
             return bool(<int>(<DBBIT *>data)[0])
 
-        elif type == SQLINT1:
+        elif dbtype == SQLINT1:
             return int(<int>(<DBTINYINT *>data)[0])
 
-        elif type == SQLINT2:
+        elif dbtype == SQLINT2:
             return int(<int>(<DBSMALLINT *>data)[0])
 
-        elif type == SQLINT4:
+        elif dbtype == SQLINT4:
             return int(<int>(<DBINT *>data)[0])
 
-        elif type == SQLINT8:
+        elif dbtype == SQLINT8:
             return long(<PY_LONG_LONG>(<PY_LONG_LONG *>data)[0])
 
-        elif type == SQLFLT4:
+        elif dbtype == SQLFLT4:
             return float(<float>(<DBREAL *>data)[0])
 
-        elif type == SQLFLT8:
+        elif dbtype == SQLFLT8:
             return float(<double>(<DBFLT8 *>data)[0])
 
-        elif type in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
+        elif dbtype in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
             dbcol.SizeOfStruct = sizeof(dbcol)
 
-            if type in (SQLMONEY, SQLMONEY4):
+            if dbtype in (SQLMONEY, SQLMONEY4):
                 precision = 4
             else:
                 precision = dbcol.Scale
 
-            len = dbconvert(self.dbproc, type, data, -1, SQLCHAR,
+            len = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
             with decimal.localcontext() as ctx:
                 ctx.prec = precision
                 return decimal.Decimal(_remove_locale(buf, len))
 
-        elif type == SQLDATETIM4:
-            dbconvert(self.dbproc, type, data, -1, SQLDATETIME,
+        elif dbtype == SQLDATETIM4:
+            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
                 <BYTE *>&dt, -1)
             dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
 
-        elif type == SQLDATETIME:
+        elif dbtype == SQLDATETIME:
             dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
 
-        elif type in (SQLVARCHAR, SQLCHAR, SQLTEXT):
+        elif dbtype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if strlen(self._charset):
                 return (<char *>data)[:length].decode(self._charset)
             else:
                 return (<char *>data)[:length]
 
-        elif type == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
+        elif dbtype == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
