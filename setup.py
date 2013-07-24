@@ -21,10 +21,12 @@
 #   Boston, MA    02110-1301, USA.
 #
 
+import contextlib
 import os
 import os.path as osp
 import sys
 import getpass
+import platform
 
 # Hack to prevent stupid TypeError: 'NoneType' object is not callable error on
 # exit of python setup.py test in multiprocessing/util.py _exit_function when
@@ -71,6 +73,34 @@ from distutils import ccompiler
 from Cython.Distutils import build_ext as _build_ext
 import struct
 
+@contextlib.contextmanager
+def stdchannel_redirected(stdchannel, dest_filename):
+    """
+    A context manager to temporarily redirect stdout or stderr
+
+    e.g.:
+
+    with stdchannel_redirected(sys.stderr, os.devnull):
+        ...
+    """
+
+    try:
+        oldstdchannel = os.dup(stdchannel.fileno())
+        dest_file = open(dest_filename, 'w')
+        os.dup2(dest_file.fileno(), stdchannel.fileno())
+
+        yield
+    finally:
+        if oldstdchannel is not None:
+            os.dup2(oldstdchannel, stdchannel.fileno())
+        if dest_file is not None:
+            dest_file.close()
+
+def add_dir_if_exists(filtered_dirs, *dirs):
+    for d in dirs:
+        if osp.exists(d):
+            filtered_dirs.append(d)
+
 compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
@@ -79,6 +109,7 @@ _extra_compile_args = [
 
 ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
+SYSTEM = platform.system()
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -91,37 +122,53 @@ else:
     include_dirs = []
     library_dirs = []
 
-    if sys.platform == 'darwin':
-        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
-    else:
-        FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+    FREETDS = None
 
-    if osp.exists(FREETDS):
+    if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
+        if sys.platform == 'darwin':
+            FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        elif SYSTEM == 'Linux':
+            FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+
+    if FREETDS and osp.exists(FREETDS):
+        print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
         include_dirs.append(osp.join(FREETDS, 'include'))
         library_dirs.append(osp.join(FREETDS, 'lib'))
+    else:
+        print('setup.py: Not using bundled FreeTDS')
 
     libraries = [ 'sybdb', 'ct' ]
-    if compiler.has_function('clock_gettime', libraries=['rt']):
-        libraries.append('rt')
+
+    with stdchannel_redirected(sys.stderr, os.devnull):
+        if compiler.has_function('clock_gettime', libraries=['rt']):
+            libraries.append('rt')
 
 if sys.platform == 'darwin':
-    fink = '/sw/'
+    fink = '/sw'
     if osp.exists(fink):
-        include_dirs.insert(0, fink + 'include')
-        library_dirs.insert(0, fink + 'lib')
+        add_dir_if_exists(include_dirs, osp.join(fink, 'include'))
+        add_dir_if_exists(library_dirs, osp.join(fink, 'lib'))
 
-    if osp.exists('/opt/local'):
+    macports = '/opt/local'
+    if osp.exists(macports):
         # some mac ports paths
-        include_dirs += [
-            '/opt/local/include',
-            '/opt/local/include/freetds',
-            '/opt/local/freetds/include'
-        ]
-        library_dirs += [
-            '/opt/local/lib',
-            '/opt/local/lib/freetds',
-            '/opt/local/freetds/lib'
-        ]
+        add_dir_if_exists(
+            include_dirs,
+            osp.join(macports, 'include'),
+            osp.join(macports, 'include/freetds'),
+            osp.join(macports, 'freetds/include')
+        )
+        add_dir_if_exists(
+            library_dirs,
+            osp.join(macports, 'lib'),
+            osp.join(macports, 'lib/freetds'),
+            osp.join(macports, 'freetds/lib')
+        )
+
+if sys.platform != 'win32':
+    # Windows uses a different piece of code to detect these
+    print('setup.py: include_dirs = %r' % include_dirs)
+    print('setup.py: library_dirs = %r' % library_dirs)
 
 class build_ext(_build_ext):
     """
@@ -193,13 +240,6 @@ class clean(_clean):
                 if osp.exists(so_built):
                     log.info('removing %s', so_built)
                     os.remove(so_built)
-
-        # Check if we need to remove the freetds directory
-        if WINDOWS:
-            # If the directory exists, remove it
-            if osp.isdir(FREETDS):
-                import shutil
-                shutil.rmtree(FREETDS)
 
 class release(Command):
     """
