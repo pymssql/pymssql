@@ -362,6 +362,7 @@ setup(
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
     zip_safe = False,
+    tests_require=['nose'],
     test_suite='nose.collector',
     setup_requires=["Cython>=0.15.1"],
     ext_modules = [
