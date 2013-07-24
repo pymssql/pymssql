@@ -588,7 +588,7 @@ cdef class MSSQLConnection:
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
-        cdef int len
+        cdef int converted_length
         cdef long prevPrecision
         cdef BYTE precision
         cdef DBDATEREC di
@@ -624,12 +624,12 @@ cdef class MSSQLConnection:
             else:
                 precision = dbcol.Scale
 
-            len = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
+            converted_length = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
 
             with decimal.localcontext() as ctx:
                 ctx.prec = precision
-                return decimal.Decimal(_remove_locale(buf, len))
+                return decimal.Decimal(_remove_locale(buf, converted_length))
 
         elif dbtype == SQLDATETIM4:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
