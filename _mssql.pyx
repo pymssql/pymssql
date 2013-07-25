@@ -622,7 +622,7 @@ cdef class MSSQLConnection:
             if dbtype in (SQLMONEY, SQLMONEY4):
                 precision = 4
             else:
-                precision = dbcol.Scale
+                precision = 0
 
             converted_length = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
                 <BYTE *>buf, NUMERIC_BUF_SZ)
