@@ -645,12 +645,12 @@ cdef class MSSQLConnection:
             else:
                 precision = 0
 
+            converted_length = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
+                <BYTE *>buf, NUMERIC_BUF_SZ)
+
             # Python 3 doesn't like decimal.localcontext() with prec == 0
             if precision == 0:
                 return int(buf)
-
-            converted_length = dbconvert(self.dbproc, dbtype, data, -1, SQLCHAR,
-                <BYTE *>buf, NUMERIC_BUF_SZ)
 
             with decimal.localcontext() as ctx:
                 ctx.prec = precision
