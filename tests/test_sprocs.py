@@ -88,9 +88,10 @@ class TestFixedTypeConversion(object):
 
     def testDecimal(self):
         input = decimal.Decimal('5.12345')
+        output = decimal.Decimal('0.00000')
         proc = self.mssql.init_procedure('pymssqlTestDecimal')
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
-        proc.bind(None, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
+        proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
         eq_(input, proc.parameters['@odecimal'])
 
@@ -112,9 +113,10 @@ class TestFixedTypeConversion(object):
 
     def testNumeric(self):
         input = decimal.Decimal('5.12345')
+        output = decimal.Decimal('0.00000')
         proc = self.mssql.init_procedure('pymssqlTestNumeric')
         proc.bind(input, _mssql.SQLNUMERIC, '@inumeric')
-        proc.bind(None, _mssql.SQLNUMERIC, '@onumeric', output=True)
+        proc.bind(output, _mssql.SQLNUMERIC, '@onumeric', output=True)
         proc.execute()
         eq_(input, proc.parameters['@onumeric'])
 
