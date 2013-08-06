@@ -90,7 +90,6 @@ class TestFixedTypeConversion(object):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(None, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
-        raise SkipTest # testDecimal - decimal value currently truncated
         eq_(input, proc.parameters['@odecimal'])
 
     def testInt(self):
@@ -115,7 +114,6 @@ class TestFixedTypeConversion(object):
         proc.bind(input, _mssql.SQLNUMERIC, '@inumeric')
         proc.bind(None, _mssql.SQLNUMERIC, '@onumeric', output=True)
         proc.execute()
-        raise SkipTest # testNumeric - decimal value currently truncated
         eq_(input, proc.parameters['@onumeric'])
 
     def testSmallInt(self):
