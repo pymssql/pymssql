@@ -94,6 +94,7 @@ class TestFixedTypeConversion(object):
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
         eq_(input, proc.parameters['@odecimal'])
+        eq_(str(input), str(proc.parameters['@odecimal']))
 
     def testInt(self):
         input = 10056
@@ -119,6 +120,7 @@ class TestFixedTypeConversion(object):
         proc.bind(output, _mssql.SQLNUMERIC, '@onumeric', output=True)
         proc.execute()
         eq_(input, proc.parameters['@onumeric'])
+        eq_(str(input), str(proc.parameters['@onumeric']))
 
     def testSmallInt(self):
         input = 10056
