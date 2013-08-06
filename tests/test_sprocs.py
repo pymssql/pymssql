@@ -96,6 +96,46 @@ class TestFixedTypeConversion(object):
         eq_(input, proc.parameters['@odecimal'])
         eq_(str(input), str(proc.parameters['@odecimal']))
 
+    def testDecimal2(self):
+        input = decimal.Decimal('6.23456')
+        output = decimal.Decimal('0.00000')
+        proc = self.mssql.init_procedure('pymssqlTestDecimal')
+        proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
+        proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
+        proc.execute()
+        eq_(input, proc.parameters['@odecimal'])
+        eq_(str(input), str(proc.parameters['@odecimal']))
+
+    def testDecimal3(self):
+        output = decimal.Decimal('0.00000')
+        proc = self.mssql.init_procedure('pymssqlTestDecimal')
+        input = decimal.Decimal('6.23400')
+        proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
+        proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
+        proc.execute()
+        eq_(input, proc.parameters['@odecimal'])
+        eq_(str(input), str(proc.parameters['@odecimal']))
+
+    def testDecimal4(self):
+        output = decimal.Decimal('1.0000000')
+        proc = self.mssql.init_procedure('pymssqlTestDecimal')
+        input = decimal.Decimal('6.2340000')
+        proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
+        proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=15)
+        proc.execute()
+        eq_(input, proc.parameters['@odecimal'])
+        eq_(str(input), str(proc.parameters['@odecimal']))
+
+    def testDecimal5(self):
+        output = decimal.Decimal('1.000000000')
+        proc = self.mssql.init_procedure('pymssqlTestDecimal')
+        input = decimal.Decimal('6.234000000')
+        proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
+        proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=15)
+        proc.execute()
+        eq_(input, proc.parameters['@odecimal'])
+        eq_(str(input), str(proc.parameters['@odecimal']))
+
     def testInt(self):
         input = 10056
         proc = self.mssql.init_procedure('pymssqlTestInt')
