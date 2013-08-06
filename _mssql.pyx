@@ -663,6 +663,7 @@ cdef class MSSQLConnection:
         cdef PY_LONG_LONG *longValue
         cdef char *strValue, *tmp
         cdef BYTE *binValue
+        cdef DBTYPEINFO decimal_type_info
 
         if value is None:
             dbValue[0] = <BYTE *>NULL
@@ -715,6 +716,38 @@ cdef class MSSQLConnection:
             value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
                 "%03d" % (value.microsecond / 1000)
             dbtype[0] = SQLCHAR
+
+        if dbtype[0] in (SQLNUMERIC, SQLDECIMAL):
+            # There seems to be no harm in setting precision higher than
+            # necessary
+            decimal_type_info.precision = 33
+
+            # Figure out `scale` - number of digits after decimal point
+            decimal_type_info.scale = abs(value.as_tuple().exponent)
+
+            # Need this to prevent Cython error:
+            # "Obtaining 'BYTE *' from temporary Python value"
+            str_value = str(value)
+
+            decValue = <DBDECIMAL *>PyMem_Malloc(sizeof(DBDECIMAL))
+            length[0] = dbconvert_ps(
+                self.dbproc,
+                SQLCHAR,
+                str_value,
+                -1,
+                dbtype[0],
+                <BYTE *>decValue,
+                sizeof(DBDECIMAL),
+                &decimal_type_info,
+            )
+            dbValue[0] = <BYTE *>decValue
+
+            IF PYMSSQL_DEBUG == 1:
+                fprintf(stderr, "convert_python_value: Converted value to DBDECIMAL with length = %d\n", length[0])
+                for i in range(0, 35):
+                    fprintf(stderr, "convert_python_value: dbValue[0][%d] = %d\n", i, dbValue[0][i])
+
+            return 0
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
             if type(value) in (int, long, bytes):
@@ -1225,7 +1258,7 @@ cdef class MSSQLStoredProcedure:
                 length = strlen(<char *>data)
         else:
             # Fixed length data type
-            if null or output:
+            if null or (output and dbtype not in (SQLDECIMAL, SQLNUMERIC)):
                 length = 0
             max_length = -1
 

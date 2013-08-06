@@ -73,6 +73,13 @@ cdef extern from "sqlfront.h":
         DBINT millisecond
         DBINT tzone
 
+    ctypedef struct DBNUMERIC:
+        BYTE precision
+        BYTE scale
+        BYTE array[33]
+
+    ctypedef DBNUMERIC DBDECIMAL
+
     # Error handler callback
     ctypedef int(*EHANDLEFUNC)(DBPROCESS *, int, int, int, char *, char *)
 
@@ -245,6 +252,12 @@ cdef extern from "sqlfront.h":
     #     failure, it will call any user-supplied error handler.
     DBINT dbconvert(DBPROCESS *, int, BYTE *, DBINT, int, BYTE *, DBINT)
 
+    ctypedef struct DBTYPEINFO:
+        DBINT precision
+        DBINT scale
+
+    DBINT dbconvert_ps(DBPROCESS * dbprocess, int srctype, BYTE * src, DBINT srclen, int desttype, BYTE * dest, DBINT destlen,
+        DBTYPEINFO * typeinfo)
 
     # Get count of rows processed.
     #
