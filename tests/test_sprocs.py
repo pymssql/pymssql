@@ -35,6 +35,8 @@ class TestFixedTypeConversion(object):
             dbtype = name.lower()
             if dbtype == 'decimal':
                 identifier = 'decimal(6, 5)'
+            elif dbtype == 'numeric':
+                identifier = 'numeric(6, 5)'
             else:
                 identifier = dbtype
 
