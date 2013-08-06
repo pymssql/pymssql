@@ -137,7 +137,7 @@ else:
     else:
         print('setup.py: Not using bundled FreeTDS')
 
-    libraries = [ 'sybdb', 'ct' ]
+    libraries = ['sybdb']
 
     with stdchannel_redirected(sys.stderr, os.devnull):
         if compiler.has_function('clock_gettime', libraries=['rt']):
