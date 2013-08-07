@@ -37,6 +37,7 @@ if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
     import uuid
 
 import os
+import sys
 import socket
 import decimal
 import datetime
@@ -595,6 +596,9 @@ cdef class MSSQLConnection:
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
+        IF PYMSSQL_DEBUG == 1:
+            sys.stderr.write("convert_db_value: dbtype = %d; length = %d\n" % (dbtype, length))
+
         if dbtype == SQLBIT:
             return bool(<int>(<DBBIT *>data)[0])
 
@@ -664,6 +668,9 @@ cdef class MSSQLConnection:
         cdef char *strValue, *tmp
         cdef BYTE *binValue
         cdef DBTYPEINFO decimal_type_info
+
+        IF PYMSSQL_DEBUG == 1:
+            sys.stderr.write("convert_python_value: value = %r; dbtype = %d" % (value, dbtype[0]))
 
         if value is None:
             dbValue[0] = <BYTE *>NULL
