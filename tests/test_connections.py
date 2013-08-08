@@ -51,17 +51,17 @@ class TestCons(unittest.TestCase):
     def test_connection_by_ip(self):
         cdump = self.connect(server=ipaddress, port=port, user=username, password=password)
         dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
-        self.assertIn(server, dump_server_name)
+        self.assertIn(ipaddress, dump_server_name)
         dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
-        self.assertEqual(dump_server_host_name, server)
+        self.assertEqual(dump_server_host_name, ipaddress)
 
     def test_port_override_ipaddress(self):
         server_join = '%s:%s' % (ipaddress, port)
         cdump = self.connect(server=server_join, user=username, password=password)
         dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
-        self.assertIn(server, dump_server_name)
+        self.assertIn(server_join, dump_server_name)
         dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
-        self.assertEqual(dump_server_host_name, server)
+        self.assertEqual(dump_server_host_name, ipaddress)
         dump_port = re.search('port = (\S+)', cdump).groups()[0]
         self.assertIn(port, dump_port)
 
