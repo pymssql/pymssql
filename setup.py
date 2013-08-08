@@ -143,6 +143,21 @@ else:
         if compiler.has_function('clock_gettime', libraries=['rt']):
             libraries.append('rt')
 
+usr_local = '/usr/local'
+if osp.exists(usr_local):
+    add_dir_if_exists(
+        include_dirs,
+        osp.join(usr_local, 'include'),
+        osp.join(usr_local, 'include/freetds'),
+        osp.join(usr_local, 'freetds/include')
+    )
+    add_dir_if_exists(
+        library_dirs,
+        osp.join(usr_local, 'lib'),
+        osp.join(usr_local, 'lib/freetds'),
+        osp.join(usr_local, 'freetds/lib')
+    )
+
 if sys.platform == 'darwin':
     fink = '/sw'
     if osp.exists(fink):
