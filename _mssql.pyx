@@ -582,6 +582,8 @@ cdef class MSSQLConnection:
             self.dbproc = NULL
 
         self._connected = 0
+        PyMem_Free(self.last_msg_proc)
+        PyMem_Free(self.last_msg_srv)
         PyMem_Free(self.last_msg_str)
         PyMem_Free(self._charset)
         connection_object_list.remove(self)
