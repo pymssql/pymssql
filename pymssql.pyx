@@ -197,7 +197,7 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot start transaction: ' + str(e[0]))
 
-    def __del__(self):
+    def __dealloc__(self):
         if self.conn:
             self.close()
 
