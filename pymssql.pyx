@@ -213,6 +213,12 @@ cdef class Connection:
         self._conn.execute_non_query('%s TRAN' % tran_type)
         self._autocommit = status
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def close(self):
         """
         Close the connection to the databsae. Implicitly rolls back all
@@ -332,6 +338,12 @@ cdef class Cursor:
         protocol.
         """
         return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def callproc(self, bytes procname, parameters=()):
         """
