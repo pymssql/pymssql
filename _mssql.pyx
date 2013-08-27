@@ -990,6 +990,8 @@ cdef class MSSQLConnection:
                 query_string = self.format_sql_command(query_string, params)
 
             log(query_string)
+            if self.debug_queries:
+                sys.stderr.write("#%s#\n" % query_string)
 
             # Prepare the query buffer
             dbcmd(self.dbproc, query_string)
