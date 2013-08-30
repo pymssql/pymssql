@@ -111,6 +111,8 @@ ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 SYSTEM = platform.system()
 
+print("setup.py: platform.system() => %r" % SYSTEM)
+
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 
@@ -129,6 +131,16 @@ else:
             FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
         elif SYSTEM == 'Linux':
             FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+        elif SYSTEM == 'FreeBSD':
+            print("""setup.py: Detected FreeBSD.
+    For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
+    and compiling it yourself.
+
+    If you use the Port, make sure to specify the option MSDBLIB.
+
+    If you build FreeTDS yourself, make sure to call ./configure with
+    --enable-msdblib.
+            """)
 
     if FREETDS and osp.exists(FREETDS):
         print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
