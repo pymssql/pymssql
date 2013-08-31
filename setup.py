@@ -112,6 +112,7 @@ WINDOWS = False
 SYSTEM = platform.system()
 
 print("setup.py: platform.system() => %r" % SYSTEM)
+print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
