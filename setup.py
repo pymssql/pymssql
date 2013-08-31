@@ -113,6 +113,8 @@ SYSTEM = platform.system()
 
 print("setup.py: platform.system() => %r" % SYSTEM)
 print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
+print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
+print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
