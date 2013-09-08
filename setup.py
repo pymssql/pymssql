@@ -111,6 +111,11 @@ ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 SYSTEM = platform.system()
 
+print("setup.py: platform.system() => %r" % SYSTEM)
+print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
+print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
+print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
+
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 
@@ -124,11 +129,28 @@ else:
 
     FREETDS = None
 
-    if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
+    with stdchannel_redirected(sys.stderr, os.devnull):
+       libc_has_vasprintf_chk = compiler.has_function('__vasprintf_chk')
+       print("setup.py: libc_has_vasprintf_chk = %r" % libc_has_vasprintf_chk)
+
+    if not libc_has_vasprintf_chk:
+        print("setup.py: libc doesn't have __vasprintf_chk - not going to use bundled FreeTDS")
+
+    if libc_has_vasprintf_chk and not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if sys.platform == 'darwin':
             FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
         elif SYSTEM == 'Linux':
             FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+        elif SYSTEM == 'FreeBSD':
+            print("""setup.py: Detected FreeBSD.
+    For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
+    and compiling it yourself.
+
+    If you use the Port, make sure to specify the option MSDBLIB.
+
+    If you build FreeTDS yourself, make sure to call ./configure with
+    --enable-msdblib.
+            """)
 
     if FREETDS and osp.exists(FREETDS):
         print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
@@ -137,11 +159,26 @@ else:
     else:
         print('setup.py: Not using bundled FreeTDS')
 
-    libraries = [ 'sybdb', 'ct' ]
+    libraries = ['sybdb']
 
     with stdchannel_redirected(sys.stderr, os.devnull):
         if compiler.has_function('clock_gettime', libraries=['rt']):
             libraries.append('rt')
+
+usr_local = '/usr/local'
+if osp.exists(usr_local):
+    add_dir_if_exists(
+        include_dirs,
+        osp.join(usr_local, 'include'),
+        osp.join(usr_local, 'include/freetds'),
+        osp.join(usr_local, 'freetds/include')
+    )
+    add_dir_if_exists(
+        library_dirs,
+        osp.join(usr_local, 'lib'),
+        osp.join(usr_local, 'lib/freetds'),
+        osp.join(usr_local, 'freetds/lib')
+    )
 
 if sys.platform == 'darwin':
     fink = '/sw'
@@ -362,7 +399,7 @@ setup(
         ('', ['_mssql.pyx', 'pymssql.pyx'])
     ],
     zip_safe = False,
-    tests_require=['nose'],
+    tests_require=['nose', 'unittest2'],
     test_suite='nose.collector',
     setup_requires=["Cython>=0.15.1"],
     ext_modules = [

@@ -205,7 +205,7 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot start transaction: ' + str(e.args[0]))
 
-    def __del__(self):
+    def __dealloc__(self):
         if self.conn:
             self.close()
 
@@ -220,6 +220,12 @@ cdef class Connection:
         tran_type = 'ROLLBACK' if status else 'BEGIN'
         self._conn.execute_non_query('%s TRAN' % tran_type)
         self._autocommit = status
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def close(self):
         """
@@ -340,6 +346,12 @@ cdef class Cursor:
         protocol.
         """
         return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def callproc(self, str procname, parameters=()):
         """

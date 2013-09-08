@@ -1,151 +1,165 @@
+pymssql
+#######
+
 Building
 ========
 
-    To build pymssql you should have:
+To build pymssql you should have:
 
-        * python >= 2.5 (including development files, i.e. pyton-dev packages)
-        * Cython >= 0.15
-        * FreeTDS >= 0.91
+* python >= 2.5 including development files. Please research your OS usual
+  software distribution channels, e.g, ``python-dev`` or ``python-devel``
+  packages)
+* Cython >= 0.15
+* FreeTDS >= 0.91 including development files. Please research your OS usual
+  software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
+  packages)
 
-    MinGW
-    =====
+Windows
+-------
 
-    Add to the above requirements:
+MinGW
+^^^^^
 
-        * MinGW
+Add to the above requirements:
 
-    then you can run:
+* MinGW
 
-        python setup.py build -c mingw32
+then you can run::
 
-    which will build pymssql in the normal python fashion.
+  python setup.py build -c mingw32
 
-    MS Visual C++
-    =============
+which will build pymssql in the normal python fashion.
 
-    Environment Setup:
-    ------------------
+MS Visual C++
+^^^^^^^^^^^^^
 
-        The commands below should be ran inside a Visual Studio command prompt
-        or a command prompt window where the vcsvars*.bat file has been previously
-        run so it can set the needed environment vars.
+Environment Setup:
+~~~~~~~~~~~~~~~~~~
 
-    Building FreeTDS:
-    -----------------
+The commands below should be ran inside a Visual Studio command prompt or a
+command prompt window where the ``vcsvars*.bat`` file has been previously run so
+it can set the needed environment vars.
 
-        Build FreeTDS from the current or stable tarball:
+Building FreeTDS:
+~~~~~~~~~~~~~~~~~
 
-        http://ibiblio.org/pub/Linux/ALPHA/freetds/current/
-        http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/
+Build FreeTDS from the current_ or stable_ tarball.
 
-        Use nmake (included with VS C++) to build FreeTDS.  To do that,
+.. _current: http://ibiblio.org/pub/Linux/ALPHA/freetds/current/
+.. _stable: http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/
 
-        Define in the environment or on the command line:
+Use ``nmake`` (included with VS C++) to build FreeTDS.  To do that,
 
-              1. CONFIGURATION = debug/release
-              2. PLATFORM = win32/x64
+Define in the environment or on the command line:
 
-            These will determine what is built and where outputs are placed.
+1. ``CONFIGURATION`` = ``debug``/``release``
+2. ``PLATFORM`` = ``win32``/``x64``
 
-            Example invocations:
+These will determine what is built and where outputs are placed.
 
-                nmake.exe -f Nmakefile -nologo PLATFORM=win32 CONFIGURATION=debug
-                nmake.exe -f Nmakefile -nologo build-win32d
+Example invocations::
 
-        Fixing build errors:  I ran into a couple build errors when using VS 2008, see
-        the following links for resolutions.
+  nmake.exe -f Nmakefile -nologo PLATFORM=win32 CONFIGURATION=debug
+  nmake.exe -f Nmakefile -nologo build-win32d
 
-        http://www.freetds.org/userguide/osissues.htm
-        http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
+Fixing build errors:  I ran into a couple build errors when using VS 2008, see
+the following links for resolutions:
 
-        When this is done, the follwing files should be available (dependening on
-        CONFIGURATION and PLATFORM) used above:
+- http://www.freetds.org/userguide/osissues.htm
+- http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
 
-        src\dblib\<PLATFORM>\<CONFIGURATION>\db-lib.lib
-        src\tds\<PLATFORM>\<CONFIGURATION>\tds.lib
+When this is done, the following files should be available (depending on
+``CONFIGURATION`` and ``PLATFORM`` used above)::
 
-        for example:
+  src\dblib\<PLATFORM>\<CONFIGURATION>\db-lib.lib
+  src\tds\<PLATFORM>\<CONFIGURATION>\tds.lib
 
-        src\dblib\win32\release\db-lib.lib
-        src\dblib\win32\release\tds.lib
+for example::
 
-        Those files should then be copied to:
+  src\dblib\win32\release\db-lib.lib
+  src\dblib\win32\release\tds.lib
 
-        <pymssql root>\freetds\vs2008_<bitness>\lib\
+Those files should then be copied to::
 
-        for example:
+  <pymssql root>\freetds\vs2008_<bitness>\lib\
 
-        <pymssql root>\freetds\vs2008_32\lib\
-        <pymssql root>\freetds\vs2008_64\lib\
+for example::
 
-        The location obviously depends on whether you are wanting a 32 or 64 bit
-        build.
+  <pymssql root>\freetds\vs2008_32\lib\
+  <pymssql root>\freetds\vs2008_64\lib\
 
-        *NOTE*: This process is currently only tested with Visual Studio 2008 targeting a
-        32-bit build.  If you run into problems, please post to the mailing list.
+The location obviously depends on whether you are performing a 32 or 64 bit
+build.
 
-        Then you can simply run:
+.. note::
 
-            python setup.py build
+  This process is currently only tested with Visual Studio 2008 targeting a
+  32-bit build. If you run into problems, please post to the mailing list.
 
-        or other setup.py commands as needed.
+Then you can simply run::
 
-    Unix
-    ====
+  python setup.py build
 
-        To build on Unix you must also have:
+or other ``setup.py`` commands as needed.
 
-            * gcc
+Unix
+====
 
-        Then you can simply run:
+To build on Unix you must also have:
 
-            python setup.py build
+* gcc
 
-        or other setup.py commands as needed.
+Then you can simply run::
+
+  python setup.py build
+
+or other ``setup.py`` commands as needed.
 
 Testing
 =======
 
-*** ALL DATA IN TESTING DBS WILL BE DELETED !!!! ***
+.. danger::
 
-You will need to install two additional packages for testing:
+  ALL DATA IN TESTING DBS WILL BE DELETED !!!!
 
-    easy_install nose SQLAlchemy
+You will need to install two additional packages for testing::
 
-You should build the package with:
+  easy_install nose SQLAlchemy
 
-    python setup.py develop
+You should build the package with::
 
-You need to setup a tests.cfg file in tests/ with the correct DB connection
-information for your environement:
+  python setup.py develop
 
-    cd tests/
-    cp tests.cfg.tpl tests.cfg
-    vim|emacs|notepad tests.cfg
+You need to setup a ``tests.cfg`` file in ``tests/`` with the correct DB
+connection information for your environement::
 
-To run the tests:
+  cd tests/
+  cp tests.cfg.tpl tests.cfg
+  vim|emacs|notepad tests.cfg
 
-    cd tests/
-    nosetests
+To run the tests::
 
-Which will go through and run all the tests with the settings from the DEFAULT
-section of tests.cfg.
+  cd tests/
+  nosetests
 
-To run with a different tests.cfg section:
+Which will go through and run all the tests with the settings from the ``DEFAULT``
+section of ``tests.cfg``.
 
-    nosetests --pymssql-section=<secname>
+To run with a different ``tests.cfg`` section::
 
-example:
+  nosetests --pymssql-section=<secname>
 
-    nosetests --pymssql-section=AllTestsWillRun
+example::
 
-to avoid slow tests:
+  nosetests --pymssql-section=AllTestsWillRun
 
-    nosetests -a '!slow'
+to avoid slow tests::
 
-to select specific tests to run:
+  nosetests -a '!slow'
 
-    nosetests test_types.py
-    nosetests test_types.py test_sprocs.py
-    nosetests test_types.py:TestTypes
-    nosetests test_types.py:TestTypes.test_image
+to select specific tests to run::
+
+  nosetests test_types.py
+  nosetests test_types.py test_sprocs.py
+  nosetests test_types.py:TestTypes
+  nosetests test_types.py:TestTypes.test_image

@@ -37,6 +37,7 @@ if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
     import uuid
 
 import os
+import sys
 import socket
 import decimal
 import datetime
@@ -602,6 +603,8 @@ cdef class MSSQLConnection:
             self.dbproc = NULL
 
         self._connected = 0
+        PyMem_Free(self.last_msg_proc)
+        PyMem_Free(self.last_msg_srv)
         PyMem_Free(self.last_msg_str)
         PyMem_Free(self._charset)
         connection_object_list.remove(self)
@@ -615,6 +618,9 @@ cdef class MSSQLConnection:
         cdef DBDATEREC di
         cdef DBDATETIME dt
         cdef DBCOL dbcol
+
+        IF PYMSSQL_DEBUG == 1:
+            sys.stderr.write("convert_db_value: dbtype = %d; length = %d\n" % (dbtype, length))
 
         if dbtype == SQLBIT:
             return bool(<int>(<DBBIT *>data)[0])
@@ -685,6 +691,10 @@ cdef class MSSQLConnection:
         cdef PY_LONG_LONG *longValue
         cdef char *strValue, *tmp
         cdef BYTE *binValue
+        cdef DBTYPEINFO decimal_type_info
+
+        IF PYMSSQL_DEBUG == 1:
+            sys.stderr.write("convert_python_value: value = %r; dbtype = %d" % (value, dbtype[0]))
 
         if value is None:
             dbValue[0] = <BYTE *>NULL
@@ -738,6 +748,39 @@ cdef class MSSQLConnection:
                 "%03d" % (value.microsecond // 1000)
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
+
+        if dbtype[0] in (SQLNUMERIC, SQLDECIMAL):
+            # There seems to be no harm in setting precision higher than
+            # necessary
+            decimal_type_info.precision = 33
+
+            # Figure out `scale` - number of digits after decimal point
+            decimal_type_info.scale = abs(value.as_tuple().exponent)
+
+            # Need this to prevent Cython error:
+            # "Obtaining 'BYTE *' from temporary Python value"
+            # bytes_value = bytes(str(value), encoding="ascii")
+            bytes_value = unicode(value).encode("ascii")
+
+            decValue = <DBDECIMAL *>PyMem_Malloc(sizeof(DBDECIMAL))
+            length[0] = dbconvert_ps(
+                self.dbproc,
+                SQLCHAR,
+                bytes_value,
+                -1,
+                dbtype[0],
+                <BYTE *>decValue,
+                sizeof(DBDECIMAL),
+                &decimal_type_info,
+            )
+            dbValue[0] = <BYTE *>decValue
+
+            IF PYMSSQL_DEBUG == 1:
+                fprintf(stderr, "convert_python_value: Converted value to DBDECIMAL with length = %d\n", length[0])
+                for i in range(0, 35):
+                    fprintf(stderr, "convert_python_value: dbValue[0][%d] = %d\n", i, dbValue[0][i])
+
+            return 0
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
             if type(value) in (int, long, bytes):
@@ -980,6 +1023,8 @@ cdef class MSSQLConnection:
             query_string_cstr = query_string_bytes
 
             log(query_string_cstr)
+            if self.debug_queries:
+                sys.stderr.write("#%s#\n" % query_string)
 
             # Prepare the query buffer
             dbcmd(self.dbproc, query_string_cstr)
@@ -1263,7 +1308,7 @@ cdef class MSSQLStoredProcedure:
                 length = strlen(<char *>data)
         else:
             # Fixed length data type
-            if null or output:
+            if null or (output and dbtype not in (SQLDECIMAL, SQLNUMERIC)):
                 length = 0
             max_length = -1
 

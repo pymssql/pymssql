@@ -23,7 +23,7 @@ cdef class MSSQLConnection:
     cdef int last_msg_line
     cdef int last_dbresults
     cdef int num_columns
-    cdef int debug_queries
+    cdef public bint debug_queries
     cdef char *last_msg_str
     cdef char *last_msg_srv
     cdef char *last_msg_proc

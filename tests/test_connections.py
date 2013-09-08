@@ -1,6 +1,11 @@
 from __future__ import with_statement
 from os import path, makedirs, environ
+import re
 import shutil
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from nose.plugins.skip import SkipTest
 
@@ -24,7 +29,7 @@ def setup_module():
     if not path.isdir(tmpdir):
         makedirs(tmpdir)
 
-class TestCons(object):
+class TestCons(unittest.TestCase):
     def connect(self, **kwargs):
         environ['TDSDUMPCONFIG'] = config_dump_path
         environ['TDSDUMP'] = dump_path
@@ -34,35 +39,57 @@ class TestCons(object):
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
+<<<<<<< local
         assert 'server_host_name = %s' % server in cdump
         assert 'server_name = %s' % server in cdump
         assert 'user_name = %s' % username in cdump
         assert 'port = %s' % port in cdump
+=======
+        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        self.assertIn(server, dump_server_name)
+        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_server_host_name, server)
+        dump_user_name = re.search('user_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_user_name, username)
+        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        self.assertIn(port, dump_port)
+>>>>>>> other
 
     def test_connection_by_ip(self):
         cdump = self.connect(server=ipaddress, port=port, user=username, password=password)
-        assert 'server_name = %s' % ipaddress in cdump
-        assert 'server_host_name = %s' % ipaddress in cdump
+        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        self.assertIn(ipaddress, dump_server_name)
+        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_server_host_name, ipaddress)
 
     def test_port_override_ipaddress(self):
         server_join = '%s:%s' % (ipaddress, port)
         cdump = self.connect(server=server_join, user=username, password=password)
-        assert 'server_name = %s' % server_join in cdump
-        assert 'server_host_name = %s' % ipaddress in cdump
-        assert 'port = %s' % port in cdump
+        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        self.assertIn(server_join, dump_server_name)
+        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_server_host_name, ipaddress)
+        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        self.assertIn(port, dump_port)
 
     def test_port_override_name(self):
         server_join = '%s:%s' % (server, port)
         cdump = self.connect(server=server_join, user=username, password=password)
-        assert 'server_name = %s' % server_join in cdump
-        assert 'server_host_name = %s' % server in cdump
-        assert 'port = %s' % port in cdump
+        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        self.assertIn(server, dump_server_name)
+        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_server_host_name, server)
+        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        self.assertIn(port, dump_port)
 
     def test_instance(self):
         if not instance:
             raise SkipTest
         server_join = r'%s\%s' % (server, instance)
         cdump = self.connect(server=server_join, user=username, password=password)
-        assert 'server_name = %s' % server_join in cdump
-        assert 'server_host_name = %s' % server in cdump
-        assert 'port = 0' in cdump
+        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        self.assertIn(server, dump_server_name)
+        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_server_host_name, server)
+        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        self.assertEqual(dump_port, 0)
