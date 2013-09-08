@@ -39,12 +39,6 @@ class TestCons(unittest.TestCase):
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
-<<<<<<< local
-        assert 'server_host_name = %s' % server in cdump
-        assert 'server_name = %s' % server in cdump
-        assert 'user_name = %s' % username in cdump
-        assert 'port = %s' % port in cdump
-=======
         dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
         self.assertIn(server, dump_server_name)
         dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
@@ -53,7 +47,6 @@ class TestCons(unittest.TestCase):
         self.assertEqual(dump_user_name, username)
         dump_port = re.search('port = (\S+)', cdump).groups()[0]
         self.assertIn(port, dump_port)
->>>>>>> other
 
     def test_connection_by_ip(self):
         cdump = self.connect(server=ipaddress, port=port, user=username, password=password)
