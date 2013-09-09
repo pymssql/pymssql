@@ -437,7 +437,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
