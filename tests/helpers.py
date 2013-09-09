@@ -20,7 +20,6 @@ def mssqlconn():
             password=config.password,
             database=config.database,
             port=config.port,
-            charset='UTF-8'
         )
 
 def pymssqlconn():
@@ -30,7 +29,6 @@ def pymssqlconn():
             password=config.password,
             database=config.database,
             port=config.port,
-            charset='UTF-8'
         )
 
 def drop_table(conn, tname):

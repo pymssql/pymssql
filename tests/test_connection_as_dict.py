@@ -11,7 +11,6 @@ def pymssqlconn(**kwargs):
             password=config.password,
             database=config.database,
             port=config.port,
-            charset='UTF-8',
             **kwargs
         )
 

@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from .helpers import config
 
 engine = sa.create_engine(
-        'mssql+pymssql://%s:%s@%s:%s/%s?charset=UTF-8' % (
+        'mssql+pymssql://%s:%s@%s:%s/%s' % (
             config.user,
             config.password,
             config.server,
