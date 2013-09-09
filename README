@@ -103,7 +103,7 @@ Then you can simply run::
 or other ``setup.py`` commands as needed.
 
 Unix
-====
+----
 
 To build on Unix you must also have:
 
