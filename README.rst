@@ -4,6 +4,9 @@ pymssql
 .. image:: https://pypip.in/d/pymssql/badge.png
         :target: https://crate.io/packages/pymssql
 
+.. image:: https://pypip.in/v/pymssql/badge.png
+        :target: https://crate.io/packages/pymssql
+
 Building
 ========
 
