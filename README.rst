@@ -10,7 +10,7 @@ pymssql
 Introduction
 ============
 
-pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with Python DB-API 2.0 Specification and works on most popular operating systems.
+pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with `Python DB-API 2.0 Specification <http://www.python.org/dev/peps/pep-0249/>` and works on most popular operating systems.
 
 Building
 ========
