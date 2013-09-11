@@ -7,6 +7,11 @@ pymssql
 .. image:: https://pypip.in/v/pymssql/badge.png
         :target: https://crate.io/packages/pymssql
 
+Introduction
+============
+
+pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with Python DB-API 2.0 Specification and works on most popular operating systems.
+
 Building
 ========
 
