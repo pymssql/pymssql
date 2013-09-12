@@ -1,6 +1,17 @@
 pymssql
 #######
 
+.. image:: https://pypip.in/d/pymssql/badge.png
+        :target: https://crate.io/packages/pymssql
+
+.. image:: https://pypip.in/v/pymssql/badge.png
+        :target: https://crate.io/packages/pymssql
+
+Introduction
+============
+
+pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with `Python DB-API 2.0 Specification <http://www.python.org/dev/peps/pep-0249/>`_ and works on most popular operating systems.
+
 Building
 ========
 
@@ -8,11 +19,11 @@ To build pymssql you should have:
 
 * python >= 2.5 including development files. Please research your OS usual
   software distribution channels, e.g, ``python-dev`` or ``python-devel``
-  packages)
+  packages.
 * Cython >= 0.15
 * FreeTDS >= 0.91 including development files. Please research your OS usual
   software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
-  packages)
+  packages.
 
 Windows
 -------
@@ -103,7 +114,7 @@ Then you can simply run::
 or other ``setup.py`` commands as needed.
 
 Unix
-====
+----
 
 To build on Unix you must also have:
 
