@@ -219,7 +219,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
 
-    sprintf(mssql_message, '%sDB-Lib error message %d, severity %d:\n%s\n',
+    sprintf(mssql_message, '%s DB-Lib error message %d, severity %d:\n%s\n',
         mssql_lastmsgstr, dberr, severity, dberrstr)
 
     if oserr != DBNOERR and oserr != 0:
