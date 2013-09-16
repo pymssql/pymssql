@@ -9,7 +9,7 @@ before_install:
 install:
 - python setup.py install
 script:
-- nosetests -v
+- nosetests -w tests -v
 env:
   global:
   - secure: KQ7dawxyyp+skShD+iIT+D6qVaeKZVeZXDM+kpA5hvZNdDMI9iVSAUbVlg7Al26l18cSPCxkYNAsi1N4vsD7x0wGjsEAhC6mpytkc1Igwv0OppmjZI5BhxJWsGPEogzk78HM8JALG4SNhW3xGB0IQtqcV1GogbYmRqw+IDriGm0=
