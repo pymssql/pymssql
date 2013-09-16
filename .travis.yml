@@ -7,7 +7,7 @@ before_install:
 - sudo apt-get install freetds-dev
 - pip install --use-mirrors Cython nose
 install:
-- python setup.py install
+- python setup.py develop
 script:
 - nosetests -w tests -v
 env:
