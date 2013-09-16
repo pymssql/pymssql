@@ -47,13 +47,13 @@ class ConfigPlugin(Plugin):
         if not _parser.has_section(section) and section != 'DEFAULT':
             raise ValueError('the tests.cfg file does not have section: %s' % section)
 
-        th.config.server = _parser.get(section, 'server')
-        th.config.user= _parser.get(section, 'username')
-        th.config.password = _parser.get(section, 'password')
-        th.config.database = _parser.get(section, 'database')
-        th.config.port = _parser.get(section, 'port')
-        th.config.ipaddress = _parser.get(section, 'ipaddress')
-        th.config.instance = _parser.get(section, 'instance')
+        th.config.server = os.getenv('PYMSSQL_TEST_SERVER') or _parser.get(section, 'server')
+        th.config.user = os.getenv('PYMSSQL_TEST_USERNAME') or _parser.get(section, 'username')
+        th.config.password = os.getenv('PYMSSQL_TEST_PASSWORD') or _parser.get(section, 'password')
+        th.config.database = os.getenv('PYMSSQL_TEST_DATABASE') or _parser.get(section, 'database')
+        th.config.port = os.getenv('PYMSSQL_TEST_PORT') or _parser.get(section, 'port')
+        th.config.ipaddress = os.getenv('PYMSSQL_TEST_IPADDRESS') or _parser.get(section, 'ipaddress')
+        th.config.instance = os.getenv('PYMSSQL_TEST_INSTANCE') or _parser.get(section, 'instance')
         th.config.orig_decimal_prec = decimal.getcontext().prec
 
     def begin(self):
