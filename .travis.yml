@@ -5,7 +5,7 @@ python:
 - 3.3
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors Cython nose
+- pip install --use-mirrors Cython nose SQLAlchemy
 install:
 - python setup.py develop
 script:
