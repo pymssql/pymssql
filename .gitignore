@@ -1,6 +1,8 @@
 build
 *.c
 *.so
+a.out
+tmp/
 tests/tests.cfg
 *.venv
 *.pyc
