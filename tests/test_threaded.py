@@ -1,3 +1,5 @@
+from os import getpid
+from socket import gethostname
 import threading
 import unittest
 
@@ -7,6 +9,9 @@ from nose.plugins.attrib import attr
 import _mssql
 
 from .helpers import mssqlconn
+
+error_thread_test_sproc_name = 'pymssqlErrorThreadTest_%s_%d' % (gethostname(), getpid())
+error_thread_test_sproc_name = error_thread_test_sproc_name.replace('-', '_')
 
 class TestingThread(threading.Thread):
 
@@ -52,7 +57,7 @@ class SprocTestingErrorThread(threading.Thread):
             mssql = mssqlconn()
             for i in range(0, 1000):
                 try:
-                    proc = mssql.init_procedure('pymssqlErrorThreadTest')
+                    proc = mssql.init_procedure(error_thread_test_sproc_name)
                     proc.execute()
                 except:
                     pass
@@ -101,7 +106,7 @@ class ThreadedTests(unittest.TestCase):
                     break
 
     def testErrorSprocThreadedUse(self):
-        spname = 'pymssqlErrorThreadTest'
+        spname = error_thread_test_sproc_name
         mssql = mssqlconn()
         try:
             mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
