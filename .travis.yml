@@ -6,6 +6,7 @@ python:
 before_install:
 - sudo apt-get install freetds-dev
 - pip install --use-mirrors Cython nose SQLAlchemy
+- "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
 - python setup.py develop
 script:
