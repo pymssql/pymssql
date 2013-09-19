@@ -136,10 +136,26 @@ else:
     if not libc_has_vasprintf_chk:
         print("setup.py: libc doesn't have __vasprintf_chk - not going to use bundled FreeTDS")
 
+    if sys.platform == 'darwin':
+        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        print("""setup.py: Detected Darwin/Mac OS X.
+    You can install FreeTDS with Homebrew or MacPorts, or by downloading
+    and compiling it yourself.
+
+    Homebrew (http://brew.sh/)
+    --------------------------
+    brew install freetds --enable-msdblib
+
+    MacPorts (http://www.macports.org/)
+    -----------------------------------
+    sudo port install freetds +mssql
+
+    If you build FreeTDS yourself, make sure to call ./configure with
+    --enable-msdblib.
+        """)
+
     if libc_has_vasprintf_chk and not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
-        if sys.platform == 'darwin':
-            FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
-        elif SYSTEM == 'Linux':
+        if SYSTEM == 'Linux':
             FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
             print("""setup.py: Detected FreeBSD.
