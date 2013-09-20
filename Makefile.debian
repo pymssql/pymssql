@@ -1,0 +1,14 @@
+PYTHON = /usr/bin/python
+
+module:
+	$(PYTHON) setup.py build
+
+install: module
+	$(PYTHON) setup.py install `test -n "$(DESTDIR)" && echo --root $(DESTDIR)`
+
+clean:
+	rm -fr build debian/python-mssql* debian/files configure-stamp build-stamp build-ext-*
+
+deb:
+	fakeroot dpkg-buildpackage
+

@@ -1,0 +1,17 @@
+ChangeLog
+MANIFEST
+PKG-INFO
+README
+TODO
+lgpl.txt
+mssqldbmodule.c
+ntwdblib.dll
+pymssql.py
+setup.py
+nagios-plugin/check_mssql
+nagios-plugin/mssql.cfg
+pymssql.egg-info/PKG-INFO
+pymssql.egg-info/SOURCES.txt
+pymssql.egg-info/dependency_links.txt
+pymssql.egg-info/not-zip-safe
+pymssql.egg-info/top_level.txt

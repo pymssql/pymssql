@@ -1,0 +1,104 @@
+pythonsource {
+   	 background-color: #eeeeee; font-family: "Courier New", Courier, monospace; font-size: 12px; text-decoration: none
+}
+.sourceblock           { background-color: #eeeeee; color: #000000 }
+.format_global         { background-color: #eeeeee; color: #000000 }
+
+FONT.basic_type        { color: #604020 } 
+FONT.keyword_flow      { color: #e08000 } 
+FONT.keyword           { color: #008000 } 
+FONT.access_specifier  { color: #ff0000 } 
+FONT.type_specifier    { color: #0000ff } 
+FONT.comment           { color: #800000 } 
+FONT.preproc           { color: #806020 } 
+FONT.preproc_startcond { color: #228b22 } 
+FONT.preproc_cond      { color: #806020 } 
+FONT.preproc_endcond   { color: #228b22 } 
+FONT.preproc_define    { color: #228b22 } 
+FONT.string_literal    { color: #002080 } 
+FONT.char_literal      { color: #008080 } 
+FONT.java_lang         { color: #8b008b } 
+FONT.python_exception  { color: #8b008b } 
+FONT.verilog_kw        { color: #008000 } 
+FONT.verilog_bt        { color: #8b008b } 
+FONT.vhdl_function     { color: #8b008b } 
+FONT.vhdl_package      { color: #ff0000 } 
+FONT.vhdl_attribute    { color: #b22222 } 
+FONT.vhdl_enum         { color: #a020f0 } 
+FONT.vhdl_constant     { color: #902080 } 
+
+p, body, h2, h3 { font-family: Verdana, Arial, Helvetica, sans-serif }
+p, body { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10pt }
+tt { margin-left: 2em }
+
+.code { font-family: "Courier New", Courier, monospace; }
+.codebold { font-family: "Courier New", Courier, monospace; font-weight: bold; }
+
+hr {
+	border-left:solid 1px #cccccc; border-top:solid 1px #cccccc; 
+	border-right:solid 2px #ffffff; border-bottom:solid 2px #ffffff 
+}
+
+.q { font-weight: bold; font-style: italic; padding-left:1em }
+.a { padding-left: 3em }
+.desc { padding-left:2em }
+
+.cen { text-align: center; border: solid 1px #888888; padding: 5px }
+.menulink { text-decoration: none; color: #333333 }
+
+/* syntax coloring by pygments */
+.hll { background-color: #eeeeee }
+.syntax {
+	background: #eeeeee; font-family: "Courier New", Courier, monospace;
+	border: 1px solid #ccc; padding: 0.4em 0.4em; width: 85%;
+}
+
+.syntaxindent {
+	background: #eeeeee; font-family: "Courier New", Courier, monospace;
+	border: 1px solid #ccc; padding: 0.4em 0.4em; width: 92%;
+}
+
+.news {
+	background: #ffffff; color: #222222;
+	padding: 0.5em 0.5em; width: 90%;
+}
+
+.n { color: #000000 } /* normal */
+.o { color: #000000 } /* operator */
+.p { color: #000000 } /* punctuation */
+.ty { color: #00008b } /* type */
+.me { color: #008b8b } /* method */
+
+.c { color: #008000; font-style:italic } /* Comment */
+.err { border: 1px solid #FF0000 } /* Error */
+.k { color: #0000ff } /* Keyword */
+.cm { color: #008000 } /* Comment.Multiline */
+.cp { color: #0000ff } /* Comment.Preproc */
+.c1 { color: #008000 } /* Comment.Single */
+.cs { color: #008000 } /* Comment.Special */
+.ge { font-style: italic } /* Generic.Emph */
+.gh { font-weight: bold } /* Generic.Heading */
+.gp { font-weight: bold } /* Generic.Prompt */
+.gs { font-weight: bold } /* Generic.Strong */
+.gu { font-weight: bold } /* Generic.Subheading */
+.kc { color: #0000ff } /* Keyword.Constant */
+.kd { color: #0000ff } /* Keyword.Declaration */
+.kn { color: #0000ff } /* Keyword.Namespace */
+.kp { color: #0000ff } /* Keyword.Pseudo */
+.kr { color: #0000ff } /* Keyword.Reserved */
+.kt { color: #2b91af } /* Keyword.Type */
+.s { color: #a31515 } /* Literal.String */
+.sf { color: #FF2222 } /* Literal.String */
+.nc { color: #2b91af } /* Name.Class */
+.ow { color: #0000ff } /* Operator.Word */
+.sb { color: #a31515 } /* Literal.String.Backtick */
+.sc { color: #a31515 } /* Literal.String.Char */
+.sd { color: #a31515 } /* Literal.String.Doc */
+.s2 { color: #a31515 } /* Literal.String.Double */
+.se { color: #a31515 } /* Literal.String.Escape */
+.sh { color: #a31515 } /* Literal.String.Heredoc */
+.si { color: #a31515 } /* Literal.String.Interpol */
+.sx { color: #a31515 } /* Literal.String.Other */
+.sr { color: #a31515 } /* Literal.String.Regex */
+.s1 { color: #a31515 } /* Literal.String.Single */
+.ss { color: #a31515 } /* Literal.String.Symbol */
