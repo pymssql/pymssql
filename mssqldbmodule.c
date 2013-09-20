@@ -1934,12 +1934,12 @@ PyObject *get_result(_mssql_connection *conn) {
 
 	// find a result set that has at least one column
 	conn->last_dbresults = SUCCEED;
-	while (conn->last_dbresults == SUCCEED &&
-			(conn->num_columns = dbnumcols(conn->dbproc)) <= 0) {
+	do {
 		Py_BEGIN_ALLOW_THREADS
 		conn->last_dbresults = dbresults(conn->dbproc);
 		Py_END_ALLOW_THREADS
-	}
+	} while (conn->last_dbresults == SUCCEED &&
+			(conn->num_columns = dbnumcols(conn->dbproc)) <= 0);
 
 	check_cancel_and_raise(conn->last_dbresults, conn);
 
