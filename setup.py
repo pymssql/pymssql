@@ -60,17 +60,22 @@ except ImportError:
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
 
-#
-# Force `setup_requires` stuff like Cython to be installed before proceeding
-#
-from setuptools.dist import Distribution
-Distribution(dict(setup_requires='Cython>=0.13.1'))
+have_c_files = osp.exists('_mssql.c') and osp.exists('pymssql.c')
 
 from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
 from distutils import ccompiler
-from Cython.Distutils import build_ext as _build_ext
+if have_c_files:
+    from distutils.command.build_ext import build_ext as _build_ext
+else:
+    #
+    # Force `setup_requires` stuff like Cython to be installed before proceeding
+    #
+    from setuptools.dist import Distribution
+    Distribution(dict(setup_requires='Cython>=0.19.1'))
+
+    from Cython.Distutils import build_ext as _build_ext
 import struct
 
 @contextlib.contextmanager
@@ -396,6 +401,25 @@ class DevelopCmd(STDevelopCmd):
         self.distribution.entry_points['nose.plugins'] = ['pymssql_config = tests.nose_plugin:ConfigPlugin']
         STDevelopCmd.run(self)
 
+def ext_modules():
+    if have_c_files:
+        source_extension = 'c'
+    else:
+        source_extension = 'pyx'
+
+    return [
+        Extension('_mssql', ['_mssql.%s' % source_extension],
+            extra_compile_args = _extra_compile_args,
+            include_dirs = include_dirs,
+            library_dirs = library_dirs
+        ),
+        Extension('pymssql', ['pymssql.%s' % source_extension],
+            extra_compile_args = _extra_compile_args,
+            include_dirs = include_dirs,
+            library_dirs = library_dirs
+        ),
+    ]
+
 setup(
     name  = 'pymssql',
     version = '2.0.0b1',
@@ -417,19 +441,7 @@ setup(
     zip_safe = False,
     tests_require=['nose', 'unittest2'],
     test_suite='nose.collector',
-    setup_requires=["Cython>=0.15.1"],
-    ext_modules = [
-        Extension('_mssql', ['_mssql.pyx'],
-            extra_compile_args = _extra_compile_args,
-            include_dirs = include_dirs,
-            library_dirs = library_dirs
-        ),
-        Extension('pymssql', ['pymssql.pyx'],
-            extra_compile_args = _extra_compile_args,
-            include_dirs = include_dirs,
-            library_dirs = library_dirs
-        ),
-    ],
+    ext_modules = ext_modules(),
 
     # don't remove this, otherwise the customization above in DevelopCmd
     # will break.  You can safely add to it though, if needed.
