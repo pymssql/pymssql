@@ -58,8 +58,32 @@ class PyTableBase(object):
         # table related commands managed by this class are handled in a
         # different connection
         cls._conn = mssqlconn()
+        cls.getapplock()
         drop_table(cls._conn, cls.tname)
         cls._conn.execute_non_query(cls.table_sql())
+
+    @classmethod
+    def teardown_class(cls):
+        cls.releaseapplock()
+
+    @classmethod
+    def getapplock(cls):
+        print("*** Grabbing app lock for PyTableBase")
+        cls._conn.execute_non_query("""
+        sp_getapplock
+            @Resource = 'PyTableBase',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session';
+        """)
+
+    @classmethod
+    def releaseapplock(cls):
+        print("*** Releasing app lock for PyTableBase")
+        cls._conn.execute_non_query("""
+        sp_releaseapplock
+            @Resource = 'PyTableBase',
+            @LockOwner = 'Session';
+        """)
 
     def setUp(self):
         clear_table(self._conn, self.tname)
@@ -125,7 +149,30 @@ class DBAPIBase(object):
         self.newconn()
 
     def setUp(self):
+        self.getapplock()
         self.conn.rollback()
+
+    def tearDown(self):
+        self.releaseapplock()
+
+    def getapplock(self):
+        print("*** Grabbing app lock for DBAPIBase")
+        cur = self.conn.cursor()
+        cur.execute("""
+        sp_getapplock
+            @Resource = 'DBAPIBase',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session';
+        """)
+
+    def releaseapplock(self):
+        print("*** Releasing app lock for DBAPIBase")
+        cur = self.conn.cursor()
+        cur.execute("""
+        sp_releaseapplock
+            @Resource = 'DBAPIBase',
+            @LockOwner = 'Session';
+        """)
 
     def execute(self, sql):
         cur = self.conn.cursor()
