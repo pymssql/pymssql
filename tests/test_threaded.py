@@ -10,9 +10,12 @@ from .helpers import mssqlconn
 
 class TestingThread(threading.Thread):
 
-    def run(self):
+    def __init__(self):
+        threading.Thread.__init__(self)
         self.running = True
         self.exc = None
+
+    def run(self):
         try:
             mssql = mssqlconn()
             for i in range(0, 1000):
@@ -27,9 +30,12 @@ class TestingThread(threading.Thread):
 
 class TestingErrorThread(threading.Thread):
 
-    def run(self):
+    def __init__(self):
+        threading.Thread.__init__(self)
         self.running = True
         self.exc = None
+
+    def run(self):
         try:
             mssql = mssqlconn()
             for i in range(0, 1000):
@@ -45,9 +51,12 @@ class TestingErrorThread(threading.Thread):
 
 class SprocTestingErrorThread(threading.Thread):
 
-    def run(self):
+    def __init__(self):
+        threading.Thread.__init__(self)
         self.running = True
         self.exc = None
+
+    def run(self):
         try:
             mssql = mssqlconn()
             for i in range(0, 1000):
