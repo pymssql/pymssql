@@ -30,6 +30,12 @@ class TestFixedTypeConversion(object):
 
     def setUp(self):
         self.mssql = mssqlconn()
+        self.mssql.execute_non_query("""
+        sp_getapplock
+            @Resource = 'TestFixedTypeConversion',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session';
+        """)
 
         for name in FIXED_TYPES:
             dbtype = name.lower()
@@ -58,6 +64,12 @@ class TestFixedTypeConversion(object):
     def tearDown(self):
         for name in FIXED_TYPES:
             self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlTest%s]' % name)
+
+        self.mssql.execute_non_query("""
+        sp_releaseapplock
+            @Resource = 'TestFixedTypeConversion',
+            @LockOwner = 'Session';
+        """)
 
         self.mssql.close()
 
@@ -185,6 +197,12 @@ class TestCallProcFancy(object):
     def setUp(self):
         self.pymssql = pymssqlconn()
         cursor = self.pymssql.cursor()
+        cursor.execute("""
+        sp_getapplock
+            @Resource = 'TestCallProcFancy',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session';
+        """)
 
         sql = u"""
         CREATE PROCEDURE [dbo].[someProcWithOneParam]
@@ -205,6 +223,12 @@ class TestCallProcFancy(object):
     def tearDown(self):
         cursor = self.pymssql.cursor()
         cursor.execute('DROP PROCEDURE [dbo].[someProcWithOneParam]')
+        cursor.execute("""
+        sp_releaseapplock
+            @Resource = 'TestCallProcFancy',
+            @LockOwner = 'Session';
+        """)
+
         self.pymssql.close()
 
     def testCallProcWithNone(self):
@@ -321,6 +345,12 @@ class TestStringTypeConversion(object):
 
     def setUp(self):
         self.mssql = mssqlconn()
+        self.mssql.execute_non_query("""
+        sp_getapplock
+            @Resource = 'TestFixedTypeConversion',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session';
+        """)
 
         for name, size in VARIABLE_TYPES:
             dbtype = name.lower()
@@ -348,6 +378,11 @@ class TestStringTypeConversion(object):
     def tearDown(self):
         for name, size in VARIABLE_TYPES:
             self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlTest%s]' % name)
+        self.mssql.execute_non_query("""
+        sp_releaseapplock
+            @Resource = 'TestFixedTypeConversion',
+            @LockOwner = 'Session';
+        """)
         self.mssql.close()
 
     def testChar(self):
