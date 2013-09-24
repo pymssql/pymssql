@@ -1,4 +1,5 @@
 from os import path
+import time
 
 from nose.tools import eq_
 
@@ -12,6 +13,7 @@ config = Config()
 cdir = path.dirname(__file__)
 tmpdir = path.join(cdir, 'tmp')
 cfgpath = path.join(cdir, 'tests.cfg')
+global_mssqlconn = None
 
 def mssqlconn():
     return _mssql.connect(
@@ -30,6 +32,43 @@ def pymssqlconn():
             database=config.database,
             port=config.port,
         )
+
+def get_app_lock():
+    global global_mssqlconn
+
+    if global_mssqlconn is None:
+        global_mssqlconn = mssqlconn()
+
+    t1 = time.time()
+
+    while True:
+        t2 = time.time()
+        print("*** %d: Grabbing app lock for pymssql tests" % (t2,))
+        result = global_mssqlconn.execute_scalar("""
+        DECLARE @result INTEGER;
+        EXEC @result = sp_getapplock
+            @Resource = 'pymssql_tests',
+            @LockMode = 'Exclusive',
+            @LockOwner = 'Session',
+            @LockTimeout = 60000;
+        SELECT @result AS result;
+        """)
+        if result != -1:  # -1 => timeout; keep looping
+            break
+
+    t2 = time.time()
+    print("*** %d: sp_getapplock for 'pymssql_tests' returned %d - it took %d seconds" % (t2, result, t2 - t1))
+
+def release_app_lock():
+    t1 = time.time()
+    result = global_mssqlconn.execute_scalar("""
+    DECLARE @result INTEGER;
+    EXEC @result = sp_releaseapplock
+        @Resource = 'pymssql_tests',
+        @LockOwner = 'Session';
+    SELECT @result AS result;
+    """)
+    print("*** %d: sp_releaseapplock for 'pymssql_tests' returned %d" % (t1, result))
 
 def drop_table(conn, tname):
     sql = "if object_id('%s') is not null drop table %s" % (tname, tname)

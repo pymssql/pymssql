@@ -10,7 +10,7 @@ import os
 from nose.plugins import Plugin
 
 import tests.helpers as th
-from .helpers import cfgpath, clear_db
+from .helpers import cfgpath, clear_db, get_app_lock, release_app_lock
 
 _parser = ConfigParser({
     'server': 'localhost',
@@ -57,4 +57,8 @@ class ConfigPlugin(Plugin):
         th.config.orig_decimal_prec = decimal.getcontext().prec
 
     def begin(self):
+        get_app_lock()
         clear_db()
+
+    def finalize(self, result):
+        release_app_lock()
