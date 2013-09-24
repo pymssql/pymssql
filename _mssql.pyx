@@ -31,6 +31,10 @@ DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
 DEF EXCOMM = 9
 
+# Provide constants missing in FreeTDS 0.82 so that we can build against it
+DEF DBVERSION_71 = 5
+DEF DBVERSION_72 = 6
+
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
