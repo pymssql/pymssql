@@ -173,7 +173,7 @@ else:
     --enable-msdblib.
             """)
 
-    if FREETDS and osp.exists(FREETDS):
+    if FREETDS and osp.exists(FREETDS) and os.getenv('PYMSSQL_BUILD_WITH_BUNDLED_FREETDS'):
         print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
         include_dirs.append(osp.join(FREETDS, 'include'))
         library_dirs.append(osp.join(FREETDS, 'lib'))
