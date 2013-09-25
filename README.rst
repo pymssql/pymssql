@@ -1,6 +1,9 @@
 pymssql
 #######
 
+.. image:: https://travis-ci.org/pymssql/pymssql.png
+        :target: https://travis-ci.org/pymssql/pymssql
+
 .. image:: https://pypip.in/d/pymssql/badge.png
         :target: https://crate.io/packages/pymssql
 
