@@ -169,6 +169,13 @@ login_timeout = 60
 
 min_error_severity = 6
 
+wait_callback = None
+
+def set_wait_callback(a_callable):
+    global wait_callback
+
+    wait_callback = a_callable
+
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
 
@@ -1037,7 +1044,10 @@ cdef class MSSQLConnection:
             dbcmd(self.dbproc, query_string_cstr)
 
             # Execute the query
-            rtc = db_sqlexec(self.dbproc)
+            rtc = dbsqlsend(self.dbproc)
+            if wait_callback:
+                wait_callback(self)
+            rtc = dbsqlok(self.dbproc)
             check_cancel_and_raise(rtc, self)
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
