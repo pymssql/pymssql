@@ -382,6 +382,7 @@ cdef class Cursor:
 
             proc.bind(param_value, db_type, output=param_output)
         self._returnvalue = proc.execute()
+        self.nextset()
         return tuple([proc.parameters[p] for p in proc.parameters])
 
     def close(self):
