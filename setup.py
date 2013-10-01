@@ -149,14 +149,11 @@ else:
 
     Homebrew (http://brew.sh/)
     --------------------------
-    brew install freetds --enable-msdblib
+    brew install freetds
 
     MacPorts (http://www.macports.org/)
     -----------------------------------
     sudo port install freetds +mssql
-
-    If you build FreeTDS yourself, make sure to call ./configure with
-    --enable-msdblib.
         """)
 
     if libc_has_vasprintf_chk and not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
@@ -166,11 +163,6 @@ else:
             print("""setup.py: Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
     and compiling it yourself.
-
-    If you use the Port, make sure to specify the option MSDBLIB.
-
-    If you build FreeTDS yourself, make sure to call ./configure with
-    --enable-msdblib.
             """)
 
     if FREETDS and osp.exists(FREETDS) and os.getenv('PYMSSQL_BUILD_WITH_BUNDLED_FREETDS'):
