@@ -1,5 +1,6 @@
 import datetime
 import gevent
+import gevent.socket
 import os
 import pymssql
 #import random
@@ -33,6 +34,7 @@ def do_test():
     dt1 = datetime.datetime.now()
 
     for i in range(5):
+        gevent.sleep(1)
         greenlets.append(gevent.spawn(run, i))
 
     gevent.joinall(greenlets)
@@ -42,13 +44,22 @@ def do_test():
     print("Done running - elapsed time: %s" % (dt2 - dt1))
 
 
-print("**** Running test WITHOUT gevent.sleep wait_callback...\n")
+print("**** Running test with NO wait_callback...\n")
 do_test()
 
 print("\n***** Running test WITH gevent.sleep wait_callback...\n")
-def wait_callback(dbproc):
-    print("    *** wait_callback called with dbproc = %r" % (dbproc,))
+def wait_callback(read_fileno):
+    # print("    *** wait_callback called with read_fileno = %r" % (read_fileno,))
     gevent.sleep()
+
+pymssql.set_wait_callback(wait_callback)
+
+do_test()
+
+print("\n***** Running test WITH gevent.socket.wait_read wait_callback...\n")
+def wait_callback(read_fileno):
+    # print("    *** wait_callback called with read_fileno = %r" % (read_fileno,))
+    gevent.socket.wait_read(read_fileno)
 
 pymssql.set_wait_callback(wait_callback)
 

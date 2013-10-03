@@ -1042,8 +1042,9 @@ cdef class MSSQLConnection:
 
             # Execute the query
             rtc = dbsqlsend(self.dbproc)
+            read_fileno = dbiordesc(self.dbproc)
             if wait_callback:
-                wait_callback(self)
+                wait_callback(read_fileno)
             rtc = dbsqlok(self.dbproc)
             check_cancel_and_raise(rtc, self)
         finally:
