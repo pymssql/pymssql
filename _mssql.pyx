@@ -1337,10 +1337,11 @@ cdef class MSSQLStoredProcedure:
             self.had_positional = True
 
         IF PYMSSQL_DEBUG == 1:
-            fprintf(stderr, "\n--- rpc_bind(name = '%s', status = %d, " \
-                "max_length = %d, data_type = %d, data_length = %d, "
-                "data = %x)\n", param_name, status, max_length, dbtype,
-                length, data)
+            sys.stderr.write(
+                "\n--- rpc_bind(name = '%s', status = %d, "
+                "max_length = %d, data_type = %d, data_length = %d\n"
+                % (param_name, status, max_length, dbtype, length)
+            )
 
         with nogil:
             rtc = dbrpcparam(self.dbproc, param_name_cstr, status, dbtype,
