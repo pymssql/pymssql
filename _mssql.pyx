@@ -1378,8 +1378,8 @@ cdef class MSSQLStoredProcedure:
             rtc = dbsqlok(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
-        # Need to call this regardless of wether or not there are output
-        # parameters in roder for the return status to be correct.
+        # Need to call this regardless of whether or not there are output
+        # parameters in order for the return status to be correct.
         output_count = dbnumrets(self.dbproc)
 
         # If there are any output parameters then we are going to want to
