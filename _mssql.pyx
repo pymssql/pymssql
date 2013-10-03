@@ -1044,10 +1044,13 @@ cdef class MSSQLConnection:
             dbcmd(self.dbproc, query_string_cstr)
 
             # Execute the query
-            rtc = dbsqlsend(self.dbproc)
+            with nogil:
+                rtc = dbsqlsend(self.dbproc)
             if wait_callback:
-                wait_callback(self)
-            rtc = dbsqlok(self.dbproc)
+                read_fileno = dbiordesc(self.dbproc)
+                wait_callback(read_fileno)
+            with nogil:
+                rtc = dbsqlok(self.dbproc)
             check_cancel_and_raise(rtc, self)
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
