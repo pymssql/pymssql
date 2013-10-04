@@ -5,7 +5,8 @@ python:
 - 3.3
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors Cython nose SQLAlchemy
+- pip install --use-mirrors nose SQLAlchemy
+- easy_install  --find-links=http://marc-abramowitz.com/download/python/eggs/linux Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
 - python setup.py develop
