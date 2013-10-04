@@ -153,7 +153,7 @@ else:
 
     MacPorts (http://www.macports.org/)
     -----------------------------------
-    sudo port install freetds +mssql
+    sudo port install freetds
         """)
 
     if libc_has_vasprintf_chk and not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
