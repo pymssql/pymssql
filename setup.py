@@ -134,13 +134,6 @@ else:
 
     FREETDS = None
 
-    with stdchannel_redirected(sys.stderr, os.devnull):
-       libc_has_vasprintf_chk = compiler.has_function('__vasprintf_chk')
-       print("setup.py: libc_has_vasprintf_chk = %r" % libc_has_vasprintf_chk)
-
-    if not libc_has_vasprintf_chk:
-        print("setup.py: libc doesn't have __vasprintf_chk - not going to use bundled FreeTDS")
-
     if sys.platform == 'darwin':
         FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
@@ -156,7 +149,7 @@ else:
     sudo port install freetds
         """)
 
-    if libc_has_vasprintf_chk and not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
+    if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if SYSTEM == 'Linux':
             FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
