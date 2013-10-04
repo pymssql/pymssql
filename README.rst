@@ -1,7 +1,7 @@
 pymssql
 #######
 
-.. image:: https://travis-ci.org/pymssql/pymssql.png
+.. image:: https://travis-ci.org/pymssql/pymssql.png?branch=master
         :target: https://travis-ci.org/pymssql/pymssql
 
 .. image:: https://pypip.in/d/pymssql/badge.png
