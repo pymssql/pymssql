@@ -1,4 +1,6 @@
+import sys
 import threading
+import time
 import unittest
 
 from nose.plugins.skip import SkipTest
@@ -74,6 +76,8 @@ class ThreadedTests(unittest.TestCase):
 
         running = True
         while running:
+            sys.stdout.write(".")
+            sys.stdout.flush()
             running = False
             for thread in threads:
                 if thread.exc:
@@ -81,6 +85,10 @@ class ThreadedTests(unittest.TestCase):
                 if thread.running:
                     running = True
                     break
+            time.sleep(5)
+
+        sys.stdout.write(" ")
+        sys.stdout.flush()
 
     @attr('slow')
     def testErrorThreadedUse(self):
@@ -92,6 +100,8 @@ class ThreadedTests(unittest.TestCase):
 
         running = True
         while running:
+            sys.stdout.write(".")
+            sys.stdout.flush()
             running = False
             for thread in threads:
                 if thread.exc:
@@ -99,6 +109,10 @@ class ThreadedTests(unittest.TestCase):
                 if thread.running:
                     running = True
                     break
+            time.sleep(5)
+
+        sys.stdout.write(" ")
+        sys.stdout.flush()
 
     def testErrorSprocThreadedUse(self):
         spname = 'pymssqlErrorThreadTest'
@@ -122,6 +136,8 @@ class ThreadedTests(unittest.TestCase):
             threads.append(thread)
 
         try:
+            sys.stdout.write(".")
+            sys.stdout.flush()
             running = True
             while running:
                 running = False
@@ -131,6 +147,10 @@ class ThreadedTests(unittest.TestCase):
                     if thread.running:
                         running = True
                         break
+                time.sleep(5)
+
+            sys.stdout.write(" ")
+            sys.stdout.flush()
         finally:
             mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
             mssql.close()
