@@ -460,7 +460,7 @@ cdef class MSSQLConnection:
 
         login = dblogin()
         if login == NULL:
-            raise MSSQLDriverException("Out of memory")
+            raise MSSQLDriverException("dblogin() failed")
 
         appname = appname or "pymssql"
 
@@ -1745,10 +1745,8 @@ def set_max_connections(int limit):
     dbsetmaxprocs(limit)
 
 cdef void init_mssql():
-    cdef RETCODE rtc
-    rtc = dbinit()
-    if rtc == FAIL:
-        raise MSSQLDriverException("Could not initialize communication layer")
+    if dbinit() == FAIL:
+        raise MSSQLDriverException("dbinit() failed")
 
     dberrhandle(err_handler)
     dbmsghandle(msg_handler)
