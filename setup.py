@@ -17,7 +17,8 @@ Intended Audience :: Developers
 License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
 Programming Language :: Python
 Programming Language :: C
-Topic :: Database :: Front-Ends
+Topic :: Database
+Topic :: Database :: Database Engines/Servers
 Topic :: Software Development :: Libraries :: Python Modules
 Operating System :: Microsoft :: Windows
 Operating System :: POSIX
@@ -110,13 +111,13 @@ if sys.platform == "darwin":
 setup(name = 'pymssql',
 	version = '1.0.2',
 	description = 'A simple database interface to MS-SQL for Python.',
-	long_description = 'A simple database interface to MS-SQL for Python.',
+	long_description = open('README').read(),
 	author = 'Joon-cheol Park',
 	author_email = 'jooncheol@gmail.com',
-	maintainer = 'Andrzej Kukula',
-	maintainer_email = 'akukula+pymssql@gmail.com',
+	maintainer = 'pymssql Google Group',
+	maintainer_email = 'pymssql@googlegroups.com',
 	license = 'LGPL',
-	url = 'http://pymssql.sourceforge.net',
+	url = 'https://code.google.com/p/pymssql/',
 	py_modules = [ 'pymssql' ],
 	ext_modules = [ Extension('_mssql', ['mssqldbmodule.c'],
 			include_dirs = include_dirs,

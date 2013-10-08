@@ -1,22 +1,39 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.1
 Name: pymssql
 Version: 1.0.2
 Summary: A simple database interface to MS-SQL for Python.
-Home-page: http://pymssql.sourceforge.net
-Author: Joon-cheol Park
-Author-email: jooncheol@gmail.com
-Maintainer: Andrzej Kukula
-Maintainer-email: akukula+pymssql@gmail.com
-License: GNU Library or Lesser General Public License (LGPL)
-Description: A simple database interface to MS-SQL for Python.
-Keywords: mssql sqlserver pymssql
-Platform: POSIX, Windows
+Home-page: https://code.google.com/p/pymssql/
+Author: pymssql Google Group
+Author-email: pymssql@googlegroups.com
+License: LGPL
+Description: 
+        pymssql - simple MS SQL Python extension module
+        ===============================================
+        
+        A simple database interface to Microsoft SQL Server (MS-SQL) for `Python`_ that
+        builds on top of `FreeTDS`_ to provide a Python DB-API (`PEP-249`_) interface to
+        SQL Server.
+        
+        .. _Python: http://www.python.org/
+        .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
+        .. _FreeTDS: http://www.freetds.org/
+        
+        Detailed information on pymssql is available on the website:
+        
+        https://code.google.com/p/pymssql/
+        
+        New development is happening on GitHub at:
+        
+        https://github.com/pymssql/pymssql
+        
+Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
 Classifier: Programming Language :: Python
 Classifier: Programming Language :: C
-Classifier: Topic :: Database :: Front-Ends
+Classifier: Topic :: Database
+Classifier: Topic :: Database :: Database Engines/Servers
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Operating System :: Microsoft :: Windows
 Classifier: Operating System :: POSIX
