@@ -27,6 +27,8 @@ cdef class MSSQLConnection:
     cdef char *last_msg_str
     cdef char *last_msg_srv
     cdef char *last_msg_proc
+    cdef char *last_dberr_str
+    cdef char *last_oserr_str
     cdef tuple column_names
     cdef tuple column_types
 
