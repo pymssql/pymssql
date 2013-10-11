@@ -109,7 +109,7 @@ if sys.platform == "darwin":
 	library_dirs.insert(0, fink + 'lib')
 
 setup(name = 'pymssql',
-	version = '1.0.2',
+	version = '1.0.3',
 	description = 'A simple database interface to MS-SQL for Python.',
 	long_description = open('README').read() +"\n\n" + open('ChangeLog').read(),
 	author = 'Joon-cheol Park',

@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: pymssql
-Version: 1.0.2
+Version: 1.0.3
 Summary: A simple database interface to MS-SQL for Python.
 Home-page: https://code.google.com/p/pymssql/
 Author: pymssql Google Group

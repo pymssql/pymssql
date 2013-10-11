@@ -26,7 +26,7 @@
 #***************************************************************************
 
 __author__ = "Joon-cheol Park <jooncheol@gmail.com>, Andrzej Kukula <akukula@gmail.com>"
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 import _mssql, types, string, time, datetime, warnings
 
 ### module constants
