@@ -1,3 +1,10 @@
+Fri Oct 11 10:26:00 2013  Marc Abramowitz <msabramo@gmail.com>
+        + bugfix: Fix bug in get_result looping over dbresults where no result
+          rows are returned from queries with newer versions of FreeTDS
+          https://github.com/pymssql/pymssql/issues/137
+          Fixed by git commit: 5033df54c1f67ad92718b4852659b07708765c9b
+        * version 1.0.3
+
 Tue Apr 23 23:00:00 2009  Andrzej Kukula <akukula@gmail.com>
         + bugfix: fixed rare quoting bug in select_db()
         + feature: added 'max_conn' parameter to pymssql.connect() and
