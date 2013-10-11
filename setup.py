@@ -111,7 +111,7 @@ if sys.platform == "darwin":
 setup(name = 'pymssql',
 	version = '1.0.2',
 	description = 'A simple database interface to MS-SQL for Python.',
-	long_description = open('README').read(),
+	long_description = open('README').read() +"\n\n" + open('ChangeLog').read(),
 	author = 'Joon-cheol Park',
 	author_email = 'jooncheol@gmail.com',
 	maintainer = 'pymssql Google Group',
