@@ -24,7 +24,7 @@ class TestConfig(object):
         except _mssql.MSSQLDatabaseException as e:
             # we get this when the name or IP can be obtained but the connection
             # can not be made
-            if e.args[0][0] != 20009:
+            if e.args[0][0] != 20009 and e.args[0][0] != 20013:
                 raise
         with open(config_dump_path, 'rb') as fh:
             return fh.read()
