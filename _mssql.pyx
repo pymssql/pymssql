@@ -181,7 +181,7 @@ cdef class MSSQLDatabaseException(MSSQLException):
 # Module attributes for configuring _mssql
 login_timeout = 60
 
-min_error_severity = 6
+min_error_severity = 2
 
 wait_callback = None
 
