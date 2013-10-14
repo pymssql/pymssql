@@ -246,7 +246,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
         break
 
-    if severity > mssql_lastmsgseverity[0]:
+    if severity >= mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
