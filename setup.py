@@ -4,11 +4,11 @@ import sys, os
 have_setuptools = 0
 from distutils.core import setup, Extension
 
-#try:
-#   from setuptools import setup, Extension
-#   have_setuptools = 1
-#except ImportError:
-#   from distutils.core import setup, Extension
+try:
+   from setuptools import setup, Extension
+   have_setuptools = 1
+except ImportError:
+   from distutils.core import setup, Extension
 
 # for setup.py register
 classifiers = """\
