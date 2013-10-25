@@ -408,7 +408,7 @@ def ext_modules():
 setup(
     name  = 'pymssql',
     version = '2.0.0',
-    description = 'A simple database interface to MS-SQL for Python.',
+    description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
