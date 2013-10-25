@@ -1,5 +1,5 @@
 Recent Changes
---------------
+==============
 
 Version 2.0.0 - 2013-10-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 -----------------------------------------------------------------------------
@@ -9,6 +9,7 @@ Version 2.0.0 - 2013-10-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
   * Better performance
   * Thread safety
   * Fuller test suite
+  * Support for Python 3
   * Continuous integration via `Travis CI`_
   * Easier to understand code, due to `Cython`_
 
