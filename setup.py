@@ -416,6 +416,7 @@ setup(
     maintainer_email = 'pymssql@googlegroups.com',
     license = 'LGPL',
     platforms = 'any',
+    keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
     url = 'http://pymssql.sourceforge.net',
     cmdclass = {
         'build_ext': build_ext,
