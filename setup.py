@@ -407,7 +407,7 @@ def ext_modules():
 
 setup(
     name  = 'pymssql',
-    version = '2.0.0b1',
+    version = '2.0.0',
     description = 'A simple database interface to MS-SQL for Python.',
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',
