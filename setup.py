@@ -412,6 +412,8 @@ setup(
     long_description = 'A simple database interface to MS-SQL for Python.',
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
+    maintainer = 'pymssql Google Group',
+    maintainer_email = 'pymssql@googlegroups.com',
     license = 'LGPL',
     url = 'http://pymssql.sourceforge.net',
     cmdclass = {
