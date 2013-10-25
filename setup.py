@@ -409,7 +409,7 @@ setup(
     name  = 'pymssql',
     version = '2.0.0',
     description = 'A simple database interface to MS-SQL for Python.',
-    long_description = 'A simple database interface to MS-SQL for Python.',
+    long_description = open('README.rst').read() +"\n\n" + open('ChangeLog').read(),
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
     maintainer = 'pymssql Google Group',
