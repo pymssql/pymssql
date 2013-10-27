@@ -3,6 +3,7 @@ include ChangeLog
 include LICENSE
 include *.pxd
 include *.c
+include *.rst
 include win32/freetds.zip
 recursive-include .pyrex *
 recursive-include nagios-plugin *
