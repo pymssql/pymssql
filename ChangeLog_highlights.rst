@@ -1,6 +1,11 @@
 Recent Changes
 ==============
 
+Version 2.0.1 - 2013-10-27 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
+-----------------------------------------------------------------------------
+* MANIFEST.in: Add "\*.rst" to prevent install error: "IOError: [Errno 2] No
+  such file or directory: 'ChangeLog_highlights.rst'"
+
 Version 2.0.0 - 2013-10-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 -----------------------------------------------------------------------------
 * First official release of pymssql 2.X (`Cython`_-based code) to `PyPI`_!

@@ -21,7 +21,7 @@
 # MA  02110-1301  USA
 
 __author__ = 'Damien Churchill <damoxc@gmail.com>'
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 import _mssql
 cimport _mssql
