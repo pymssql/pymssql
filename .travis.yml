@@ -5,10 +5,10 @@ python:
 - 3.3
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors nose SQLAlchemy
+- pip install --use-mirrors SQLAlchemy
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
 - pip --version
-- time pip install --use-wheel --no-index --find-links=https://github.com/msabramo/cython/releases/tag/0.19.1 Cython
+- time pip install --use-wheel --no-index --find-links=http://marc-abramowitz.com/download/python/wheels/linux/ Cython
 # - easy_install  --find-links=http://marc-abramowitz.com/download/python/eggs/linux Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
