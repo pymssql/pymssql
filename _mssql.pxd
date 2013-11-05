@@ -30,6 +30,8 @@ cdef class MSSQLConnection:
     cdef tuple column_names
     cdef tuple column_types
 
+    cdef object msghandler
+
     cpdef cancel(self)
     cdef void clear_metadata(self)
     cdef object convert_db_value(self, BYTE *, int, int)
@@ -44,6 +46,8 @@ cdef class MSSQLConnection:
     cdef format_sql_command(self, format, params=?)
     cdef get_result(self)
     cdef get_row(self, int)
+
+    cpdef set_msghandler(self, object handler)
 
 cdef class MSSQLRowIterator:
     cdef MSSQLConnection conn
