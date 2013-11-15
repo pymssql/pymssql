@@ -39,3 +39,9 @@ Do you use pymssql?
 Can you take a minute and fill out this survey to help us prioritize development tasks?
 
 https://www.surveymonkey.com/s/KMQ8BM5
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/pymssql/pymssql/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
