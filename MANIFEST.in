@@ -2,6 +2,7 @@ include ez_setup.py
 include ChangeLog
 include LICENSE
 include *.pxd
+include *.pyx
 include *.c
 include *.rst
 include win32/freetds.zip

@@ -442,9 +442,6 @@ setup(
       "Operating System :: POSIX",
       "Operating System :: Unix",
     ],
-    data_files = [
-        ('', ['_mssql.pyx', 'pymssql.pyx'])
-    ],
     zip_safe = False,
     tests_require=['nose', 'unittest2'],
     test_suite='nose.collector',
