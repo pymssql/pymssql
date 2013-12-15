@@ -56,6 +56,8 @@ from cpython cimport bool
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from cpython.long cimport PY_LONG_LONG
 
+from pymssql_version import PYMSSQL_VERSION
+
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
@@ -76,7 +78,7 @@ cdef list connection_object_list = list()
 cdef int MAX_INT = 2147483647
 
 # Store the module version
-__version__ = '1.9.909'
+__version__ = PYMSSQL_VERSION
 
 #############################
 ## DB-API type definitions ##

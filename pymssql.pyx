@@ -20,12 +20,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA  02110-1301  USA
 
-__author__ = 'Damien Churchill <damoxc@gmail.com>'
-__version__ = '2.0.1'
-
 import _mssql
 cimport _mssql
 from cpython cimport bool
+
+from pymssql_version import PYMSSQL_VERSION
+
+__author__ = 'Damien Churchill <damoxc@gmail.com>'
+__version__ = PYMSSQL_VERSION
 
 # comliant with DB SIG 2.0
 apilevel = '2.0'

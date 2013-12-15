@@ -78,6 +78,8 @@ else:
     from Cython.Distutils import build_ext as _build_ext
 import struct
 
+from pymssql_version import PYMSSQL_VERSION
+
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
     """
@@ -407,7 +409,7 @@ def ext_modules():
 
 setup(
     name  = 'pymssql',
-    version = '2.0.2-dev',
+    version = PYMSSQL_VERSION,
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',
