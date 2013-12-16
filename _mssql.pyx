@@ -889,6 +889,13 @@ cdef class MSSQLConnection:
             dbValue[0] = <BYTE *>binValue
             return 0
 
+        if dbtype[0] == SQLUUID:
+            binValue = <BYTE *>PyMem_Malloc(16)
+            memcpy(binValue, <char *>value.bytes_le, 16)
+            length[0] = 16
+            dbValue[0] = <BYTE *>binValue
+            return 0
+
         # No conversion was possible so raise an error
         raise MSSQLDriverException('Unable to convert value')
 
