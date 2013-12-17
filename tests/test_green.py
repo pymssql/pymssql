@@ -1,8 +1,12 @@
 import datetime
 import unittest
 
-import gevent
-import gevent.socket
+from nose.plugins.skip import SkipTest
+try:
+    import gevent
+    import gevent.socket
+except ImportError:
+    raise SkipTest('gevent is not available')
 
 import pymssql
 from .helpers import pymssqlconn
@@ -34,7 +38,7 @@ class GreenletTests(unittest.TestCase):
 
         return dt2 - dt1
 
-    def test_fast(self):
+    def test_gevent_socket_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)
 
