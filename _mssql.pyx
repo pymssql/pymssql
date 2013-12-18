@@ -1389,6 +1389,14 @@ cdef class MSSQLStoredProcedure:
             rtc = dbrpcsend(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
+        # If there is a wait callback, call it with the file descriptor we're
+        # waiting on.
+        # The wait_callback is a good place to do things like yield to another
+        # gevent greenlet -- e.g.: gevent.socket.wait_read(read_fileno)
+        if wait_callback:
+            read_fileno = dbiordesc(self.dbproc)
+            wait_callback(read_fileno)
+
         # Wait for the server to return
         with nogil:
             rtc = dbsqlok(self.dbproc)
