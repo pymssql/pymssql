@@ -1,3 +1,5 @@
+import unittest
+
 import pymssql as pym
 
 from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_
@@ -6,7 +8,7 @@ class TestDBAPI2(object):
     def test_version(self):
         assert pym.__version__
 
-class TestTransaction(PyTableBase):
+class TestTransaction(unittest.TestCase, PyTableBase):
     tname = 'users'
     cols = (
         'name varchar(50)',
