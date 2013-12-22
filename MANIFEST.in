@@ -5,6 +5,7 @@ include LICENSE
 include *.pxd
 include *.pyx
 include *.c
+include *.h
 include *.rst
 include win32/freetds.zip
 recursive-include .pyrex *

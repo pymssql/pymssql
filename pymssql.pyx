@@ -24,10 +24,11 @@ import _mssql
 cimport _mssql
 from cpython cimport bool
 
-from pymssql_version import PYMSSQL_VERSION
+cdef extern from "pymssql_version.h":
+    const char *PYMSSQL_VERSION
 
 __author__ = 'Damien Churchill <damoxc@gmail.com>'
-__version__ = PYMSSQL_VERSION
+__version__ = PYMSSQL_VERSION.decode('ascii')
 
 # comliant with DB SIG 2.0
 apilevel = '2.0'
