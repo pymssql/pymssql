@@ -313,10 +313,12 @@ cdef void clr_err(MSSQLConnection conn):
         conn.last_msg_no = 0
         conn.last_msg_severity = 0
         conn.last_msg_state = 0
+        conn.last_msg_str[0] = 0
     else:
         _mssql_last_msg_no = 0
         _mssql_last_msg_severity = 0
         _mssql_last_msg_state = 0
+        _mssql_last_msg_str[0] = 0
 
 cdef RETCODE db_cancel(MSSQLConnection conn):
     cdef RETCODE rtc
@@ -1445,7 +1447,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     error_msg = get_last_msg_str(conn)
     if len(error_msg) == 0:
-        error_msg = "Unknown error"
+        error_msg = b"Unknown error"
 
     ex = MSSQLDatabaseException((get_last_msg_no(conn), error_msg))
     (<MSSQLDatabaseException>ex).text = error_msg
