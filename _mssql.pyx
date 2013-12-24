@@ -219,6 +219,9 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
         mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
         mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+        if DBDEAD(dbproc):
+            log("+++ err_handler: dbproc is dead; killing conn...\n")
+            conn.mark_disconnected()
         break
 
     if severity > mssql_lastmsgseverity[0]:
@@ -609,8 +612,12 @@ cdef class MSSQLConnection:
 
         with nogil:
             dbclose(self.dbproc)
-            self.dbproc = NULL
 
+        self.mark_disconnected()
+
+    def mark_disconnected(self):
+        log("_mssql.MSSQLConnection.mark_disconnected()")
+        self.dbproc = NULL
         self._connected = 0
         PyMem_Free(self.last_msg_proc)
         PyMem_Free(self.last_msg_srv)
@@ -1461,7 +1468,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
     clr_err(conn)
     raise ex
 
-cdef void assert_connected(MSSQLConnection conn):
+cdef void assert_connected(MSSQLConnection conn) except *:
     log("_mssql.assert_connected()")
     if not conn.connected:
         raise MSSQLDriverException("Not connected to any MS SQL server")
