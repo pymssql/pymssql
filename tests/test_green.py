@@ -22,6 +22,7 @@ class GreenletTests(unittest.TestCase):
             SELECT CURRENT_TIMESTAMP
             """)
             row = cur.fetchone()
+            print("greenlet_run_pymssql_execute: num = %r; row = %r" % (num, row))
 
     def greenlet_run_pymssql_callproc(self, num):
         with pymssqlconn() as conn:
@@ -53,6 +54,7 @@ class GreenletTests(unittest.TestCase):
         SELECT CURRENT_TIMESTAMP
         """)
         for row in conn:
+            print("greenlet_run_mssql_execute: num = %r; row = %r" % (num, row))
             pass
         conn.close()
 
