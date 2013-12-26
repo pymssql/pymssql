@@ -311,8 +311,44 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
 
 cdef int db_sqlexec(DBPROCESS *dbproc):
     cdef RETCODE rtc
+
+    # The dbsqlsend function sends Transact-SQL statements, stored in the
+    # command buffer of the DBPROCESS, to SQL Server.
+    #
+    # It does not wait for a response. This gives us an opportunity to do other
+    # things while waiting for the server response.
+    #
+    # After dbsqlsend returns SUCCEED, dbsqlok must be called to verify the
+    # accuracy of the command batch. Then dbresults can be called to process
+    # the results.
     with nogil:
-        rtc = dbsqlexec(dbproc)
+        rtc = dbsqlsend(dbproc)
+        if rtc != SUCCEED:
+            return rtc
+
+    # If we've reached here, dbsqlsend didn't fail so the query is in progress.
+
+    # Wait for results to come back and return the return code, optionally
+    # calling wait_callback first...
+    return db_sqlok(dbproc)
+
+cdef int db_sqlok(DBPROCESS *dbproc):
+    cdef RETCODE rtc
+
+    # If there is a wait callback, call it with the file descriptor we're
+    # waiting on.
+    # The wait_callback is a good place to do things like yield to another
+    # gevent greenlet -- e.g.: gevent.socket.wait_read(read_fileno)
+    if wait_callback:
+        read_fileno = dbiordesc(dbproc)
+        wait_callback(read_fileno)
+
+    # dbsqlok following dbsqlsend is the equivalent of dbsqlexec. This function
+    # must be called after dbsqlsend returns SUCCEED. When dbsqlok returns,
+    # then dbresults can be called to process the results.
+    with nogil:
+        rtc = dbsqlok(dbproc)
+
     return rtc
 
 cdef void clr_err(MSSQLConnection conn):
@@ -552,7 +588,7 @@ cdef class MSSQLConnection:
             "SET TEXTSIZE 2147483647;"
         )
 
-        rtc = dbsqlexec(self.dbproc)
+        rtc = db_sqlexec(self.dbproc)
         if (rtc == FAIL):
             raise MSSQLDriverException("Could not set connection properties")
 
@@ -1044,13 +1080,8 @@ cdef class MSSQLConnection:
             dbcmd(self.dbproc, query_string_cstr)
 
             # Execute the query
-            with nogil:
-                rtc = dbsqlsend(self.dbproc)
-            if wait_callback:
-                read_fileno = dbiordesc(self.dbproc)
-                wait_callback(read_fileno)
-            with nogil:
-                rtc = dbsqlok(self.dbproc)
+            rtc = db_sqlexec(self.dbproc)
+
             check_cancel_and_raise(rtc, self)
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
@@ -1389,17 +1420,10 @@ cdef class MSSQLStoredProcedure:
             rtc = dbrpcsend(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
-        # If there is a wait callback, call it with the file descriptor we're
-        # waiting on.
-        # The wait_callback is a good place to do things like yield to another
-        # gevent greenlet -- e.g.: gevent.socket.wait_read(read_fileno)
-        if wait_callback:
-            read_fileno = dbiordesc(self.dbproc)
-            wait_callback(read_fileno)
+        # Wait for results to come back and return the return code, optionally
+        # calling wait_callback first...
+        rtc = db_sqlok(self.dbproc)
 
-        # Wait for the server to return
-        with nogil:
-            rtc = dbsqlok(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
         # Need to call this regardless of whether or not there are output
