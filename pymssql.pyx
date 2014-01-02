@@ -30,7 +30,8 @@ cdef extern from "pymssql_version.h":
 __author__ = 'Damien Churchill <damoxc@gmail.com>'
 __version__ = PYMSSQL_VERSION.decode('ascii')
 
-# comliant with DB SIG 2.0
+# Strives for compliance with DB-API 2.0 (PEP 249)
+# http://www.python.org/dev/peps/pep-0249/
 apilevel = '2.0'
 
 # module may be shared, but not connections
