@@ -528,7 +528,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433'):
+        host='', appname=None, port='1433', tds_dump_config=None):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -574,7 +574,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
 
     try:
         conn = _mssql.connect(server, user, password, charset, database,
-            appname, port)
+            appname, port, tds_dump_config=tds_dump_config)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e.args[0])

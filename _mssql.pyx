@@ -446,7 +446,8 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1',
+            tds_dump_config=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -517,8 +518,18 @@ cdef class MSSQLConnection:
         cdef bytes server_bytes = server.encode('utf-8')
         cdef char *server_cstr = server_bytes
 
+        if tds_dump_config:
+            import tempfile
+            temp_file = tempfile.NamedTemporaryFile()
+            os.environ['TDSDUMPCONFIG'] = temp_file.name
+            print("_mssql.MSSQLConnection.__init__(): Set TDSDUMPCONFIG to %r" % os.environ['TDSDUMPCONFIG'])
+
         # Connect to the server
         self.dbproc = dbopen(login, server_cstr)
+
+        if tds_dump_config:
+            import shutil
+            shutil.copyfileobj(temp_file, tds_dump_config)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
