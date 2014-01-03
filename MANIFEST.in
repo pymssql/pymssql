@@ -13,3 +13,4 @@ recursive-include nagios-plugin *
 recursive-include tests *.py
 include tests/tests.cfg.tpl
 recursive-include freetds *
+recursive-exclude docs/_build *

@@ -22,7 +22,7 @@ interface to SQL Server.
 
 Detailed information on pymssql is available on the website:
 
-https://code.google.com/p/pymssql/
+http://pymssql.org
 
 New development is happening on GitHub at:
 

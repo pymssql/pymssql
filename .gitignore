@@ -10,3 +10,4 @@ tests/tests.cfg
 dist
 *.egg
 *.egg-info
+docs/_build
