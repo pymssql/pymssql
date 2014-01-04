@@ -37,6 +37,8 @@ The pymssql package consists of two modules:
 * :mod:`_mssql` -- use it if you care about performance and ease of use
   (``_mssql`` module is easier to use than ``pymssql``).
 
+pymssql 2 is both Unicode and Python 3 friendly.
+
 Project Discussion
 ==================
 
