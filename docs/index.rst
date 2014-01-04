@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-===================================
-Welcome to pymssql's documentation!
-===================================
+=======
+pymssql
+=======
 
 Contents:
 
@@ -57,7 +57,8 @@ development.
 Current Development
 ===================
 
-Official development repositories and issue trackers have been moved to GitHub.
+Official development repositories and issue trackers have been moved to GitHub
+at https://github.com/pymssq/pymssql.
 
 We would be happy to have a couple more developers help with maintenance and
 refreshing our documentation. If interested, please connect with us on the
@@ -65,11 +66,14 @@ mailing list.
 
 Things you might be interested in:
 
-* PYPI Page, recent changelog, and Downloads
-* Documentation -- hasn't been updated in a while, sorry. :) We would love some
-  help here.
-* pymssql mailing list
-* FreeTDS User Guide
+* `PYPI Page`_, recent changelog, and Downloads
+* pymssql `mailing list`_
+* `FreeTDS User Guide`_
+
+.. _PYPI Page: https://pypi.python.org/pypi/pymssql/
+.. _mailing list: http://groups.google.com/group/pymssql
+
+.. _FreeTDS User Guide: http://www.freetds.org/userguide/
 
 Indices and tables
 ==================

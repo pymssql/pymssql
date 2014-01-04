@@ -33,35 +33,45 @@ Credits for the release go to:
 * Jooncheol Park <jooncheol_at_gmail_com> who did develop the initial version
   of pymssql (until 0.5.2). Now just doing boring translation docs for Korean.
 
-pymssql module
---------------
+``pymssql`` module
+------------------
 
 * Rewritten from scratch in C, you should observe even better performance than before
-* ``dsn`` parameter to ``pymssql.connect()`` has been removed
-* ``host`` parameter to pymssql.connect() has been renamed to server to be
-  consistent with ``_mssql`` module
-* ``max_conn`` parameter to pymssql.connect() has been removed
+* ``dsn`` parameter to :func:`pymssql.connect()` has been removed
+* ``host`` parameter to :func:`pymssql.connect()` has been renamed to ``server``
+  to be consistent with ``_mssql`` module
+* ``max_conn`` parameter to :func:`pymssql.connect()` has been removed
 
-pymssqlConnection class
+``pymssqlConnection`` class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``autocommit()`` function has been changed to
+  :attr:`pymssql.pymssqlConnection.autocommit` property that you can set or get
+  its current state.
+
+``pymssqlCursor`` class
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-* autocommit() function has been changed to ``autocommit`` property that you can
-  set or get its current state.
+* ``fetchone_asdict()`` method has been removed. Just use
+  :func:`pymssql.connect()` with ``as_dict=True``, then use regular
+  :meth:`~pymssql.pymssqlCursor.fetchone()`
+* ``fetchmany_asdict()`` method has been removed. Just use
+  :func:`pymssql.connect()` with ``as_dict=True``, then use regular
+  :meth:`~pymssql.pymssqlCursor.fetchmany()`
+* ``fetchall_asdict()`` method has been removed. Just use
+  :func:`pymssql.connect()` with ``as_dict=True``, then use regular
+  :meth:`~pymssql.pymssqlCursor.fetchall()`
 
-pymssqlCursor class
-~~~~~~~~~~~~~~~~~~~
+``_mssql`` module
+-----------------
 
-* fetchone_asdict() method has been removed. Just use pymssql.connect() with ``as_dict=True``, then use regular fetchone()
-* fetchmany_asdict() method has been removed. Just use pymssql.connect() with ``as_dict=True``, then use regular fetchmany()
-* fetchall_asdict() method has been removed. Just use pymssql.connect() with ``as_dict=True``, then use regular fetchall()
-
-_mssql module
--------------
-
-* Added native support for stored procedures (MSSQLStoredProcedure class)
-* ``maxconn`` parameter to _mssql.connect() has been removed
-* ``timeout`` and ``login_timeout`` parameter to _mssql.connect() has been added
-* get_max_connections() and set_max_connections() module-level methods have been added
+* Added native support for stored procedures
+  (:class:`~_mssql.MSSQLStoredProcedure` class)
+* ``maxconn`` parameter to :func:`_mssql.connect()` has been removed
+* ``timeout`` and ``login_timeout`` parameter to :func:`_mssql.connect()` has
+  been added
+* :func:`~_mssql.get_max_connections()` and :func:`~_mssql.set_max_connections()`
+  module-level methods have been added
 * Class names have changed:
 
 ======================  ======================
@@ -74,7 +84,7 @@ MssqlRowIterator        MSSQLRowIterator
 MssqlConnection         MSSQLConnection
 ======================  ======================
 
-MSSQLConnection class
-~~~~~~~~~~~~~~~~~~~~~
+``MSSQLConnection`` class
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added ``tds_version`` property.
+* Added :attr:`~_mssql.MSSQLConnection.tds_version` property.

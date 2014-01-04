@@ -111,7 +111,8 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 
 .. py:attribute:: MSSQLConnection.tds_version
 
-   The TDS version used by this connection. Can be one of 4.2, 7.0 and 8.0.
+   The TDS version used by this connection. Can be one of ``'4.2'``, ``'7.0'``
+   and ``'8.0'``.
 
 ``MSSQLConnection`` object methods
 ----------------------------------
