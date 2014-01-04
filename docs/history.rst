@@ -5,7 +5,7 @@ History
 Evolution of pymssql.
 
 This page stores the most important dates for pymssql project before it moved to
-Google.
+Google Code.
 
 The beginning
 =============

@@ -19,6 +19,8 @@ Contents:
    ref/pymssql
    ref/_mssql
    faq
+   compilation
+   freetds_and_dates
    history
 
 Introduction

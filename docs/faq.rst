@@ -32,7 +32,7 @@ Returned dates are not correct
 ==============================
 
 If you use pymssql on Linux/\*nix and you suspect that returned dates are not
-correct, please read FreeTDS and dates page.
+correct, please read the :doc:`FreeTDS and dates <freetds_and_dates>` page.
 
 Shared object "libsybdb.so.3" not found
 =======================================
