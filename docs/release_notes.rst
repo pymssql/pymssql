@@ -42,25 +42,25 @@ Credits for the release go to:
   to be consistent with ``_mssql`` module
 * ``max_conn`` parameter to :func:`pymssql.connect()` has been removed
 
-``pymssqlConnection`` class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``Connection`` class
+~~~~~~~~~~~~~~~~~~~~
 
 * ``autocommit()`` function has been changed to
-  :attr:`pymssql.pymssqlConnection.autocommit` property that you can set or get
+  :attr:`pymssql.Connection.autocommit` property that you can set or get
   its current state.
 
-``pymssqlCursor`` class
-~~~~~~~~~~~~~~~~~~~~~~~
+``Cursor`` class
+~~~~~~~~~~~~~~~~
 
 * ``fetchone_asdict()`` method has been removed. Just use
   :func:`pymssql.connect()` with ``as_dict=True``, then use regular
-  :meth:`~pymssql.pymssqlCursor.fetchone()`
+  :meth:`~pymssql.Cursor.fetchone()`
 * ``fetchmany_asdict()`` method has been removed. Just use
   :func:`pymssql.connect()` with ``as_dict=True``, then use regular
-  :meth:`~pymssql.pymssqlCursor.fetchmany()`
+  :meth:`~pymssql.Cursor.fetchmany()`
 * ``fetchall_asdict()`` method has been removed. Just use
   :func:`pymssql.connect()` with ``as_dict=True``, then use regular
-  :meth:`~pymssql.pymssqlCursor.fetchall()`
+  :meth:`~pymssql.Cursor.fetchall()`
 
 ``_mssql`` module
 -----------------

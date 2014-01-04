@@ -19,10 +19,10 @@ Complete documentation of ``pymssql`` module classes, methods and properties.
     Gets current maximum number of simultaneous database connections allowed to
     be open at any given time.
 
-Connection (``pymssqlCnx``) class
-=================================
+``Connection`` class
+====================
 
-.. py:class:: pymssqlCnx(user, password, host, database, timeout, \
+.. py:class:: Connection(user, password, host, database, timeout, \
                          login_timeout, charset, as_dict)
 
     This class represents an MS SQL database connection. You can create an
@@ -71,7 +71,7 @@ This class has no useful properties and data members.
 Connection object methods
 -------------------------
 
-.. py:method:: pymssqlCnx.autocommit(status)
+.. py:method:: Connection.autocommit(status)
 
    Where *status* is a boolean value. This method turns autocommit mode on or
    off.
@@ -82,57 +82,57 @@ Connection object methods
    You can turn autocommit mode on, what means every single operation commits
    itself as soon as it succeeds.
 
-.. py:method:: pymssqlCnx.close()
+.. py:method:: Connection.close()
 
    Close the connection.
 
-.. py:method:: pymssqlCnx.cursor()
+.. py:method:: Connection.cursor()
 
    Return a cursor object, that can be used to make queries and fetch results
    from the database.
 
-.. py:method:: pymssqlCnx.commit()
+.. py:method:: Connection.commit()
 
    Commit current transaction. You must call this method to persist your data if
    you leave autocommit at its default value, which is ``False``.
 
    See also :doc:`pymssql examples </pymssql_examples>`.
 
-.. py:method:: pymssqlCnx.rollback()
+.. py:method:: Connection.rollback()
 
    Roll back current transaction.
 
-Cusor (``pymssqlCursor``) class
-===============================
+``Cursor`` class
+================
 
-.. py:class:: pymssqlCursor
+.. py:class:: Cursor
 
 This class represents a Cursor (in terms of Python DB-API specs) that is used to
 make queries against the database and obtaining results. You create
-``pymssqlCursor`` instances by calling :py:meth:`~pymssqlCnx.cursor()` method on
-an open :py:class:`pymssqlCnx` connection object.
+``Cursor`` instances by calling :py:meth:`~Connection.cursor()` method on
+an open :py:class:`Connection` connection object.
 
 Cusor object properties
 -----------------------
 
-.. py:attribute:: pymssqlCursor.rowcount
+.. py:attribute:: Cursor.rowcount
 
    Returns number of rows affected by last operation. In case of ``SELECT``
    statements it returns meaningful information only after all rows have been
    fetched.
 
-.. py:attribute:: pymssqlCursor.connection
+.. py:attribute:: Cursor.connection
 
    This is the extension of the DB-API specification. Returns a reference to the
    connection object on which the cursor was created.
 
-.. py:attribute:: pymssqlCursor.lastrowid
+.. py:attribute:: Cursor.lastrowid
 
    This is the extension of the DB-API specification. Returns identity value of
    last inserted row. If previous operation did not involve inserting a row into
    a table with identity column, ``None`` is returned.
 
-.. py:attribute:: pymssqlCursor.rownumber
+.. py:attribute:: Cursor.rownumber
 
    This is the extension of the DB-API specification. Returns current 0-based
    index of the cursor in the result set.
@@ -140,12 +140,12 @@ Cusor object properties
 Cusor object methods
 --------------------
 
-.. py:method:: pymssqlCursor.close()
+.. py:method:: Cursor.close()
 
    Close the cursor. The cursor is unusable from this point.
 
-.. py:method:: pymssqlCursor.execute(operation)
-               pymssqlCursor.execute(operation, params)
+.. py:method:: Cursor.execute(operation)
+               Cursor.execute(operation, params)
 
     *operation* is a string and *params*, if specified, is a simple value, a
     tuple, or ``None``.
@@ -161,19 +161,19 @@ Cusor object methods
     special meaning, so you can use it as usual in your query string, for
     example in ``LIKE`` operator. See the :doc:`examples </pymssql_examples>`.
 
-    You must call :meth:`pymssqlCnx.commit()` after ``execute()`` or your data
+    You must call :meth:`Connection.commit()` after ``execute()`` or your data
     will not be persisted in the database. You can also set
     ``connection.autocommit`` if you want it to be done automatically. This
     behaviour is required by DB-API, if you don't like it, just use the
     :mod:`_mssql` module instead.
 
-.. py:method:: pymssqlCursor.executemany(operation, params_seq)
+.. py:method:: Cursor.executemany(operation, params_seq)
 
    *operation* is a string and *params_seq* is a sequence of tuples (e.g. a
    list). Execute a database operation repeatedly for each element in parameter
    sequence.
 
-.. py:method:: pymssqlCursor.fetchone()
+.. py:method:: Cursor.fetchone()
 
    Fetch the next row of a query result, returning a tuple, or a dictionary if
    as_dict was passed to ``pymssql.connect()``, or ``None`` if no more data is
@@ -181,7 +181,7 @@ Cusor object methods
    previous call to ``execute*()`` did not produce any result set or no call was
    issued yet.
 
-.. py:method:: pymssqlCursor.fetchmany(size=None)
+.. py:method:: Cursor.fetchmany(size=None)
 
    Fetch the next batch of rows of a query result, returning a list of tuples,
    or a list of dictionaries if *as_dict* was passed to
@@ -191,7 +191,7 @@ Cusor object methods
    (:pep:`249#operationalerror`) if previous call to ``execute*()`` did not
    produce any result set or no call was issued yet.
 
-.. py:method:: pymssqlCursor.fetchall()
+.. py:method:: Cursor.fetchall()
 
    Fetch all remaining rows of a query result, returning a list of tuples, or a
    list of dictionaries if as_dict was passed to ``pymssql.connect()``, or an
@@ -199,21 +199,21 @@ Cusor object methods
    (:pep:`249#operationalerror`) if previous call to ``execute*()`` did not
    produce any result set or no call was issued yet.
 
-.. py:method:: pymssqlCursor.nextset()
+.. py:method:: Cursor.nextset()
 
    This method makes the cursor skip to the next available result set,
    discarding any remaining rows from the current set. Returns ``True`` value if
    next result is available, ``None`` if not.
 
-.. py:method:: pymssqlCursor.__iter__()
-               pymssqlCursor.next()
+.. py:method:: Cursor.__iter__()
+               Cursor.next()
 
    These methods facilitate :ref:`Python iterator protocol <python:typeiter>`.
    You most likely will not call them directly, but indirectly by using
    iterators.
 
-.. py:method:: pymssqlCursor.setinputsizes()
-               pymssqlCursor.setoutputsize()
+.. py:method:: Cursor.setinputsizes()
+               Cursor.setoutputsize()
 
    These methods do nothing, as permitted by DB-API specs.
 
