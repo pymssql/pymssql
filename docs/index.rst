@@ -19,6 +19,7 @@ Contents:
    ref/pymssql
    ref/_mssql
    faq
+   history
 
 Introduction
 ============

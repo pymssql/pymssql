@@ -74,8 +74,8 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 
 .. py:attribute:: MSSQLConnection.connected
 
-   True if the connection object has an open connection to a database, false
-   otherwise.
+   ``True`` if the connection object has an open connection to a database,
+   ``False`` otherwise.
 
 .. py:attribute:: MSSQLConnection.charset
 
@@ -133,10 +133,16 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    This method sends a query to the *MS SQL Server* to which this object
    instance is connected. An exception is raised on failure. If there are
    pending results or rows prior to executing this command, they are silently
-   discarded. After calling this method you may iterate over the connection
-   object to get rows returned by the query. You can use Python formatting and
-   all values get properly quoted. Please see examples for details. This method
-   is intented to be used on queries that return results, i.e. ``SELECT.``
+   discarded.
+
+   After calling this method you may iterate over the connection object to get
+   rows returned by the query.
+
+   You can use Python formatting and all values get properly quoted. Please see
+   examples for details.
+
+   This method is intented to be used on queries that return results, i.e.
+   ``SELECT.``
 
 .. py:method:: MSSQLConnection.execute_non_query(query_string)
     execute_non_query(query_string, params)
@@ -144,11 +150,14 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    This method sends a query to the *MS SQL Server* to which this object instance
    is connected. After completion, its results (if any) are discarded. An
    exception is raised on failure. If there are pending results or rows prior to
-   executing this command, they are silently discarded. You can use Python
-   formatting and all values get properly quoted. Please see examples for
-   details. This method is useful for ``INSERT``, ``UPDATE``, ``DELETE``, and
-   for Data Definition Language commands, i.e. when you need to alter your
-   database schema.
+   executing this command, they are silently discarded.
+
+   You can use Python formatting and all values get properly quoted. Please see
+   examples for details.
+
+   This method is useful for ``INSERT``, ``UPDATE``, ``DELETE``, and for Data
+   Definition Language commands, i.e. when you need to alter your database
+   schema.
 
 .. py:method:: MSSQLConnection.execute_scalar(query_string)
                MSSQLConnection.execute_scalar(query_string, params)
@@ -156,12 +165,17 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    This method sends a query to the *MS SQL Server* to which this object instance
    is connected, then returns first column of first row from result. An
    exception is raised on failure. If there are pending results or rows prior to
-   executing this command, they are silently discarded. You can use Python
+   executing this command, they are silently discarded.
+
+   You can use Python
    formatting and all values get properly quoted. Please see examples for
-   details. This method is useful if you want just a single value from a query,
-   as in the example below. This method works in the same way as
-   ``iter(conn).next()[0]``. Remaining rows, if any, can still be iterated after
-   calling this method. Example usage::
+   details.
+
+   This method is useful if you want just a single value from a query, as in the
+   example below. This method works in the same way as ``iter(conn).next()[0]``.
+   Remaining rows, if any, can still be iterated after calling this method.
+
+   Example usage::
 
        count = conn.execute_scalar("SELECT COUNT(*) FROM employees")
 
@@ -171,12 +185,17 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    This method sends a query to the *MS SQL Server* to which this object
    instance is connected, then returns first row of data from result. An
    exception is raised on failure. If there are pending results or rows prior to
-   executing this command, they are silently discarded. You can use Python
-   formatting and all values get properly quoted. Please see examples for
-   details. This method is useful if you want just a single row and don't want
+   executing this command, they are silently discarded.
+
+   You can use Python formatting and all values get properly quoted. Please see
+   examples for details.
+
+   This method is useful if you want just a single row and don't want
    or don't need to iterate over the connection object. This method works in the
    same way as ``iter(conn).next()`` to obtain single row. Remaining rows, if
-   any, can still be iterated after calling this method. Example usage::
+   any, can still be iterated after calling this method.
+
+   Example usage::
 
        empinfo = conn.execute_row("SELECT * FROM employees WHERE empid=10")
 
@@ -208,7 +227,7 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 .. py:method:: MSSQLConnection.__iter__()
                MSSQLConnection.next()
 
-   These methods faciliate Python iterator protocol. You most likely will not
+   These methods facilitate Python iterator protocol. You most likely will not
    call them directly, but indirectly by using iterators.
 
 ``MSSQLStoredProcedure`` class

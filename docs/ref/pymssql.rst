@@ -26,9 +26,9 @@ Connection (``pymssqlCnx``) class
                          login_timeout, charset, as_dict)
 
     This class represents an MS SQL database connection. You can create an
-    instance of this class by calling constructor ``pymssql.connect()``. It accepts
-    the following arguments. Note that in most cases you will want to use
-    keyword arguments, instead of positional arguments.
+    instance of this class by calling constructor :func:`pymssql.connect()`. It
+    accepts the following arguments. Note that in most cases you will want to
+    use keyword arguments, instead of positional arguments.
 
     :param str user: Database user to connect as
 
@@ -74,8 +74,11 @@ Connection object methods
 .. py:method:: pymssqlCnx.autocommit(status)
 
    Where *status* is a boolean value. This method turns autocommit mode on or
-   off. By default, autocommit mode is off, what means every transaction must
+   off.
+
+   By default, autocommit mode is off, what means every transaction must
    be explicitly committed if changed data is to be persisted in the database.
+
    You can turn autocommit mode on, what means every single operation commits
    itself as soon as it succeeds.
 
@@ -91,8 +94,9 @@ Connection object methods
 .. py:method:: pymssqlCnx.commit()
 
    Commit current transaction. You must call this method to persist your data if
-   you leave autocommit at its default value, which is False. See also
-   :doc:`pymssql examples </pymssql_examples>`.
+   you leave autocommit at its default value, which is ``False``.
+
+   See also :doc:`pymssql examples </pymssql_examples>`.
 
 .. py:method:: pymssqlCnx.rollback()
 
@@ -126,7 +130,7 @@ Cusor object properties
 
    This is the extension of the DB-API specification. Returns identity value of
    last inserted row. If previous operation did not involve inserting a row into
-   a table with identity column, None is returned.
+   a table with identity column, ``None`` is returned.
 
 .. py:attribute:: pymssqlCursor.rownumber
 
@@ -144,24 +148,29 @@ Cusor object methods
                pymssqlCursor.execute(operation, params)
 
     *operation* is a string and *params*, if specified, is a simple value, a
-    tuple, or ``None``. Performs the operation against the database, possibly
-    replacing parameter placeholders with provided values. This should be
-    preferred method of creating SQL commands, instead of concatenating strings
-    manually, what makes a potential of `SQL Injection attacks`_. This method
-    accepts the same formatting as Python's builtin :ref:`string interpolation
-    operator <python:string-formatting>`. If you call ``execute()`` with
-    one argument, the ``%`` sign loses its special meaning, so you can use it as
-    usual in your query string, for example in ``LIKE`` operator. See the
-    :doc:`examples </pymssql_examples>`.  You must call
-    :meth:`pymssqlCnx.commit()` after ``execute()`` or your data will not be
-    persisted in the database. You can also set ``connection.autocommit`` if you
-    want it to be done automatically. This behaviour is required by DB-API, if
-    you don't like it, just use the :mod:`_mssql` module instead.
+    tuple, or ``None``.
+
+    Performs the operation against the database, possibly replacing parameter
+    placeholders with provided values. This should be preferred method of
+    creating SQL commands, instead of concatenating strings manually, what makes
+    a potential of `SQL Injection attacks`_. This method accepts the same
+    formatting as Python's builtin :ref:`string interpolation operator
+    <python:string-formatting>`.
+
+    If you call ``execute()`` with one argument, the ``%`` sign loses its
+    special meaning, so you can use it as usual in your query string, for
+    example in ``LIKE`` operator. See the :doc:`examples </pymssql_examples>`.
+
+    You must call :meth:`pymssqlCnx.commit()` after ``execute()`` or your data
+    will not be persisted in the database. You can also set
+    ``connection.autocommit`` if you want it to be done automatically. This
+    behaviour is required by DB-API, if you don't like it, just use the
+    :mod:`_mssql` module instead.
 
 .. py:method:: pymssqlCursor.executemany(operation, params_seq)
 
    *operation* is a string and *params_seq* is a sequence of tuples (e.g. a
-   list).  Execute a database operation repeatedly for each element in parameter
+   list). Execute a database operation repeatedly for each element in parameter
    sequence.
 
 .. py:method:: pymssqlCursor.fetchone()
