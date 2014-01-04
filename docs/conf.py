@@ -111,6 +111,11 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+    html_context = {
+        'display_github': True,
+        'github_user': 'pymssql',
+        'github_repo': 'pymssql',
+    }
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
