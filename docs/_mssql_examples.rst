@@ -1,6 +1,6 @@
-===============
-_mssql examples
-===============
+===================
+``_mssql`` examples
+===================
 
 Example scripts using ``_mssql`` module.
 

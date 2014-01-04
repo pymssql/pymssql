@@ -1,8 +1,6 @@
-===
-FAQ
-===
-
-Frequently Asked Questions / Troubleshooting.
+==========================
+Frequently asked questions
+==========================
 
 Cannot connect to SQL Server
 ============================
