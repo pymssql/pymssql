@@ -32,10 +32,10 @@ Microsoft SQL Servers from Python scripts. It is compliant with Python DB-API
 
 The pymssql package consists of two modules:
 
-* ``pymssql`` -- use it if you care about DB-API compliance, or if you are
+* :mod:`pymssql` -- use it if you care about DB-API compliance, or if you are
   accustomed to DB-API syntax,
-* ``_mssql`` -- use it if you care about performance and ease of use (``_mssql``
-  module is easier to use than ``pymssql``).
+* :mod:`_mssql` -- use it if you care about performance and ease of use
+  (``_mssql`` module is easier to use than ``pymssql``).
 
 Project Discussion
 ==================
