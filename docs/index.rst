@@ -7,13 +7,28 @@
 pymssql -- SQL Server database adapter for Python
 =================================================
 
-pymssql is the Python language extension module that provides access to
-*Microsoft SQL Servers* from Python scripts. It is compliant with Python DB-API
-2.0 Specification and works on most popular operating systems.
+A simple database interface to `Microsoft SQL Server`_ (MS-SQL) for `Python`_
+that builds on top of `FreeTDS`_ to provide a Python DB-API (`PEP-249`_)
+interface to *SQL Server*.
 
-pymssql is both Unicode and Python 3 friendly.
+Features include:
+
+* Unicode friendly
+* Python 3 friendly
+* Works on most popular operating systems
+* Written in Cython_ for performance
+* Includes a supported  and documented low-level ``_mssql`` module
+* Supports stored procedures with both return values and output parameters
+* Has a comprehensive test suite
 
 pymssql is licensed under the terms of the GNU LGPL license.
+
+.. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
+.. _Python: http://www.python.org/
+.. _PEP-249: http://www.python.org/dev/peps/pep-0249/
+.. _FreeTDS: http://www.freetds.org/
+.. _Cython: http://cython.org
+
 
 Contents
 ========
@@ -29,8 +44,10 @@ Contents
    ref/pymssql
    ref/_mssql
    faq
-   compilation
+   building_and_developing
    freetds_and_dates
+   todo
+   changelog
    history
 
 Indices and tables

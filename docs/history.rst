@@ -1,6 +1,6 @@
-=======
-History
-=======
+===============
+Project history
+===============
 
 Evolution of pymssql.
 

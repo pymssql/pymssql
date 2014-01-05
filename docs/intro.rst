@@ -36,11 +36,14 @@ Current Development
 ===================
 
 Official development repositories and issue trackers have been moved to GitHub
-at https://github.com/pymssq/pymssql.
+at https://github.com/pymssql/pymssql.
 
-We would be happy to have a couple more developers and community members that
-can help with maintenance and refreshing this documentation. If interested,
-please connect with us on the mailing list.
+We would be happy to have:
+
+* A couple more developers
+* Help from the community with maintenance and refreshing this documentation.
+
+If interested, please connect with us on the mailing list.
 
 Things you might be interested in:
 

@@ -1,19 +1,6 @@
-pymssql
-#######
-
-.. image:: https://travis-ci.org/pymssql/pymssql.png?branch=master
-        :target: https://travis-ci.org/pymssql/pymssql
-
-.. image:: https://pypip.in/d/pymssql/badge.png
-        :target: https://crate.io/packages/pymssql
-
-.. image:: https://pypip.in/v/pymssql/badge.png
-        :target: https://crate.io/packages/pymssql
-
-Introduction
-============
-
-pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with `Python DB-API 2.0 Specification <http://www.python.org/dev/peps/pep-0249/>`_ and works on most popular operating systems.
+===============================
+Building and developing pymssql
+===============================
 
 Building
 ========

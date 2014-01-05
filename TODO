@@ -1,18 +1,22 @@
+==========
+To-do list
+==========
+
 Complete
 ========
 
- * Connecting to the server
- * Selecting a database
- * Executing straight text
- * Quote and flatten parameters
- * Returning data
+* Connecting to the server
+* Selecting a database
+* Executing straight text
+* Quote and flatten parameters
+* Returning data
 
 Partially Complete
 ==================
 
- * Stored Procedures
+* Stored Procedures
 
 Incomplete
 ==========
 
- * Inserting binary data
+* Inserting binary data
