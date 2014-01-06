@@ -32,6 +32,17 @@ many of the limitations of previous versions of FreeTDS).
 **Legacy release**: 1.0.3 is the legacy version and is no longer under active
 development.
 
+.. note:: This documentation is for pymssql 2.x.
+
+    The document set you are reading describes exclusively the code base of
+    pymssql 2.x and newer. All description of functionality, workarounds,
+    limitations, dependencies, etc. of older revisions has been removed.
+
+    If you need help for building/using pymssql 1.x please refer to the old
+    `Google Code documentation Wiki`_.
+
+.. _Google Code documentation Wiki: https://code.google.com/p/pymssql/wiki/Documentation
+
 Current Development
 ===================
 
