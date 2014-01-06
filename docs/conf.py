@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pymssql'
-copyright = u'2001-2013, pymssql developers'
+copyright = u'2001-2014, pymssql developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
