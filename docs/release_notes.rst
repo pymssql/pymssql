@@ -26,8 +26,13 @@ http://github.com/pymssql/pymssql.
 
 Credits for the release go to:
 
-* Damien Churchill <damoxc_at_gmail_com> who did all coding, release
-  engineering, new site features like Sphinx, SimpleJSON and others,
+* Marc Abramowitz <msabramo_at_gmail_com> who joined the project in Jan 2013 and
+  is responsible for the actual release of the 2.0 version by fixing many old
+  tickets, coding the port to Python 3 and driving the migration to Git and
+  GitHub.
+* Damien Churchill <damoxc_at_gmail_com> who set the foundations of the new
+  Cython-based code base, release engineering, new site features like Sphinx,
+  SimpleJSON and others,
 * Andrzej Kukuła <akukula_at_gmail_com> who did all the docs, site migration,
   and other boring but necessary stuff.
 * Jooncheol Park <jooncheol_at_gmail_com> who did develop the initial version
