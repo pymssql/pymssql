@@ -300,6 +300,8 @@ Functions
 
    :param null: TBD
 
+   .. todo:: Document ``null`` ``MSSQLStoredProcedure.bind()`` argument.
+
    :param max_length: Is the maximum data length for this parameter to be
                       returned from the stored procedure.
 

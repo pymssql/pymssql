@@ -98,3 +98,5 @@ An example of exception handling
             raise # re-raise real error
     finally:
         conn.close()
+
+.. todo:: Add an example of invoking a Stored Procedure using ``_mssql``.

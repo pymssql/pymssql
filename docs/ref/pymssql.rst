@@ -266,4 +266,6 @@ Cusor object methods
 
    These methods do nothing, as permitted by DB-API specs.
 
+.. todo:: Document all ``pymssql`` PEP 249-mandated exceptions.
+
 .. _SQL Injection attacks: http://en.wikipedia.org/wiki/SQL_injection
