@@ -17,7 +17,8 @@ Features include:
 * Python 3 friendly
 * Works on most popular operating systems
 * Written in Cython_ for performance
-* Includes a supported  and documented low-level ``_mssql`` module
+* Includes a supported and documented low-level module (``_mssql``) that you
+  can use instead of the DB-API
 * Supports stored procedures with both return values and output parameters
 * Has a comprehensive test suite
 
