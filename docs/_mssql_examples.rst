@@ -83,7 +83,7 @@ than in ``pymssql`` module.
 An example of exception handling
 ================================
 
-::
+.. code-block:: python
 
     import _mssql
 
