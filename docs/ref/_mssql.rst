@@ -2,31 +2,33 @@
 ``_mssql`` module reference
 ===========================
 
-.. py:module:: _mssql
+.. module:: _mssql
 
 Complete documentation of ``_mssql`` module classes, methods and properties.
 
-``_mssql`` module properties
-============================
+Module-level symbols
+====================
 
-.. py:data:: login_timeout
+Variables whose values you can change to alter behavior in a global basis.
+
+.. data:: login_timeout
 
     Timeout for connection and login in seconds, default 60.
 
-.. py:data:: min_error_severity
+.. data:: min_error_severity
 
    Minimum severity of errors at which to begin raising exceptions. The default
    value of 6 should be appropriate in most cases.
 
-``_mssql`` module methods
-=========================
+Functions
+=========
 
-.. py:function:: set_max_connections(number)
+.. function:: set_max_connections(number)
 
     Sets maximum number of simultaneous connections allowed to be open at any
     given time. Default is 25.
 
-.. py:function:: get_max_connections()
+.. function:: get_max_connections()
 
     Gets current maximum number of simultaneous connections allowed to be open
     at any given time.
@@ -34,7 +36,7 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 ``MSSQLConnection`` class
 =========================
 
-.. py:class:: MSSQLConnection
+.. class:: MSSQLConnection
 
     This class represents an MS SQL database connection. You can make queries
     and obtain results through a database connection.
@@ -69,19 +71,36 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
                          default *SQL Server* selects the database which is set as
                          default for specific user
 
+
+    With every nw connection, the following SQL statements are sent to the
+    server:
+
+    .. code-block:: sql
+
+        SET ARITHABORT ON;
+        SET CONCAT_NULL_YIELDS_NULL ON;
+        SET ANSI_NULLS ON;
+        SET ANSI_NULL_DFLT_ON ON;
+        SET ANSI_PADDING ON;
+        SET ANSI_WARNINGS ON;
+        SET ANSI_NULL_DFLT_ON ON;
+        SET CURSOR_CLOSE_ON_COMMIT ON;
+        SET QUOTED_IDENTIFIER ON;
+        SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+
 ``MSSQLConnection`` object properties
 -------------------------------------
 
-.. py:attribute:: MSSQLConnection.connected
+.. attribute:: MSSQLConnection.connected
 
    ``True`` if the connection object has an open connection to a database,
    ``False`` otherwise.
 
-.. py:attribute:: MSSQLConnection.charset
+.. attribute:: MSSQLConnection.charset
 
    Character set name that was passed to _mssql.connect().
 
-.. py:attribute:: MSSQLConnection.identity
+.. attribute:: MSSQLConnection.identity
 
    Returns identity value of last inserted row. If previous operation did not
    involve inserting a row into a table with identity column, None is returned.
@@ -91,25 +110,25 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
        conn.execute_non_query("INSERT INTO persons (name) VALUES('John Doe')")
        print "Last inserted row has id = " + conn.identity
 
-.. py:attribute:: MSSQLConnection.query_timeout
+.. attribute:: MSSQLConnection.query_timeout
 
    Query timeout in seconds, default is 0, what means to wait indefinitely for
    results. Due to the way DB-Library for C works, setting this property affects
    all connections opened from current Python script (or, very technically, all
    connections made from this instance of dbinit()).
 
-.. py:attribute:: MSSQLConnection.rows_affected
+.. attribute:: MSSQLConnection.rows_affected
 
    Number of rows affected by last query. For SELECT statements this value is
    only meaningful after reading all rows.
 
-.. py:attribute:: MSSQLConnection.debug_queries
+.. attribute:: MSSQLConnection.debug_queries
 
    If set to true, all queries are printed to stderr after formatting and
    quoting, just before being sent to *SQL Server*. It may be helpful if you
    suspect problems with formatting or quoting.
 
-.. py:attribute:: MSSQLConnection.tds_version
+.. attribute:: MSSQLConnection.tds_version
 
    The TDS version used by this connection. Can be one of ``'4.2'``, ``'7.0'``
    and ``'8.0'``.
@@ -117,18 +136,18 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 ``MSSQLConnection`` object methods
 ----------------------------------
 
-.. py:method:: MSSQLConnection.cancel()
+.. method:: MSSQLConnection.cancel()
 
    Cancel all pending results from the last SQL operation. It can be called more
    than one time in a row. No exception is raised in this case.
 
-.. py:method:: MSSQLConnection.close()
+.. method:: MSSQLConnection.close()
 
    Close the connection and free all memory used. It can be called more than one
    time in a row. No exception is raised in this case.
 
-.. py:method:: MSSQLConnection.execute_query(query_string)
-               MSSQLConnection.execute_query(query_string, params)
+.. method:: MSSQLConnection.execute_query(query_string)
+            MSSQLConnection.execute_query(query_string, params)
 
    This method sends a query to the *MS SQL Server* to which this object
    instance is connected. An exception is raised on failure. If there are
@@ -144,8 +163,8 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    This method is intented to be used on queries that return results, i.e.
    ``SELECT.``
 
-.. py:method:: MSSQLConnection.execute_non_query(query_string)
-    execute_non_query(query_string, params)
+.. method:: MSSQLConnection.execute_non_query(query_string)
+            MSSQLConnection.execute_non_query(query_string, params)
 
    This method sends a query to the *MS SQL Server* to which this object instance
    is connected. After completion, its results (if any) are discarded. An
@@ -159,8 +178,8 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    Definition Language commands, i.e. when you need to alter your database
    schema.
 
-.. py:method:: MSSQLConnection.execute_scalar(query_string)
-               MSSQLConnection.execute_scalar(query_string, params)
+.. method:: MSSQLConnection.execute_scalar(query_string)
+            MSSQLConnection.execute_scalar(query_string, params)
 
    This method sends a query to the *MS SQL Server* to which this object instance
    is connected, then returns first column of first row from result. An
@@ -179,8 +198,8 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 
        count = conn.execute_scalar("SELECT COUNT(*) FROM employees")
 
-.. py:method:: MSSQLConnection.execute_row(query_string)
-               MSSQLConnection.execute_row(query_string, params)
+.. method:: MSSQLConnection.execute_row(query_string)
+            MSSQLConnection.execute_row(query_string, params)
 
    This method sends a query to the *MS SQL Server* to which this object
    instance is connected, then returns first row of data from result. An
@@ -199,7 +218,7 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 
        empinfo = conn.execute_row("SELECT * FROM employees WHERE empid=10")
 
-.. py:method:: MSSQLConnection.get_header()
+.. method:: MSSQLConnection.get_header()
 
    This method is infrastructure and don't need to be called by your code. It
    gets the Python DB-API compliant header information. Returns a list of
@@ -207,25 +226,25 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    compliant type is filled, rest of the data is ``None``, as permitted by the
    specs.
 
-.. py:method:: MSSQLConnection.init_procedure(name)
+.. method:: MSSQLConnection.init_procedure(name)
 
    Create an MSSQLStoredProcedure object that will be used to invoke stored
    procedure with given name.
 
-.. py:method:: MSSQLConnection.nextresult()
+.. method:: MSSQLConnection.nextresult()
 
    Move to the next result, skipping all pending rows. This method fetches and
    discards any rows remaining from current operation, then it advances to next
    result (if any). Returns ``True`` value if next set is available, ``None``
    otherwise. An exception is raised on failure.
 
-.. py:method:: MSSQLConnection.select_db(dbname)
+.. method:: MSSQLConnection.select_db(dbname)
 
    This function makes given database the current one. An exception is raised on
    failure.
 
-.. py:method:: MSSQLConnection.__iter__()
-               MSSQLConnection.next()
+.. method:: MSSQLConnection.__iter__()
+            MSSQLConnection.next()
 
    These methods facilitate Python iterator protocol. You most likely will not
    call them directly, but indirectly by using iterators.
@@ -233,7 +252,7 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 ``MSSQLStoredProcedure`` class
 ==============================
 
-.. py:class:: MSSQLStoredProcedure
+.. class:: MSSQLStoredProcedure
 
     This class represents a stored procedure. You create an object of this class
     by calling :meth:`~MSSQLConnection.init_procedure()` method on
@@ -242,23 +261,23 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 ``MSSQLStoredProcedure`` object properties
 ------------------------------------------
 
-.. py:attribute:: MSSQLStoredProcedure.connection
+.. attribute:: MSSQLStoredProcedure.connection
 
    An underlying MSSQLConnection object.
 
-.. py:attribute:: MSSQLStoredProcedure.name
+.. attribute:: MSSQLStoredProcedure.name
 
    The name of the procedure that this object represents.
 
-.. py:attribute:: MSSQLStoredProcedure.parameters
+.. attribute:: MSSQLStoredProcedure.parameters
 
    The parameters that have been bound to this procedure.
 
 ``MSSQLStoredProcedure`` object methods
 ---------------------------------------
 
-.. py:method:: MSSQLStoredProcedure.bind(value, dbtype, name=None, \
-                                        output=False, null=False, max_length=-1)
+.. method:: MSSQLStoredProcedure.bind(value, dbtype, name=None, \
+                                      output=False, null=False, max_length=-1)
 
    This method binds a parameter to the stored procedure. *value* and *dbtype*
    are mandatory arguments, the rest is optional.
@@ -284,12 +303,12 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
    :param max_length: Is the maximum data length for this parameter to be
                       returned from the stored procedure.
 
-.. py:method:: MSSQLStoredProcedure.execute()
+.. method:: MSSQLStoredProcedure.execute()
 
    Execute the stored procedure.
 
-``_mssql`` module exceptions
-============================
+Module-level exceptions
+=======================
 
 Exception hierarchy::
 
@@ -299,32 +318,32 @@ Exception hierarchy::
     |
     +-- MSSQLDatabaseException
 
-.. py:exception:: MSSQLDriverException
+.. exception:: MSSQLDriverException
 
    ``MSSQLDriverException`` is raised whenever there is a problem within
    ``_mssql`` -- e.g. insufficient memory for data structures, and so on.
 
-.. py:exception:: MSSQLDatabaseException
+.. exception:: MSSQLDatabaseException
 
     ``MSSQLDatabaseException`` is raised whenever there is a problem with the
     database -- e.g. query syntax error, invalid object name and so on. In this
     case you can use the following properties to access details of the error:
 
-   .. py:attribute:: MSSQLDatabaseException.number
+   .. attribute:: MSSQLDatabaseException.number
 
       The error code, as returned by *SQL Server*.
 
-   .. py:attribute:: MSSQLDatabaseException.severity
+   .. attribute:: MSSQLDatabaseException.severity
 
       The so-called severity level, as returned by *SQL Server*. If value of this
-      property is less than the value of :ref:`_mssql.min_error_severity`, such
+      property is less than the value of :data:`_mssql.min_error_severity`, such
       errors are ignored and exceptions are not raised.
 
-   .. py:attribute:: MSSQLDatabaseException.state
+   .. attribute:: MSSQLDatabaseException.state
 
       The third error code, as returned by *SQL Server*.
 
-   .. py:attribute:: MSSQLDatabaseException.message
+   .. attribute:: MSSQLDatabaseException.message
 
       The error message, as returned by *SQL Server*.
 

@@ -2,19 +2,68 @@
 ``pymssql`` module reference
 ============================
 
-.. py:module:: pymssql
+.. module:: pymssql
 
 Complete documentation of ``pymssql`` module classes, methods and properties.
 
-``pymssql`` methods
-===================
+Module-level symbols
+====================
 
-.. py:function:: set_max_connections(number)
+Constants, required by the DB-API 2.0 (:pep:`249`) specification.
+
+.. data:: apilevel
+
+   ``'2.0'`` -- ``pymssql`` strives for compliance with DB-API 2.0.
+
+.. data:: paramstyle
+
+   ``'pyformat'`` -- ``pymssql`` uses extended python format codes.
+
+.. data:: threadsafety
+
+   ``1`` -- Module may be shared, but not connections.
+
+Functions
+=========
+
+.. function:: connect(server='.', user='', password='', database='', \
+                      timeout=0, login_timeout=60, charset='UTF-8', \
+                      as_dict=False, host='', appname=None, port='1433')
+
+    Constructor for creating a connection to the database. Returns a
+    :class:`Connection` object.
+
+    :param server: database host
+    :type server: string
+    :param user: database user to connect as
+    :type user: string
+    :param password: user's password
+    :type password: string
+    :param database: the database to initially connect to
+    :type database: string
+    :param timeout: query timeout in seconds, default 0 (no timeout)
+    :type timeout: int
+    :param login_timeout: timeout for connection and login in seconds, default 60
+    :type login_timeout: int
+    :param charset: character set with which to connect to the database
+    :type charset: string
+    :keyword as_dict: whether rows should be returned as dictionaries instead of tuples
+    :type as_dict: boolean
+    :keyword appname: Set the application name to use for the connection
+    :type appname: string
+    :keyword port: the TCP port to use to connect to the server
+    :type port: string
+
+.. function:: get_dbversion()
+
+   TBD
+
+.. function:: set_max_connections(number)
 
     Sets maximum number of simultaneous database connections allowed to be open
     at any given time. Default is 25.
 
-.. py:function:: get_max_connections()
+.. function:: get_max_connections()
 
     Gets current maximum number of simultaneous database connections allowed to
     be open at any given time.
@@ -22,8 +71,8 @@ Complete documentation of ``pymssql`` module classes, methods and properties.
 ``Connection`` class
 ====================
 
-.. py:class:: Connection(user, password, host, database, timeout, \
-                         login_timeout, charset, as_dict)
+.. class:: Connection(user, password, host, database, timeout, \
+                      login_timeout, charset, as_dict)
 
     This class represents an MS SQL database connection. You can create an
     instance of this class by calling constructor :func:`pymssql.connect()`. It
@@ -71,7 +120,7 @@ This class has no useful properties and data members.
 Connection object methods
 -------------------------
 
-.. py:method:: Connection.autocommit(status)
+.. method:: Connection.autocommit(status)
 
    Where *status* is a boolean value. This method turns autocommit mode on or
    off.
@@ -82,30 +131,30 @@ Connection object methods
    You can turn autocommit mode on, what means every single operation commits
    itself as soon as it succeeds.
 
-.. py:method:: Connection.close()
+.. method:: Connection.close()
 
    Close the connection.
 
-.. py:method:: Connection.cursor()
+.. method:: Connection.cursor()
 
    Return a cursor object, that can be used to make queries and fetch results
    from the database.
 
-.. py:method:: Connection.commit()
+.. method:: Connection.commit()
 
    Commit current transaction. You must call this method to persist your data if
    you leave autocommit at its default value, which is ``False``.
 
    See also :doc:`pymssql examples </pymssql_examples>`.
 
-.. py:method:: Connection.rollback()
+.. method:: Connection.rollback()
 
    Roll back current transaction.
 
 ``Cursor`` class
 ================
 
-.. py:class:: Cursor
+.. class:: Cursor
 
 This class represents a Cursor (in terms of Python DB-API specs) that is used to
 make queries against the database and obtaining results. You create
@@ -115,24 +164,24 @@ an open :py:class:`Connection` connection object.
 Cusor object properties
 -----------------------
 
-.. py:attribute:: Cursor.rowcount
+.. attribute:: Cursor.rowcount
 
    Returns number of rows affected by last operation. In case of ``SELECT``
    statements it returns meaningful information only after all rows have been
    fetched.
 
-.. py:attribute:: Cursor.connection
+.. attribute:: Cursor.connection
 
    This is the extension of the DB-API specification. Returns a reference to the
    connection object on which the cursor was created.
 
-.. py:attribute:: Cursor.lastrowid
+.. attribute:: Cursor.lastrowid
 
    This is the extension of the DB-API specification. Returns identity value of
    last inserted row. If previous operation did not involve inserting a row into
    a table with identity column, ``None`` is returned.
 
-.. py:attribute:: Cursor.rownumber
+.. attribute:: Cursor.rownumber
 
    This is the extension of the DB-API specification. Returns current 0-based
    index of the cursor in the result set.
@@ -140,12 +189,12 @@ Cusor object properties
 Cusor object methods
 --------------------
 
-.. py:method:: Cursor.close()
+.. method:: Cursor.close()
 
    Close the cursor. The cursor is unusable from this point.
 
-.. py:method:: Cursor.execute(operation)
-               Cursor.execute(operation, params)
+.. method:: Cursor.execute(operation)
+            Cursor.execute(operation, params)
 
     *operation* is a string and *params*, if specified, is a simple value, a
     tuple, or ``None``.
@@ -167,13 +216,13 @@ Cusor object methods
     behaviour is required by DB-API, if you don't like it, just use the
     :mod:`_mssql` module instead.
 
-.. py:method:: Cursor.executemany(operation, params_seq)
+.. method:: Cursor.executemany(operation, params_seq)
 
    *operation* is a string and *params_seq* is a sequence of tuples (e.g. a
    list). Execute a database operation repeatedly for each element in parameter
    sequence.
 
-.. py:method:: Cursor.fetchone()
+.. method:: Cursor.fetchone()
 
    Fetch the next row of a query result, returning a tuple, or a dictionary if
    as_dict was passed to ``pymssql.connect()``, or ``None`` if no more data is
@@ -181,7 +230,7 @@ Cusor object methods
    previous call to ``execute*()`` did not produce any result set or no call was
    issued yet.
 
-.. py:method:: Cursor.fetchmany(size=None)
+.. method:: Cursor.fetchmany(size=None)
 
    Fetch the next batch of rows of a query result, returning a list of tuples,
    or a list of dictionaries if *as_dict* was passed to
@@ -191,7 +240,7 @@ Cusor object methods
    (:pep:`249#operationalerror`) if previous call to ``execute*()`` did not
    produce any result set or no call was issued yet.
 
-.. py:method:: Cursor.fetchall()
+.. method:: Cursor.fetchall()
 
    Fetch all remaining rows of a query result, returning a list of tuples, or a
    list of dictionaries if as_dict was passed to ``pymssql.connect()``, or an
@@ -199,21 +248,21 @@ Cusor object methods
    (:pep:`249#operationalerror`) if previous call to ``execute*()`` did not
    produce any result set or no call was issued yet.
 
-.. py:method:: Cursor.nextset()
+.. method:: Cursor.nextset()
 
    This method makes the cursor skip to the next available result set,
    discarding any remaining rows from the current set. Returns ``True`` value if
    next result is available, ``None`` if not.
 
-.. py:method:: Cursor.__iter__()
-               Cursor.next()
+.. method:: Cursor.__iter__()
+            Cursor.next()
 
    These methods facilitate :ref:`Python iterator protocol <python:typeiter>`.
    You most likely will not call them directly, but indirectly by using
    iterators.
 
-.. py:method:: Cursor.setinputsizes()
-               Cursor.setoutputsize()
+.. method:: Cursor.setinputsizes()
+            Cursor.setoutputsize()
 
    These methods do nothing, as permitted by DB-API specs.
 
