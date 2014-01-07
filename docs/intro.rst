@@ -52,7 +52,7 @@ at https://github.com/pymssql/pymssql.
 We would be happy to have:
 
 * A couple more developers
-* Help from the community with maintenance and refreshing this documentation.
+* Help from the community with maintenance of this documentation.
 
 If interested, please connect with us on the mailing list.
 

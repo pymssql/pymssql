@@ -20,7 +20,7 @@ Features include:
 * Includes a supported and documented low-level module (``_mssql``) that you
   can use instead of the DB-API
 * Supports stored procedures with both return values and output parameters
-* Has a comprehensive test suite
+* A comprehensive test suite
 
 pymssql is licensed under the terms of the GNU LGPL license.
 
