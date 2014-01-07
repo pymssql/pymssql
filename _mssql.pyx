@@ -229,15 +229,20 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
 
-    sprintf(mssql_message, '%s DB-Lib error message %d, severity %d:\n%s\n',
-        mssql_lastmsgstr, dberr, severity, dberrstr)
-
     if oserr != DBNOERR and oserr != 0:
         if severity == EXCOMM:
             strcpy(error_type, 'Net-Lib')
         else:
             strcpy(error_type, 'Operating System')
-        sprintf(mssql_message, '%s error during %s', error_type, oserrstr)
+        sprintf(
+            mssql_message,
+            '%sDB-Lib error message %d, severity %d:\n%s\n%s error during %s (%d)\n',
+            mssql_lastmsgstr, dberr, severity, dberrstr, error_type, oserrstr, oserr)
+    else:
+        sprintf(
+            mssql_message,
+            '%sDB-Lib error message %d, severity %d:\n%s\n',
+            mssql_lastmsgstr, dberr, severity, dberrstr)
 
     strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
 
