@@ -427,7 +427,7 @@ setup(
     license = 'LGPL',
     platforms = 'any',
     keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
-    url = 'https://github.com/pymssql/pymssql',
+    url = 'http://pymssql.org',
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
