@@ -65,8 +65,11 @@ cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef int _mssql_last_msg_line = 0
 cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_str[0] = <char>0
 cdef char *_mssql_last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_srv[0] = <char>0
 cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_proc[0] = <char>0
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
