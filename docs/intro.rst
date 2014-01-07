@@ -56,10 +56,11 @@ We would be happy to have:
 
 If interested, please connect with us on the mailing list.
 
-Things you might be interested in:
+.. seealso::
 
-* `PYPI Page`_, recent changelog, and Downloads
-* `FreeTDS User Guide`_
+  `PYPI Page`_, recent changelog, and Downloads
+
+  `FreeTDS User Guide`_
 
 .. _PYPI Page: https://pypi.python.org/pypi/pymssql/
 .. _FreeTDS User Guide: http://www.freetds.org/userguide/
