@@ -290,7 +290,16 @@ class CursorBase(DBAPIBase):
     def test_as_dict_no_column_name(self):
         cur = self.conn.cursor(as_dict=True)
         cur.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
-        eq_(cur.fetchall(), [{'(No column name)': 3}])
+        eq_(cur.fetchall(), [{'(No column name #1)': 3}])
+
+    def test_as_dict_no_column_name_2(self):
+        cur = self.conn.cursor(as_dict=True)
+        cur.execute(
+            "SELECT MAX(x), MAX(y) "
+            "FROM (VALUES (1, 2), (2, 3), (3, 4)) AS foo(x, y)")
+        eq_(cur.fetchall(), [{
+            '(No column name #1)': 3,
+            '(No column name #2)': 4}])
 
     def test_fetchmany(self):
         cur = self.conn.cursor()

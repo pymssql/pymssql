@@ -1012,7 +1012,7 @@ cdef class MSSQLConnection:
             # and reduces confusion from users who use as_dict=True and then do
             # "SELECT MAX(x) FROM..." and get rows with no columns.
             if not name:
-                name = '(No column name)'
+                name = '(No column name #%d)' % col
 
             row_dict[name] = value
             row_dict[col - 1] = value
