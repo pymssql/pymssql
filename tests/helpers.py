@@ -287,6 +287,11 @@ class CursorBase(DBAPIBase):
         cur.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
         eq_(cur.fetchall(), [{'first_name': u'foo', 'last_name': u'bar'}])
 
+    def test_as_dict_no_column_name(self):
+        cur = self.conn.cursor(as_dict=True)
+        cur.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
+        eq_(cur.fetchall(), [{'(No column name)': 3}])
+
     def test_fetchmany(self):
         cur = self.conn.cursor()
         cur.execute('select * from test')
