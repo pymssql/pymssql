@@ -1007,10 +1007,14 @@ cdef class MSSQLConnection:
             name = self.column_names[col - 1]
             value = row[col - 1]
 
-            # Add key by column name, only if the column has a name
-            if name:
-                row_dict[name] = value
+            # Default column name if it has none
+            # Makes it look like Management Studio
+            # and reduces confusion from users who use as_dict=True and then do
+            # "SELECT MAX(x) FROM..." and get rows with no columns.
+            if not name:
+                name = '(No column name)'
 
+            row_dict[name] = value
             row_dict[col - 1] = value
 
         return row_dict
