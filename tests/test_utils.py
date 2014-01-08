@@ -1,4 +1,3 @@
-from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 
 import _mssql
