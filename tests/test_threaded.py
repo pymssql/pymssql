@@ -114,6 +114,7 @@ class ThreadedTests(unittest.TestCase):
         sys.stdout.write(" ")
         sys.stdout.flush()
 
+    @attr('slow')
     def testErrorSprocThreadedUse(self):
         spname = 'pymssqlErrorThreadTest'
         mssql = mssqlconn()
