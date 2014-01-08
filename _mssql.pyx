@@ -1669,7 +1669,7 @@ cdef _substitute_params(toformat, params, charset):
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
 
             # calculate string positions so we can keep track of the offset to
-            # be used in future substituations on this string.  This is
+            # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
             # original string, but we modify the original string each time we
             # loop, so we need to make an adjustment for the difference between
@@ -1692,7 +1692,7 @@ cdef _substitute_params(toformat, params, charset):
         offset = 0
         for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
             # calculate string positions so we can keep track of the offset to
-            # be used in future substituations on this string.  This is
+            # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
             # original string, but we modify the original string each time we
             # loop, so we need to make an adjustment for the difference between
