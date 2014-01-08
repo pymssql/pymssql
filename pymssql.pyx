@@ -490,13 +490,12 @@ cdef class Cursor:
             raise OperationalError('Statement not executed or executed statement has no resultset')
 
         try:
-            if self.as_dict:
-                rows = [row2dict(row) for row in self._source._conn]
-            else:
-                rows = [dict([(k, v) for k, v in row.items() if isinstance(k, int)])
-                        for row in self._source._conn]
-                rows = [tuple([row[r] for r in sorted(row.keys()) if \
-                        type(r) == int]) for row in rows]
+            rows = []
+            while True:
+                try:
+                    rows.append(self.getrow())
+                except StopIteration:
+                    break
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
