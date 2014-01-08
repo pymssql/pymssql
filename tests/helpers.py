@@ -287,6 +287,26 @@ class CursorBase(DBAPIBase):
         cur.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
         eq_(cur.fetchall(), [{'first_name': u'foo', 'last_name': u'bar'}])
 
+    def test_as_dict_no_column_name(self):
+        cur = self.conn.cursor(as_dict=True)
+        try:
+            cur.execute(
+                "SELECT MAX(x), MIN(x) AS [MIN(x)] "
+                "FROM (VALUES (1), (2), (3)) AS foo(x)")
+            assert False, "Didn't raise InterfaceError"
+        except pymssql.ColumnsWithoutNamesError as exc:
+            eq_(exc.columns_without_names, [0])
+
+    def test_as_dict_no_column_name_2(self):
+        cur = self.conn.cursor(as_dict=True)
+        try:
+            cur.execute(
+                "SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y) "
+                "FROM (VALUES (1, 2), (2, 3), (3, 4)) AS foo(x, y)")
+            assert False, "Didn't raise InterfaceError"
+        except pymssql.ColumnsWithoutNamesError as exc:
+            eq_(exc.columns_without_names, [0, 2])
+
     def test_fetchmany(self):
         cur = self.conn.cursor()
         cur.execute('select * from test')
