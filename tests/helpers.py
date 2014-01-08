@@ -6,8 +6,10 @@ from nose.tools import eq_
 import _mssql
 import pymssql
 
+
 class Config(object):
     pass
+
 config = Config()
 
 cdir = path.dirname(__file__)
@@ -15,23 +17,26 @@ tmpdir = path.join(cdir, 'tmp')
 cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
 
+
 def mssqlconn():
     return _mssql.connect(
-            server=config.server,
-            user=config.user,
-            password=config.password,
-            database=config.database,
-            port=config.port,
-        )
+        server=config.server,
+        user=config.user,
+        password=config.password,
+        database=config.database,
+        port=config.port,
+    )
+
 
 def pymssqlconn():
     return pymssql.connect(
-            server=config.server,
-            user=config.user,
-            password=config.password,
-            database=config.database,
-            port=config.port,
-        )
+        server=config.server,
+        user=config.user,
+        password=config.password,
+        database=config.database,
+        port=config.port,
+    )
+
 
 def get_app_lock():
     global global_mssqlconn
@@ -57,7 +62,11 @@ def get_app_lock():
             break
 
     t2 = time.time()
-    print("*** %d: sp_getapplock for 'pymssql_tests' returned %d - it took %d seconds" % (t2, result, t2 - t1))
+    print(
+        "*** %d: sp_getapplock for 'pymssql_tests' returned %d - "
+        "it took %d seconds"
+        % (t2, result, t2 - t1))
+
 
 def release_app_lock():
     t1 = time.time()
@@ -68,15 +77,20 @@ def release_app_lock():
         @LockOwner = 'Session';
     SELECT @result AS result;
     """)
-    print("*** %d: sp_releaseapplock for 'pymssql_tests' returned %d" % (t1, result))
+    print(
+        "*** %d: sp_releaseapplock for 'pymssql_tests' returned %d"
+        % (t1, result))
+
 
 def drop_table(conn, tname):
     sql = "if object_id('%s') is not null drop table %s" % (tname, tname)
     conn.execute_non_query(sql)
 
+
 def clear_table(conn, tname):
     sql = 'delete from %s' % tname
     conn.execute_non_query(sql)
+
 
 class PyTableBase(object):
     tname = 'pymssql'
@@ -112,6 +126,7 @@ class PyTableBase(object):
         cur.execute(sql, params)
         return cur
 
+
 class TableManager(object):
     def __init__(self, conn, tname, *cols):
         self.conn = conn
@@ -125,7 +140,8 @@ class TableManager(object):
 
     def drop(self):
         #mssql
-        sql = "if object_id('%s') is not null drop table %s" % (self.tname, self.tname)
+        sql = "if object_id('%s') is not null drop table %s" % (
+            self.tname, self.tname)
         try:
             self.execute(sql)
         except Exception as e:
@@ -155,6 +171,7 @@ class TableManager(object):
         cur.execute(sql)
         return cur.fetchone()[0]
 
+
 class DBAPIBase(object):
 
     def newconn(self):
@@ -176,12 +193,13 @@ class DBAPIBase(object):
         cur.executemany(sql, params_seq)
         return cur
 
+
 class CursorBase(DBAPIBase):
     """
-        This is a "base" object because I have an uncommitted test module
-        that runs these tests against psycopg to see what its behavior is.
-        When psycopg comparison isn't needed anymore, this class can be moved to
-        test_pymssql and used directly.
+    This is a "base" object because I have an uncommitted test module
+    that runs these tests against psycopg to see what its behavior is.
+    When psycopg comparison isn't needed anymore, this class can be moved to
+    test_pymssql and used directly.
     """
     def __init__(self):
         DBAPIBase.__init__(self)
@@ -230,9 +248,11 @@ class CursorBase(DBAPIBase):
         eq_(res[0], 1)
         res = cur.fetchone()
         eq_(res[0], 2)
+
         for x in range(0, 5):
             if cur.fetchone() is None:
-                # make sure another call is also None and no execption is raised
+                # make sure another call is also None and no exception is
+                # raised
                 assert cur.fetchone() is None
                 break
             if x == 5:
@@ -279,10 +299,13 @@ class CursorBase(DBAPIBase):
         eq_(len(cur.fetchmany(2)), 0)
 
     def test_execute_many(self):
-        cur = self.executemany("delete from test where id = %(id)s", [{'id': 1}, {'id': 2}])
+        cur = self.executemany(
+            "delete from test where id = %(id)s",
+            [{'id': 1}, {'id': 2}])
         self.conn.commit()
         eq_(self.t1.count(), 3)
         eq_(cur.rowcount, 2)
+
 
 def clear_db():
     conn = mssqlconn()
@@ -295,7 +318,6 @@ def clear_db():
         'U': 'drop table [%(name)s]',
     }
     delete_sql = []
-    to_repeat_sql = []
     for type, drop_sql in mapping.items():
         sql = 'select name, object_name( parent_object_id ) as parent_name '\
             'from sys.objects where type in (\'%s\')' % '", "'.join(type)
