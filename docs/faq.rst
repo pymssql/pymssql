@@ -70,6 +70,37 @@ Examples of this problem:
 
 * `Google Group post: pymssql with MAX(values) function does not appear to work <https://groups.google.com/forum/?fromgroups#!topic/pymssql/JoZpmNZFtxM>`_
 
+pymssql does not unserialize ``DATE`` and ``TIME`` columns to ``datetime.date`` and ``datetime.time`` instances
+===============================================================================================================
+
+You may notice that pymssql will unserialize a ``DATETIME`` column to a
+:class:`python:datetime.datetime` instance, but it will unserialize ``DATE``
+and ``TIME`` columns as simple strings. For example::
+
+    >>> cursor.execute("SELECT * FROM foo")
+    >>> cursor.fetchall()
+    [{u'date': u'2014-01-09', u'time': u'06:17:00.0000000',
+      u'datetime': datetime.datetime(2014, 1, 9, 9, 17, 56, 623000)}]
+
+Yep, so the problem here is that ``DATETIME`` has been supported by `FreeTDS
+<http://www.freetds.org/>`_ for a long time, but ``DATE`` and ``TIME`` are
+newer types in SQL Server and Microsoft never added support for them to db-lib
+and FreeTDS never added support for them either.
+
+There was some discussion of adding it to FreeTDS, but I think that stalled.
+See this thread:
+
+http://lists.ibiblio.org/pipermail/freetds/2013q2/thread.html#28348
+
+So we would need to get FreeTDS to support it and then the user would have to
+make sure to use a very recent FreeTDS (unless pymssql links in said version of
+FreeTDS).
+
+Links:
+
+* https://github.com/pymssql/pymssql/issues/156
+* `Discussion of adding support for DATE and TIME to FreeTDS <http://lists.ibiblio.org/pipermail/freetds/2013q2/thread.html#28348>`_
+
 Shared object "libsybdb.so.3" not found
 =======================================
 
