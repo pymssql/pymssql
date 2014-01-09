@@ -26,3 +26,17 @@ class TestConnectionAsDict(unittest.TestCase):
         cursor.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
         data = cursor.fetchall()
         self.assertEquals(data, [{'first_name': u'foo', 'last_name': u'bar'}])
+
+    def test_no_results_with_connection_as_dict(self):
+        # Make sure that checking for columns without names doesn't break
+        # statements that don't return results
+
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        CREATE TABLE dates_and_times (
+            datetime DATETIME,
+            date DATE,
+            time TIME,
+        )
+        """)
+
