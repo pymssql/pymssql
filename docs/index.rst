@@ -44,6 +44,7 @@ Contents
    freetds
    ref/pymssql
    ref/_mssql
+   migrate_1_x_to_2_x
    faq
    building_and_developing
    freetds_and_dates
