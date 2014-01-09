@@ -83,7 +83,7 @@ Note that for ``pyformat``, PEP 249 only shows the example of a string substitut
 
     %(name)s
 
-It is not clear from PEP 249 whether other types should be support, like::
+It is not clear from PEP 249 whether other types should be supported, like::
 
     %(name)d
     %(name)f
