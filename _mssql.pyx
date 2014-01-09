@@ -576,7 +576,7 @@ cdef class MSSQLConnection:
     def __iter__(self):
         assert_connected(self)
         clr_err(self)
-        return MSSQLRowIterator(self)
+        return MSSQLRowIterator(self, ROW_FORMAT_DICT)
 
     cpdef cancel(self):
         """
