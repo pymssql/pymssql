@@ -204,7 +204,7 @@ Mon Nov 23 13:37:00 2009 Damien Churchill <damoxc@gmail.com>
 Fri Nov 20 13:03:00 2009 Damien Churchill <damoxc@gmail.com>
 	* mssqldbmodule.c: deprecated in favour of _mssql.pyx
 	* pymssql.py: deprecated in favour of pymssql.py
-	+ feature: added support for uniqueidentifer types
+	+ feature: added support for uniqueidentifier types
 	+ feature: added support for calling remote procedures programmatically
 	* version 1.9.901
 
