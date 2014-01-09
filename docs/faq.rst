@@ -77,10 +77,19 @@ You may notice that pymssql will unserialize a ``DATETIME`` column to a
 :class:`python:datetime.datetime` instance, but it will unserialize ``DATE``
 and ``TIME`` columns as simple strings. For example::
 
-    >>> cursor.execute("SELECT * FROM foo")
+    >>> cursor.execute("""
+    ... CREATE TABLE dates_and_times (
+    ...     datetime DATETIME,
+    ...     date DATE,
+    ...     time TIME,
+    ... )
+    ... """)
+    >>> cursor.execute("INSERT INTO dates_and_times VALUES (GETDATE(), '20140109', '6:17')")
+    >>> cursor.execute("SELECT * FROM dates_and_times")
     >>> cursor.fetchall()
     [{u'date': u'2014-01-09', u'time': u'06:17:00.0000000',
-      u'datetime': datetime.datetime(2014, 1, 9, 9, 17, 56, 623000)}]
+      u'datetime': datetime.datetime(2014, 1, 9, 12, 41, 59, 403000)}]
+    >>> cursor.execute("DROP TABLE dates_and_times")
 
 Yep, so the problem here is that ``DATETIME`` has been supported by `FreeTDS
 <http://www.freetds.org/>`_ for a long time, but ``DATE`` and ``TIME`` are
