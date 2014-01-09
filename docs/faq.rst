@@ -5,20 +5,20 @@ Frequently asked questions
 Cannot connect to SQL Server
 ============================
 
-If your script can't connect to an *SQL Server* instance, try the following:
+If your script can't connect to a *SQL Server* instance, try the following:
 
-* By default *SQL Server* 2005 and newer doesn't accept remote connections, you
+* By default *SQL Server* 2005 and newer don't accept remote connections, you
   have to use *SQL Server Surface Area Configuration* and/or *SQL Server
   Configuration Manager* to enable specific protocols and network adapters;
   don't forget to restart *SQL Server* after making these changes,
 
-* If *SQL Server* is on remote machine, check whether connections are not
+* If *SQL Server* is on a remote machine, check whether connections are not
   blocked by any intermediate firewall device, firewall software, antivirus
   software, or other security facility,
 
 * If you use pymssql on Linux/Unix with FreeTDS, check that FreeTDS's
   configuration is ok and that it can be found by pymssql. The easiest way is to
-  test connection using ``tsl`` utility which can be found in FreeTDS package.
+  test connection using ``tsql`` utility which can be found in FreeTDS package.
   See :doc:`FreeTDS Configuration </freetds>` for more info,
 
 * If you use pymssql on Windows and the server is on local machine, you can try
@@ -42,13 +42,13 @@ On Linux/\*nix you may encounter the following behaviour::
     File "<stdin>", line 1, in ?
     ImportError: Shared object "libsybdb.so.3" not found
 
-It may mean that FreeTDS library is unavailable, or that dynamic linker is
+It may mean that the FreeTDS library is unavailable, or that the dynamic linker is
 unable to find it. Check that it is installed and that the path to ``libsybdb.so``
 is in ``/etc/ld.so.conf`` file. Then do ``ldconfig`` as root to refresh linker
-database. On Solaris I just set ``LD_LIBRARY_PATH`` environment variable to
-directory with the library just before launching Python.
+database. On Solaris, I just set the ``LD_LIBRARY_PATH`` environment variable to
+the directory with the library just before launching Python.
 
-pymssql 2.x bundles the FreeTDS ``sydbd`` library for supported platforms. This
+pymssql 2.x bundles the FreeTDS ``sybdb`` library for supported platforms. This
 error may show up in 2.x versions if you are trying to build with your own
 FreeTDS.
 
