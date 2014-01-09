@@ -35,6 +35,9 @@ DEF EXCOMM = 9
 DEF DBVERSION_71 = 5
 DEF DBVERSION_72 = 6
 
+ROW_FORMAT_TUPLE = 1
+ROW_FORMAT_DICT = 2
+
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
@@ -348,8 +351,9 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 ##############################
 cdef class MSSQLRowIterator:
 
-    def __init__(self, connection):
+    def __init__(self, connection, int row_format):
         self.conn = connection
+        self.row_format = row_format
 
     def __iter__(self):
         return self
@@ -357,7 +361,7 @@ cdef class MSSQLRowIterator:
     def __next__(self):
         assert_connected(self.conn)
         clr_err(self.conn)
-        return self.conn.fetch_next_row_dict(1)
+        return self.conn.fetch_next_row(1, self.row_format)
 
 ############################
 ## MSSQL Connection Class ##
@@ -924,7 +928,7 @@ cdef class MSSQLConnection:
         """
         log("_mssql.MSSQLConnection.execute_row()")
         self.format_and_run_query(query_string, params)
-        return self.fetch_next_row_dict(0)
+        return self.fetch_next_row(0, ROW_FORMAT_DICT)
 
     cpdef execute_scalar(self, query_string, params=None):
         """
@@ -963,9 +967,9 @@ cdef class MSSQLConnection:
             self.last_dbresults = 0
             return None
 
-        return self.get_row(rtc)[0]
+        return self.get_row(rtc, ROW_FORMAT_TUPLE)[0]
 
-    cdef fetch_next_row(self, int throw):
+    cdef fetch_next_row(self, int throw, int row_format):
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.fetch_next_row() BEGIN")
         try:
@@ -992,28 +996,9 @@ cdef class MSSQLConnection:
                     raise StopIteration
                 return None
 
-            return self.get_row(rtc)
+            return self.get_row(rtc, row_format)
         finally:
             log("_mssql.MSSQLConnection.fetch_next_row() END")
-
-    cdef fetch_next_row_dict(self, int throw):
-        cdef int col
-        log("_mssql.MSSQLConnection.fetch_next_row_dict()")
-
-        row_dict = {}
-        row = self.fetch_next_row(throw)
-
-        for col in xrange(1, self.num_columns + 1):
-            name = self.column_names[col - 1]
-            value = row[col - 1]
-
-            # Add key by column name, only if the column has a name
-            if name:
-                row_dict[name] = value
-
-            row_dict[col - 1] = value
-
-        return row_dict
 
     cdef format_and_run_query(self, query_string, params=None):
         """
@@ -1083,6 +1068,17 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.get_header() END")
 
+    def get_iterator(self, int row_format):
+        """
+        get_iterator(row_format) -- allows the format of the iterator to be specified
+
+        While the iter(conn) call will always return a dictionary, this
+        method allows the return type of the row to be specified.
+        """
+        assert_connected(self)
+        clr_err(self)
+        return MSSQLRowIterator(self, row_format)
+
     cdef get_result(self):
         cdef int coltype
         cdef char log_message[200]
@@ -1131,7 +1127,7 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.get_result() END")
 
-    cdef get_row(self, int row_info):
+    cdef get_row(self, int row_info, int row_format):
         cdef DBPROCESS *dbproc = self.dbproc
         cdef int col
         cdef int col_type
@@ -1143,7 +1139,10 @@ cdef class MSSQLConnection:
             global _row_count
             _row_count += 1
 
-        record = tuple()
+        if row_format == ROW_FORMAT_TUPLE:
+            record = tuple()
+        elif row_format == ROW_FORMAT_DICT:
+            record = dict()
 
         for col in xrange(1, self.num_columns + 1):
             with nogil:
@@ -1152,16 +1151,23 @@ cdef class MSSQLConnection:
                 len = get_length(dbproc, row_info, col)
 
             if data == NULL:
-                record += (None,)
-                continue
+                value = None
+            else:
+                IF PYMSSQL_DEBUG == 1:
+                    global _row_count
+                    fprintf(stderr, 'Processing row %d, column %d,' \
+                        'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
+                        data, col_type, len)
+                value = self.convert_db_value(data, col_type, len)
 
-            IF PYMSSQL_DEBUG == 1:
-                global _row_count
-                fprintf(stderr, 'Processing row %d, column %d,' \
-                    'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
-                    data, col_type, len)
+            if row_format == ROW_FORMAT_TUPLE:
+                record += (value,)
+            elif row_format == ROW_FORMAT_DICT:
+                name = self.column_names[col - 1]
+                record[col - 1] = value
+                if name:
+                    record[name] = value
 
-            record += (self.convert_db_value(data, col_type, len),)
         return record
 
     def init_procedure(self, procname):

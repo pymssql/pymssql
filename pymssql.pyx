@@ -443,12 +443,11 @@ cdef class Cursor:
         Helper method used by fetchone and fetchmany to fetch and handle
         converting the row if as_dict = False.
         """
-        row = next(iter(self._source._conn))
-        self._rownumber = self._source._conn.rows_affected
-        if self.as_dict:
-            return row2dict(row)
-        row = dict([(k, v) for k, v in row.items() if isinstance(k, int)])
-        return tuple([row[r] for r in sorted(row) if type(r) == int])
+        row_format = _mssql.ROW_FORMAT_DICT if self.as_dict else _mssql.ROW_FORMAT_TUPLE
+        row = next(self._source._conn.get_iterator(row_format))
+        if not self.as_dict:
+            return row
+        return row2dict(row)
 
     def fetchone(self):
         if self.description is None:
