@@ -131,6 +131,15 @@ class ProgrammingError(DatabaseError):
 class NotSupportedError(DatabaseError):
     pass
 
+class ColumnsWithoutNamesError(InterfaceError):
+    def __init__(self, columns_without_names):
+        self.columns_without_names = columns_without_names
+
+    def __str__(self):
+        return 'Specified as_dict=True and ' \
+            'there are columns with no names: %r' \
+            % (self.columns_without_names,)
+
 def row2dict(row):
     """Filter dict so it only has string keys; used when as_dict == True"""
     return dict([(k, v) for k, v in row.items() if hasattr(k, 'startswith')])
@@ -406,6 +415,15 @@ cdef class Cursor:
                 self._source._conn.execute_query(operation, params)
             self.description = self._source._conn.get_header()
             self._rownumber = self._source._conn.rows_affected
+
+            if self.as_dict:
+                columns_without_names = [
+                    idx
+                    for idx, column_descriptor in enumerate(self.description)
+                    if len(column_descriptor[0]) == 0
+                ]
+                if columns_without_names:
+                    raise ColumnsWithoutNamesError(columns_without_names)
 
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
