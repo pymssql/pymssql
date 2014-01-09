@@ -32,6 +32,44 @@ Returned dates are not correct
 If you use pymssql on Linux/\*nix and you suspect that returned dates are not
 correct, please read the :doc:`FreeTDS and dates <freetds_and_dates>` page.
 
+Results are missing columns
+===========================
+
+One possible cause of your result rows missing columns is if you are using a
+connection or cursor with ``as_dict=True`` and your query has columns without
+names -- for example::
+
+    >>> cursor = conn.cursor(as_dict=True)
+    >>> cursor.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
+    >>> cursor.fetchall()
+    [{}]
+
+Whoa, what happened to ``MAX(x)``?!?!
+
+In this case, pymssql does not know what name to use for the dict key, so it
+omits the column.
+
+The solution is to supply a name for all columns -- e.g.::
+
+    >>> cursor.execute("SELECT MAX(x) AS [MAX(x)] FROM (VALUES (1), (2), (3)) AS foo(x)")
+    >>> cursor.fetchall()
+    [{u'MAX(x)': 3}]
+
+This behavior was changed in https://github.com/pymssql/pymssql/pull/160 --
+with this change, if you specify `as_dict=True` and omit column names, an
+exception will be raised::
+
+    >>> cursor.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "pymssql.pyx", line 426, in pymssql.Cursor.execute (pymssql.c:5828)
+        raise ColumnsWithoutNamesError(columns_without_names)
+    pymssql.ColumnsWithoutNamesError: Specified as_dict=True and there are columns with no names: [0]
+
+Examples of this problem:
+
+* `Google Group post: pymssql with MAX(values) function does not appear to work <https://groups.google.com/forum/?fromgroups#!topic/pymssql/JoZpmNZFtxM>`_
+
 Shared object "libsybdb.so.3" not found
 =======================================
 
