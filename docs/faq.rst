@@ -7,6 +7,117 @@ Cannot connect to SQL Server
 
 If your script can't connect to a *SQL Server* instance, try the following:
 
+* Check that you can connect with another tool.
+
+    If you are using `FreeTDS <http://www.freetds.org/>`_, then you can use the
+    included ``tsql`` command to try to connect -- it looks like this::
+
+        $ tsql -H sqlserverhost -p 1433 -U user -P password -D tempdb
+        locale is "en_US.UTF-8"
+        locale charset is "UTF-8"
+        using default charset "UTF-8"
+        Setting tempdb as default database in login packet
+        1> SELECT @@VERSION
+        2> GO
+
+        Microsoft SQL Server 2012 - 11.0.2100.60 (X64)
+                Feb 10 2012 19:39:15
+                Copyright (c) Microsoft Corporation
+                Developer Edition (64-bit) on Windows NT 6.1 <X64> (Build 7601: Service Pack 1)
+
+        (1 row affected)
+
+    .. note::
+
+        Note that I use the ``-H`` option rather than the ``-S`` option to
+        ``tsql``. This is because with ``-H``, it will bypass reading settings
+        from the ``freetds.conf`` file like ``port`` and ``tds version``, and
+        so this is more similar to what happens with pymssql.
+
+    If you **can't** connect with ``tsql`` or other tools, then the problem is
+    probably not pymssql; you probably have a problem with your server
+    configuration (see below), :doc:`FreeTDS Configuration </freetds>`,
+    network, etc.
+
+    If you **can** connect with ``tsql``, then you should be able to connect
+    with pymssql with something like this::
+
+        >>> import pymssql
+        >>> conn = pymssql.connect(
+        ...     server="sqlserverhost",
+        ...     port=1433,
+        ...     user="user",
+        ...     password="password",
+        ...     database="tempdb")
+        >>> conn
+        <pymssql.Connection object at 0x10107a3f8>
+        >>> cursor = conn.cursor()
+        >>> cursor.execute("SELECT @@VERSION")
+        >>> print(cursor.fetchone()[0])
+        Microsoft SQL Server 2012 - 11.0.2100.60 (X64)
+          Feb 10 2012 19:39:15
+          Copyright (c) Microsoft Corporation
+          Developer Edition (64-bit) on Windows NT 6.1 <X64> (Build 7601: Service Pack 1)
+
+    If something like the above doesn't work, then you can try to diagnose by
+    setting one or both of the following `FreeTDS environment variables that control logging <http://www.freetds.org/userguide/logging.htm>`_:
+
+    * ``TDSDUMP``
+    * ``TDSDUMPCONFIG``
+
+    Either or both of these can be set. They can be set to a filename or to
+    ``stdout`` or ``stderr``.
+
+    These will cause FreeTDS to output a ton of information about what it's doing
+    and you may very well spot that it's not using the port that you expected or
+    something similar. For example::
+
+        >>> import os
+        >>> os.environ['TDSDUMP'] = 'stdout'
+        >>>
+        >>> import pymssql
+        >>> conn = pymssql.connect(server="sqlserverhost")
+        log.c:194:Starting log file for FreeTDS 0.92.dev.20140102
+          on 2014-01-09 14:05:32 with debug flags 0x4fff.
+        config.c:731:Setting 'dump_file' to 'stdout' from $TDSDUMP.
+        ...
+        dblib.c:7934:20013: "Unknown host machine name"
+        dblib.c:7955:"Unknown host machine name", client returns 2 (INT_CANCEL)
+        util.c:347:tdserror: client library returned TDS_INT_CANCEL(2)
+        util.c:370:tdserror: returning TDS_INT_CANCEL(2)
+        login.c:418:IP address pointer is empty
+        login.c:420:Server sqlserverhost:1433 not found!
+        ...
+
+    .. note::
+
+        Note that pymssql will use a default port of 1433, despite any ports
+        you may have specified in your ``freetds.conf`` file.  So if you have
+        SQL Server running on a port other than 1433, you must explicitly
+        specify the ``port`` in your call to ``pymssql.connect``.  You cannot
+        rely on it to pick up the port in your ``freetds.conf``, even though
+        ``tsql -S`` might do this. This is why I recommend using ``tsql -H``
+        instead for diagnosing connection problems.
+
+    It is also useful to know that ``tsql -C`` will output a lot of information
+    about FreeTDS, that can be useful for diagnosing problems::
+
+        $ tsql -C
+        Compile-time settings (established with the "configure" script)
+                                    Version: freetds v0.92.dev.20140102
+                     freetds.conf directory: /usr/local/etc
+             MS db-lib source compatibility: no
+                Sybase binary compatibility: no
+                              Thread safety: yes
+                              iconv library: yes
+                                TDS version: 5.0
+                                      iODBC: yes
+                                   unixodbc: no
+                      SSPI "trusted" logins: no
+                                   Kerberos: no
+                                    OpenSSL: no
+                                     GnuTLS: no
+
 * By default *SQL Server* 2005 and newer don't accept remote connections, you
   have to use *SQL Server Surface Area Configuration* and/or *SQL Server
   Configuration Manager* to enable specific protocols and network adapters;
