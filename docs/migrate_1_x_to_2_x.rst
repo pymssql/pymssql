@@ -8,6 +8,44 @@ differences and usually upgrading is pretty easy.
 
 There are a few differences though...
 
+``str`` vs. ``unicode``
+=======================
+
+Note that we are talking about Python 2, because pymssql 1.x doesn't work on
+Python 3.
+
+pymssql 1.x will return ``str`` instances::
+
+    >>> pymssql.__version__
+    '1.0.3'
+    >>> conn.as_dict = True
+    >>> cursor = conn.cursor()
+    >>> cursor.execute("SELECT 'hello' AS str FROM foo")
+    >>> cursor.fetchall()
+    [{0: 'hello', 'str': 'hello'}]
+
+whereas pymssql 2.x will return ``unicode`` instances::
+
+    >>> pymssql.__version__
+    u'2.0.1.2'
+    >>> conn.as_dict = True
+    >>> cursor = conn.cursor()
+    >>> cursor.execute("SELECT 'hello' AS str FROM foo")
+    >>> cursor.fetchall()
+    [{u'str': u'hello'}]
+
+If your application has code that deals with ``str`` and ``unicode``
+differently, then you may run into issues.
+
+You can always convert a ``unicode`` to a ``str`` by encoding::
+
+    >>> cursor.execute("SELECT 'hello' AS str FROM foo")
+    >>> s = cursor.fetchone()['str']
+    >>> s
+    u'hello'
+    >>> s.encode('utf-8')
+    'hello'
+
 Handling of ``uniqueidentifier`` columns
 ========================================
 
