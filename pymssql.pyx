@@ -416,7 +416,7 @@ cdef class Cursor:
             self.description = self._source._conn.get_header()
             self._rownumber = self._source._conn.rows_affected
 
-            if self.as_dict:
+            if self.as_dict and self.description:
                 columns_without_names = [
                     idx
                     for idx, column_descriptor in enumerate(self.description)
