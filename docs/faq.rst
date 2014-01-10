@@ -266,37 +266,6 @@ It may happen when one of the following is true:
 ``"Login incorrect"`` following this error is spurious, real ``"Login
 incorrect"`` messages has code=18456 and severity=14.
 
-Python on Windows dies with memory access violation error on connect() when incorrect password is given
-=======================================================================================================
-
-This may happen if you use different version of ``ntwdblib.dll`` than the one
-included in pymssql package. For example the version 2000.80.2273.0 is unable
-to handle ``dberrhandle()`` callbacks properly, and causes access violation
-error in ``err_handler()`` function on return ``INT_CANCEL``. I have given up
-after several hours of investigating the issue, and just reverted to previous
-version of the ``ntwdblib.dll`` and the error disappeared.
-
-"Not enough storage is available to complete this operation" error appears
-==========================================================================
-
-On Windows you may encounter the following behaviour::
-
-    >>> import _mssql
-    >>> c=_mssql.connect('hostname:portnumber','user','pass')
-    Traceback (most recent call last):
-    File "<pyshell#1>", line 1, in -toplevel-
-    File "E:\Python24\Lib\site-packages\pymssql.py", line 310, in connect
-    con = _mssql.connect(dbhost, dbuser, dbpasswd)
-    error: DB-Lib error message 10004, severity 9:
-    Unable to connect: SQL Server is unavailable or does not exist. Invalid connection.
-    Net-Lib error during ConnectionOpen (ParseConnectParams()).
-    Error 14 - Not enough storage is available to complete this operation.
-
-This may happen most likely on earlier versions of pymssql. It happens always if
-you use a colon ``":"`` to separate hostname from port number. On Windows you
-should use comma ``","`` instead. pymssql 1.0 has a workaround, so you do not
-have to care about that anymore.
-
 More troubleshooting
 ====================
 
