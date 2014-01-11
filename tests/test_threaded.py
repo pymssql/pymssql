@@ -3,10 +3,7 @@ import threading
 import time
 import unittest
 
-from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
-
-import _mssql
 
 from .helpers import mssqlconn
 
