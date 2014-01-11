@@ -7,7 +7,10 @@ from nose.plugins.attrib import attr
 
 from .helpers import mssqlconn
 
+
 class TestingThread(threading.Thread):
+    running = False
+    exc = None
 
     def run(self):
         self.running = True
@@ -19,54 +22,60 @@ class TestingThread(threading.Thread):
                 for row in mssql:
                     assert row[0] == i
             mssql.close()
-        except Exception as e:
-            self.exc = e
+        except Exception as exc:
+            self.exc = exc
         finally:
             self.running = False
 
+
 class TestingErrorThread(threading.Thread):
+    running = False
+    exc = None
 
     def run(self):
         self.running = True
         self.exc = None
         try:
             mssql = mssqlconn()
-            for i in range(0, 1000):
+            for _ in range(0, 1000):
                 try:
                     mssql.execute_query('SELECT unknown_column')
                 except:
                     pass
             mssql.close()
-        except Exception as e:
-            self.exc = e
+        except Exception as exc:
+            self.exc = exc
         finally:
             self.running = False
 
+
 class SprocTestingErrorThread(threading.Thread):
+    running = False
+    exc = None
 
     def run(self):
         self.running = True
         self.exc = None
         try:
             mssql = mssqlconn()
-            for i in range(0, 1000):
+            for _ in range(0, 1000):
                 try:
                     proc = mssql.init_procedure('pymssqlErrorThreadTest')
                     proc.execute()
                 except:
                     pass
             mssql.close()
-        except Exception as e:
-            self.exc = e
+        except Exception as exc:
+            self.exc = exc
         finally:
             self.running = False
 
-class ThreadedTests(unittest.TestCase):
 
+class ThreadedTests(unittest.TestCase):
     @attr('slow')
     def testThreadedUse(self):
         threads = []
-        for i in range(0, 50):
+        for _ in range(0, 50):
             thread = TestingThread()
             thread.start()
             threads.append(thread)
@@ -90,7 +99,7 @@ class ThreadedTests(unittest.TestCase):
     @attr('slow')
     def testErrorThreadedUse(self):
         threads = []
-        for i in range(0, 2):
+        for _ in range(0, 2):
             thread = TestingErrorThread()
             thread.start()
             threads.append(thread)
@@ -128,7 +137,7 @@ class ThreadedTests(unittest.TestCase):
         """ % spname)
 
         threads = []
-        for i in range(0, 5):
+        for _ in range(0, 5):
             thread = SprocTestingErrorThread()
             thread.start()
             threads.append(thread)
@@ -152,6 +161,7 @@ class ThreadedTests(unittest.TestCase):
         finally:
             mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
             mssql.close()
+
 
 suite = unittest.TestSuite()
 suite.addTest(unittest.makeSuite(ThreadedTests))
