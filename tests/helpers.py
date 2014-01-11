@@ -1,3 +1,4 @@
+import logging
 from os import path
 import time
 
@@ -346,3 +347,66 @@ def clear_db():
             delete_sql.append(drop_sql % dict(row))
     for sql in delete_sql:
         conn.execute_non_query(sql)
+
+
+class StoredProc(object):
+    def __init__(self, name, args, body, mssql=None):
+        self.name = name
+        self.args = args
+        self.body = body
+        self.mssql = mssql
+        logger_name = '.'.join([__name__, self.__class__.__name__, self.name])
+        self.logger = logging.getLogger(logger_name)
+
+    def create(self, mssql=None):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+
+        try:
+            self.drop(mssql)
+        except:
+            pass
+
+        mssql.execute_non_query("""
+        CREATE PROCEDURE [dbo].[%(name)s]
+            %(args)s
+        AS
+        BEGIN
+            %(body)s
+        END
+        """ % {
+            'name': self.name,
+            'args': '\n'.join(self.args),
+            'body': self.body,
+        })
+        self.logger.debug("Created stored proc: %r" % self.name)
+        return self
+
+    def execute(self, mssql=None, args=()):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+        proc = mssql.init_procedure(self.name)
+        for arg in args:
+            proc.bind(*arg)
+        self.logger.debug("Calling stored proc: %r" % self.name)
+        proc.execute()
+        self.logger.debug("Called stored proc: %r" % self.name)
+
+    def drop(self, mssql=None):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+        mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % self.name)
+        self.logger.debug("Dropped stored proc: %r" % self.name)
+        if self.mssql:
+            self.mssql.close()
+            self.logger.debug("Closed mssql connection: %r" % self.mssql)
+            self.mssql = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.drop()
