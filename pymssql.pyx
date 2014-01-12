@@ -242,7 +242,7 @@ cdef class Connection:
 
     def close(self):
         """
-        Close the connection to the databsae. Implicitly rolls back all
+        Close the connection to the database. Implicitly rolls back all
         uncommitted transactions.
         """
         if self.conn:
