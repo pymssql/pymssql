@@ -10,6 +10,7 @@ except ImportError:
 from pymssql import InterfaceError
 from .helpers import pymssqlconn
 
+
 class TestContextManagers(unittest.TestCase):
     def test_pymssql_Connection_with(self):
         with pymssqlconn() as conn:
