@@ -569,6 +569,12 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.__dealloc__()")
         self.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def __iter__(self):
         assert_connected(self)
         clr_err(self)

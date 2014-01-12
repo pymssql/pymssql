@@ -8,7 +8,7 @@ except ImportError:
     import unittest
 
 from pymssql import InterfaceError
-from .helpers import pymssqlconn
+from .helpers import pymssqlconn, mssqlconn
 
 
 class TestContextManagers(unittest.TestCase):
@@ -35,3 +35,10 @@ class TestContextManagers(unittest.TestCase):
             cursor.execute("SELECT @@version AS version")
 
         self.assertEqual(str(context.exception), "Cursor is closed.")
+
+    def test_mssql_Connection_with(self):
+        with mssqlconn() as conn:
+            conn.execute_query("SELECT @@version AS version")
+            self.assertTrue(conn.connected)
+
+        self.assertFalse(conn.connected)
