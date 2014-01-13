@@ -38,7 +38,8 @@ CREATE TABLE pymssql (
     decimal_no decimal(38,2),
     decimal_no2 decimal(38,10),
     numeric_no numeric(38,8),
-    stamp_time timestamp
+    stamp_time timestamp,
+    uuid uniqueidentifier
 )
 """
 
@@ -189,3 +190,13 @@ class TestTypes(object):
         colval = self.insert_and_select('float_no', origval, 's')
         self.typeeq(expect, colval)
         eq_(expect, colval)
+
+    def test_uuid(self):
+        if sys.version_info < (2, 5):
+            raise SkipTest
+        import uuid
+        testval = uuid.uuid4()
+        stestval = str(testval)
+        colval = self.insert_and_select('uuid', stestval, 's')
+        self.typeeq(testval, colval)
+        eq_(testval, colval)
