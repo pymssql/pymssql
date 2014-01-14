@@ -16,7 +16,6 @@ def get_bytes_buffer():
         from io import BytesIO
         return BytesIO()
 
-from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 
 from .helpers import drop_table, mssqlconn, clear_table, config

@@ -1,4 +1,3 @@
-from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 
 import sqlalchemy as sa
@@ -56,6 +55,5 @@ class TestSA(object):
         sess.add(s)
         sess.commit()
         res = sess.execute(sa.select([saotbl.c.data]))
-        #raise SkipTest # SA pickle columns cause us problems, delete this skip to see
         row = res.fetchone()
         eq_(row['data'], ['one'])
