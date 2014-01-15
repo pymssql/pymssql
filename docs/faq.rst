@@ -143,6 +143,66 @@ Returned dates are not correct
 If you use pymssql on Linux/\*nix and you suspect that returned dates are not
 correct, please read the :doc:`FreeTDS and dates <freetds_and_dates>` page.
 
+Queries return no rows
+======================
+
+There is a known issue where some versions of pymssql 1.x (pymssql 1.0.2 is
+where I've seen this) work well with FreeTDS 0.82, but return no rows when used
+with newer versions of FreeTDS, such as FreeTDS 0.91. At `SurveyMonkey
+<https://www.surveymonkey.com/>`_, we ran into this problem when we were using
+`pymssql 1.0.2 <https://pypi.python.org/pypi/pymssql/1.0.2>`_ and then upgraded
+servers from Ubuntu 10 (which includes FreeTDS 0.82) to Ubuntu 12 (which
+includes FreeTDS 0.91).
+
+E.g.::
+
+    >>> import pymssql
+    >>> pymssql.__version__
+    '1.0.2'
+    >>> conn = pymssql.connect(host='127.0.0.1:1433', user=user,
+    ...                        password=password, database='tempdb')
+    >>> cursor = conn.cursor()
+    >>> cursor.execute('SELECT 1')
+    >>> cursor.fetchall()
+    []
+
+See `GitHub issue 137: pymssql 1.0.2: No result rows are returned from queries
+with newer versions of FreeTDS
+<https://github.com/pymssql/pymssql/issues/137>`_.
+
+There are two way to fix this problem:
+
+1. (Preferred) Upgrade to pymssql 2.x. pymssql 1.x is not actively being worked
+   on. pymssql 2.x is rewritten in Cython, is actively maintained, and offers
+   better performance, Python 3 support, etc. E.g.::
+
+       >>> import pymssql
+       >>> pymssql.__version__
+       u'2.0.1.2'
+       >>> conn = pymssql.connect(host='127.0.0.1:1433', user=user,
+       ...                        password=password, database='tempdb')
+       >>> cursor = conn.cursor()
+       >>> cursor.execute('SELECT 1')
+       >>> cursor.fetchall()
+       [(1,)]
+
+2. Upgrade to `pymssql 1.0.3 <https://pypi.python.org/pypi/pymssql/1.0.3>`_.
+   This is identical to pymssql 1.0.2 except that it has a very small change
+   that makes it so that it works with newer versions of FreeTDS as well as
+   older versions.
+
+   E.g.::
+
+       >>> import pymssql
+       >>> pymssql.__version__
+       '1.0.3'
+       >>> conn = pymssql.connect(host='127.0.0.1:1433', user=user,
+       ...                        password=password, database='tempdb')
+       >>> cursor = conn.cursor()
+       >>> cursor.execute('SELECT 1')
+       >>> cursor.fetchall()
+       [(1,)]
+
 Results are missing columns
 ===========================
 
@@ -167,7 +227,7 @@ The solution is to supply a name for all columns -- e.g.::
     [{u'MAX(x)': 3}]
 
 This behavior was changed in https://github.com/pymssql/pymssql/pull/160 --
-with this change, if you specify `as_dict=True` and omit column names, an
+with this change, if you specify ``as_dict=True`` and omit column names, an
 exception will be raised::
 
     >>> cursor.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
