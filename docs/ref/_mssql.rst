@@ -9,7 +9,7 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 Module-level symbols
 ====================
 
-Variables whose values you can change to alter behavior in a global basis.
+Variables whose values you can change to alter behavior on a global basis.
 
 .. data:: login_timeout
 
@@ -41,7 +41,7 @@ Functions
     This class represents an MS SQL database connection. You can make queries
     and obtain results through a database connection.
 
-    You can create an instance of this class by calling constructor
+    You can create an instance of this class by calling
     :func:`_mssql.connect()`. It accepts the following arguments. Note that you
     can use keyword arguments, instead of positional arguments.
 
@@ -61,18 +61,18 @@ Functions
 
     :param str password: User's password
 
-    :param bool trusted: Bolean value signalling whether to use Windows
+    :param bool trusted: Boolean value signalling whether to use Windows
                          Integrated Authentication to connect instead of SQL
-                         autentication with user and password (Windows only)
+                         authentication with user and password (Windows only)
 
     :param str charset: Character set name to set for the connection.
 
-    :param str database: The database you want initially to connect to, by
-                         default *SQL Server* selects the database which is set as
-                         default for specific user
+    :param str database: The database you want to initially to connect to; by
+                         default, *SQL Server* selects the database which is set as
+                         the default for the specific user
 
 
-    With every nw connection, the following SQL statements are sent to the
+    With every new connection, the following SQL statements are sent to the
     server:
 
     .. code-block:: sql
@@ -112,9 +112,9 @@ Functions
 
 .. attribute:: MSSQLConnection.query_timeout
 
-   Query timeout in seconds, default is 0, what means to wait indefinitely for
+   Query timeout in seconds, default is 0, which means to wait indefinitely for
    results. Due to the way DB-Library for C works, setting this property affects
-   all connections opened from current Python script (or, very technically, all
+   all connections opened from the current Python script (or, very technically, all
    connections made from this instance of dbinit()).
 
 .. attribute:: MSSQLConnection.rows_affected
@@ -220,7 +220,7 @@ Functions
 
 .. method:: MSSQLConnection.get_header()
 
-   This method is infrastructure and don't need to be called by your code. It
+   This method is infrastructure and doesn't need to be called by your code. It
    gets the Python DB-API compliant header information. Returns a list of
    7-element tuples describing current result header. Only name and DB-API
    compliant type is filled, rest of the data is ``None``, as permitted by the
@@ -228,8 +228,8 @@ Functions
 
 .. method:: MSSQLConnection.init_procedure(name)
 
-   Create an MSSQLStoredProcedure object that will be used to invoke stored
-   procedure with given name.
+   Create an MSSQLStoredProcedure object that will be used to invoke thestored
+   procedure with the given name.
 
 .. method:: MSSQLConnection.nextresult()
 
@@ -240,13 +240,13 @@ Functions
 
 .. method:: MSSQLConnection.select_db(dbname)
 
-   This function makes given database the current one. An exception is raised on
+   This function makes the given database the current one. An exception is raised on
    failure.
 
 .. method:: MSSQLConnection.__iter__()
             MSSQLConnection.next()
 
-   These methods facilitate Python iterator protocol. You most likely will not
+   These methods facilitate the Python iterator protocol. You most likely will not
    call them directly, but indirectly by using iterators.
 
 ``MSSQLStoredProcedure`` class
@@ -255,7 +255,7 @@ Functions
 .. class:: MSSQLStoredProcedure
 
     This class represents a stored procedure. You create an object of this class
-    by calling :meth:`~MSSQLConnection.init_procedure()` method on
+    by calling the :meth:`~MSSQLConnection.init_procedure()` method on
     :class:`MSSQLConnection` object.
 
 ``MSSQLStoredProcedure`` object properties
