@@ -2,7 +2,15 @@ import logging
 from os import path
 import time
 
-from nose.tools import eq_
+try:
+    from nose.tools import eq_
+    from nose.plugins.attrib import attr
+    mark_slow = attr('slow')
+except ImportError:
+    def eq_(a, b):
+        assert a == b
+    def mark_slow(f):
+        return f
 
 import _mssql
 import pymssql

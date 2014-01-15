@@ -3,11 +3,9 @@ import threading
 import time
 import unittest
 
-from nose.plugins.attrib import attr
-
 from _mssql import MSSQLDatabaseException
 
-from .helpers import mssqlconn, StoredProc
+from .helpers import mssqlconn, StoredProc, mark_slow
 
 
 error_sproc = StoredProc(
@@ -77,7 +75,7 @@ class ThreadedTests(unittest.TestCase):
 
         return results, exceptions
 
-    @attr('slow')
+    @mark_slow
     def testThreadedUse(self):
         results, exceptions = self.run_threads(
             num=50,
@@ -86,7 +84,7 @@ class ThreadedTests(unittest.TestCase):
         for result in results:
             self.assertEqual(result, list(range(0, 1000)))
 
-    @attr('slow')
+    @mark_slow
     def testErrorThreadedUse(self):
         results, exceptions = self.run_threads(
             num=2,
@@ -95,7 +93,7 @@ class ThreadedTests(unittest.TestCase):
         for exc in exceptions:
             self.assertEqual(type(exc), MSSQLDatabaseException)
 
-    @attr('slow')
+    @mark_slow
     def testErrorSprocThreadedUse(self):
         with error_sproc.create():
             results, exceptions = self.run_threads(

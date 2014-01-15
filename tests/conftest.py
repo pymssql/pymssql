@@ -7,6 +7,8 @@ except ImportError:
     # Python 3
     from configparser import ConfigParser
 
+import pytest
+
 import tests.helpers as th
 from .helpers import cfgpath, clear_db, get_app_lock, release_app_lock
 
@@ -43,6 +45,7 @@ def pytest_configure(config):
     th.config.ipaddress = os.getenv('PYMSSQL_TEST_IPADDRESS') or _parser.get(section, 'ipaddress')
     th.config.instance = os.getenv('PYMSSQL_TEST_INSTANCE') or _parser.get(section, 'instance')
     th.config.orig_decimal_prec = decimal.getcontext().prec
+    th.mark_slow = pytest.mark.slow
 
     get_app_lock()
     clear_db()
