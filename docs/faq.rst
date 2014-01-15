@@ -227,7 +227,7 @@ The solution is to supply a name for all columns -- e.g.::
     [{u'MAX(x)': 3}]
 
 This behavior was changed in https://github.com/pymssql/pymssql/pull/160 --
-with this change, if you specify `as_dict=True` and omit column names, an
+with this change, if you specify ``as_dict=True`` and omit column names, an
 exception will be raised::
 
     >>> cursor.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
