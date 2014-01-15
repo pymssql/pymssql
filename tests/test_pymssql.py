@@ -1,8 +1,6 @@
-from nose.tools import eq_
-
 import pymssql as pym
 
-from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase
+from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_
 
 class TestDBAPI2(object):
     def test_version(self):

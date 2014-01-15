@@ -1,10 +1,8 @@
-from nose.tools import eq_
-
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from .helpers import config
+from .helpers import config, eq_
 
 engine = sa.create_engine(
         'mssql+pymssql://%s:%s@%s:%s/%s' % (

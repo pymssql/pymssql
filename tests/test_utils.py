@@ -1,4 +1,4 @@
-from nose.tools import eq_
+from .helpers import eq_
 
 from _mssql import substitute_params
 
