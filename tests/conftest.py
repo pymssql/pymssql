@@ -46,6 +46,7 @@ def pytest_configure(config):
     th.config.instance = os.getenv('PYMSSQL_TEST_INSTANCE') or _parser.get(section, 'instance')
     th.config.orig_decimal_prec = decimal.getcontext().prec
     th.mark_slow = pytest.mark.slow
+    th.skip_test = pytest.skip
 
     get_app_lock()
     clear_db()

@@ -4,11 +4,20 @@ import time
 
 try:
     from nose.tools import eq_
+    from nose.plugins.skip import SkipTest
     from nose.plugins.attrib import attr
+
+    def skip_test():
+        raise SkipTest
+
     mark_slow = attr('slow')
 except ImportError:
     def eq_(a, b):
         assert a == b
+
+    def skip_test():
+        pass
+
     def mark_slow(f):
         return f
 
