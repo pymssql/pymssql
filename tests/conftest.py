@@ -1,3 +1,14 @@
+from os.path import dirname
+import sys
+
+# When using tox, it can accidentally pick up a {pymssql,_mssql}.so file in the
+# root directory and then get ImportError because of incompatibility in Python
+# versions. By removing the root directory from the sys.path, it forces tox to
+# import the library from correct place in the tox virtualenv.
+if '.tox' in sys.executable:
+    root_dir = dirname(dirname(__file__))
+    sys.path.remove(root_dir)
+
 import decimal
 import os
 try:
