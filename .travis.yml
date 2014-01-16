@@ -5,7 +5,7 @@ python:
 - 3.3
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors nose pytest SQLAlchemy
+- pip install --use-mirrors pytest SQLAlchemy
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
 - pip --version
 - time pip install --use-wheel --no-index --find-links=http://wheels.astropy.org/ --find-links=http://wheels2.astropy.org/ Cython
