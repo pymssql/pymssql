@@ -38,6 +38,9 @@ DEF DBVERSION_72 = 6
 ROW_FORMAT_TUPLE = 1
 ROW_FORMAT_DICT = 2
 
+cdef int _ROW_FORMAT_TUPLE = ROW_FORMAT_TUPLE
+cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
+
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
 if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
@@ -58,6 +61,8 @@ from libc.string cimport strlen, strcpy, strncpy, memcpy
 from cpython cimport bool
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from cpython.long cimport PY_LONG_LONG
+from cpython.ref cimport Py_INCREF
+from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
 
 cdef extern from "pymssql_version.h":
     const char *PYMSSQL_VERSION
@@ -1139,16 +1144,18 @@ cdef class MSSQLConnection:
         cdef int col_type
         cdef int len
         cdef BYTE *data
+        cdef tuple trecord
+        cdef dict drecord
         log("_mssql.MSSQLConnection.get_row()")
 
         if PYMSSQL_DEBUG == 1:
             global _row_count
             _row_count += 1
 
-        if row_format == ROW_FORMAT_TUPLE:
-            record = tuple()
-        elif row_format == ROW_FORMAT_DICT:
-            record = dict()
+        if row_format == _ROW_FORMAT_TUPLE:
+            trecord = PyTuple_New(self.num_columns)
+        elif row_format == _ROW_FORMAT_DICT:
+            drecord = dict()
 
         for col in xrange(1, self.num_columns + 1):
             with nogil:
@@ -1166,15 +1173,19 @@ cdef class MSSQLConnection:
                         data, col_type, len)
                 value = self.convert_db_value(data, col_type, len)
 
-            if row_format == ROW_FORMAT_TUPLE:
-                record += (value,)
-            elif row_format == ROW_FORMAT_DICT:
+            if row_format == _ROW_FORMAT_TUPLE:
+                Py_INCREF(value)
+                PyTuple_SetItem(trecord, col - 1, value)
+            elif row_format == _ROW_FORMAT_DICT:
                 name = self.column_names[col - 1]
-                record[col - 1] = value
+                drecord[col - 1] = value
                 if name:
-                    record[name] = value
+                    drecord[name] = value
 
-        return record
+        if row_format == _ROW_FORMAT_TUPLE:
+            return trecord
+        elif row_format == _ROW_FORMAT_DICT:
+            return drecord
 
     def init_procedure(self, procname):
         """
