@@ -47,6 +47,7 @@ import os
 import sys
 import socket
 import decimal
+import binascii
 import datetime
 import re
 
@@ -1574,7 +1575,13 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, unicode):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
+    if isinstance(value, bytearray):
+        return b'0x' + binascii.hexlify(value)
+
     if isinstance(value, (str, bytes)):
+        if value[0:2] == b'0x':
+            return value
+
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:
@@ -1586,7 +1593,6 @@ cdef _quote_simple_value(value, charset='utf8'):
         # Python 3: handle bytes
         # @todo - Marc - hack hack hack
         if isinstance(value, bytes):
-            import binascii
             return b'0x' + binascii.hexlify(value)
 
         # will still be string type if there was a null byte in it or if the
@@ -1655,7 +1661,7 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str, bytes,
+            (bool, int, long, float, unicode, str, bytes, bytearray,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
