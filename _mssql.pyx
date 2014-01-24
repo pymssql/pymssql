@@ -1576,7 +1576,7 @@ cdef _quote_simple_value(value, charset='utf8'):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
     if isinstance(value, bytearray):
-        return b'0x' + binascii.hexlify(value)
+        return b'0x' + binascii.hexlify(bytes(value))
 
     if isinstance(value, (str, bytes)):
         if value[0:2] == b'0x':
