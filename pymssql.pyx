@@ -40,6 +40,8 @@ threadsafety = 1
 # this module uses extended python format codes
 paramstyle = 'pyformat'
 
+from _mssql import set_wait_callback
+
 # store a tuple of programming error codes
 cdef object prog_errors = (
     102,    # syntax error
