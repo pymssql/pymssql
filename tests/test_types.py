@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import binascii
 from datetime import datetime
 import decimal
 from decimal import Decimal as D
@@ -95,6 +96,19 @@ class TestTypes(object):
         colval = self.insert_and_select('comment_nvch', testval, 's')
         self.typeeq(testval, colval)
         eq_(testval, colval)
+
+    def test_binary_string(self):
+        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
+        testval = '0x'.encode('ascii') + binascii.hexlify(bindata)
+        colval = self.insert_and_select('data_binary', testval, 's')
+        self.typeeq(bindata, colval)
+        eq_(bindata, colval)
+
+    def test_binary_bytearray(self):
+        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
+        colval = self.insert_and_select('data_binary', bytearray(bindata), 's')
+        self.typeeq(bindata, colval)
+        eq_(bindata, colval)
 
     def test_image(self):
         buf = get_bytes_buffer()
