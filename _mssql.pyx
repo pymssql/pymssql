@@ -37,15 +37,13 @@ DEF DBVERSION_72 = 6
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
-if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
-    import uuid
-
 import os
 import sys
 import socket
 import decimal
 import datetime
 import re
+import uuid
 
 from sqlfront cimport *
 
@@ -700,7 +698,7 @@ cdef class MSSQLConnection:
             else:
                 return (<char *>data)[:length]
 
-        elif dbtype == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
+        elif dbtype == SQLUUID:
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
