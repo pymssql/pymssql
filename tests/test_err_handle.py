@@ -50,7 +50,7 @@ class ErrHandleTests(unittest.TestCase):
 		self.assertEqual( values[0] , 2 )
 		self.assertEqual( values[1] , expect )
 
-	def test04OSError(self):
+	def test04NoError(self):
 		connection = None
 
 		# smaller than min error severity, so no output should be generated
