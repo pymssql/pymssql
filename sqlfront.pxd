@@ -406,7 +406,7 @@ cdef extern from "sqlfront.h":
     #
     #   Return values:
     #     NULL insufficient memory, unable to connect for any reason
-    DBPROCESS * dbopen(LOGINREC *, char *)
+    DBPROCESS * dbopen(LOGINREC *, char *) nogil
 
     # Set up query results.
     #

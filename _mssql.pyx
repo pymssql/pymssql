@@ -584,7 +584,8 @@ cdef class MSSQLConnection:
         cdef char *server_cstr = server_bytes
 
         # Connect to the server
-        self.dbproc = dbopen(login, server_cstr)
+        with nogil:
+            self.dbproc = dbopen(login, server_cstr)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
