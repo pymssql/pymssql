@@ -1831,6 +1831,34 @@ MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
 MssqlConnection = MSSQLConnection
 
+###########################
+## Test Helper Functions ##
+###########################
+
+def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr):
+    """
+    Expose err_handler function and its side effects to facilitate testing.
+    """
+    cdef DBPROCESS *dbproc = NULL
+    cdef char *dberrstrc = NULL
+    cdef char *oserrstrc = NULL
+    if dberrstr:
+        dberrstrc = dberrstr
+    if oserrstr:
+        oserrstrc = oserrstr
+    if connection:
+        dbproc = (<MSSQLConnection>connection).dbproc
+    results = (
+        err_handler(dbproc, severity, dberr, oserr, dberrstrc, oserrstrc),
+        get_last_msg_str(connection),
+        get_last_msg_no(connection),
+        get_last_msg_severity(connection),
+        get_last_msg_state(connection)
+    )
+    clr_err(connection)
+    return results
+    
+
 #####################
 ## Max Connections ##
 #####################
