@@ -459,6 +459,29 @@ cdef extern from "sqlfront.h":
     #     FAIL      was returned by dbsqlsend() or dbsqlok()
     RETCODE dbsqlexec(DBPROCESS *) nogil
 
+    # Send the SQL command to the server
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     SUCCEED   query was processed without errors.
+    #     FAIL      was returned by dbsqlsend() or dbsqlok()
+    RETCODE dbsqlsend(DBPROCESS *) nogil
+
+    # Get file descriptor of the socket used by a DBPROCESS to read data coming
+    # from the server.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #
+    #   Return values:
+    #     An integer file descriptor used by the specified DBPROCESS to read
+    #     data coming from the server.
+    int dbiordesc(DBPROCESS *) nogil
+
     # Wait for results of a query from the server.
     #
     #   Parameters:

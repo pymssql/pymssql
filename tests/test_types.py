@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import binascii
 from datetime import datetime
 import decimal
 from decimal import Decimal as D
@@ -35,7 +36,8 @@ CREATE TABLE pymssql (
     decimal_no decimal(38,2),
     decimal_no2 decimal(38,10),
     numeric_no numeric(38,8),
-    stamp_time timestamp
+    stamp_time timestamp,
+    uuid uniqueidentifier
 )
 """
 
@@ -95,6 +97,19 @@ class TestTypes(object):
         colval = self.insert_and_select('comment_nvch', testval, 's')
         self.typeeq(testval, colval)
         eq_(testval, colval)
+
+    def test_binary_string(self):
+        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
+        testval = '0x'.encode('ascii') + binascii.hexlify(bindata)
+        colval = self.insert_and_select('data_binary', testval, 's')
+        self.typeeq(bindata, colval)
+        eq_(bindata, colval)
+
+    def test_binary_bytearray(self):
+        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
+        colval = self.insert_and_select('data_binary', bytearray(bindata), 's')
+        self.typeeq(bindata, colval)
+        eq_(bindata, colval)
 
     def test_image(self):
         buf = get_bytes_buffer()
@@ -186,3 +201,13 @@ class TestTypes(object):
         colval = self.insert_and_select('float_no', origval, 's')
         self.typeeq(expect, colval)
         eq_(expect, colval)
+
+    def test_uuid(self):
+        if sys.version_info < (2, 5):
+            raise SkipTest
+        import uuid
+        testval = uuid.uuid4()
+        stestval = str(testval)
+        colval = self.insert_and_select('uuid', stestval, 's')
+        self.typeeq(testval, colval)
+        eq_(testval, colval)

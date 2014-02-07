@@ -43,15 +43,14 @@ cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
-if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
-    import uuid
-
 import os
 import sys
 import socket
 import decimal
+import binascii
 import datetime
 import re
+import uuid
 
 from sqlfront cimport *
 
@@ -179,6 +178,13 @@ cdef class MSSQLDatabaseException(MSSQLException):
 login_timeout = 60
 
 min_error_severity = 6
+
+wait_callback = None
+
+def set_wait_callback(a_callable):
+    global wait_callback
+
+    wait_callback = a_callable
 
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
@@ -327,8 +333,44 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
 
 cdef int db_sqlexec(DBPROCESS *dbproc):
     cdef RETCODE rtc
+
+    # The dbsqlsend function sends Transact-SQL statements, stored in the
+    # command buffer of the DBPROCESS, to SQL Server.
+    #
+    # It does not wait for a response. This gives us an opportunity to do other
+    # things while waiting for the server response.
+    #
+    # After dbsqlsend returns SUCCEED, dbsqlok must be called to verify the
+    # accuracy of the command batch. Then dbresults can be called to process
+    # the results.
     with nogil:
-        rtc = dbsqlexec(dbproc)
+        rtc = dbsqlsend(dbproc)
+        if rtc != SUCCEED:
+            return rtc
+
+    # If we've reached here, dbsqlsend didn't fail so the query is in progress.
+
+    # Wait for results to come back and return the return code, optionally
+    # calling wait_callback first...
+    return db_sqlok(dbproc)
+
+cdef int db_sqlok(DBPROCESS *dbproc):
+    cdef RETCODE rtc
+
+    # If there is a wait callback, call it with the file descriptor we're
+    # waiting on.
+    # The wait_callback is a good place to do things like yield to another
+    # gevent greenlet -- e.g.: gevent.socket.wait_read(read_fileno)
+    if wait_callback:
+        read_fileno = dbiordesc(dbproc)
+        wait_callback(read_fileno)
+
+    # dbsqlok following dbsqlsend is the equivalent of dbsqlexec. This function
+    # must be called after dbsqlsend returns SUCCEED. When dbsqlok returns,
+    # then dbresults can be called to process the results.
+    with nogil:
+        rtc = dbsqlok(dbproc)
+
     return rtc
 
 cdef void clr_err(MSSQLConnection conn):
@@ -571,7 +613,7 @@ cdef class MSSQLConnection:
             "SET TEXTSIZE 2147483647;"
         )
 
-        rtc = dbsqlexec(self.dbproc)
+        rtc = db_sqlexec(self.dbproc)
         if (rtc == FAIL):
             raise MSSQLDriverException("Could not set connection properties")
 
@@ -716,7 +758,7 @@ cdef class MSSQLConnection:
             else:
                 return (<char *>data)[:length]
 
-        elif dbtype == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
+        elif dbtype == SQLUUID:
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
@@ -853,6 +895,13 @@ cdef class MSSQLConnection:
             binValue = <BYTE *>PyMem_Malloc(len(value))
             memcpy(binValue, <char *>value, len(value))
             length[0] = len(value)
+            dbValue[0] = <BYTE *>binValue
+            return 0
+
+        if dbtype[0] == SQLUUID:
+            binValue = <BYTE *>PyMem_Malloc(16)
+            memcpy(binValue, <char *>value.bytes_le, 16)
+            length[0] = 16
             dbValue[0] = <BYTE *>binValue
             return 0
 
@@ -1053,6 +1102,7 @@ cdef class MSSQLConnection:
 
             # Execute the query
             rtc = db_sqlexec(self.dbproc)
+
             check_cancel_and_raise(rtc, self)
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
@@ -1421,9 +1471,10 @@ cdef class MSSQLStoredProcedure:
             rtc = dbrpcsend(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
-        # Wait for the server to return
-        with nogil:
-            rtc = dbsqlok(self.dbproc)
+        # Wait for results to come back and return the return code, optionally
+        # calling wait_callback first...
+        rtc = db_sqlok(self.dbproc)
+
         check_cancel_and_raise(rtc, self.conn)
 
         # Need to call this regardless of whether or not there are output
@@ -1598,7 +1649,13 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, unicode):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
+    if isinstance(value, bytearray):
+        return b'0x' + binascii.hexlify(bytes(value))
+
     if isinstance(value, (str, bytes)):
+        if value[0:2] == b'0x':
+            return value
+
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:
@@ -1610,7 +1667,6 @@ cdef _quote_simple_value(value, charset='utf8'):
         # Python 3: handle bytes
         # @todo - Marc - hack hack hack
         if isinstance(value, bytes):
-            import binascii
             return b'0x' + binascii.hexlify(value)
 
         # will still be string type if there was a null byte in it or if the
@@ -1679,7 +1735,7 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str, bytes,
+            (bool, int, long, float, unicode, str, bytes, bytearray,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 

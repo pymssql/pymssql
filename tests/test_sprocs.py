@@ -16,7 +16,8 @@ FIXED_TYPES = (
     'Money',
     'Numeric',
     'SmallInt',
-    'TinyInt'
+    'TinyInt',
+    'UniqueIdentifier',
 )
 
 VARIABLE_TYPES = (
@@ -176,6 +177,15 @@ class TestFixedTypeConversion(object):
         proc.bind(None, _mssql.SQLINT1, '@otinyint', output=True)
         proc.execute()
         eq_(input, proc.parameters['@otinyint'])
+
+    def testUuid(self):
+        import uuid
+        input = uuid.uuid4()
+        proc = self.mssql.init_procedure('pymssqlTestUniqueIdentifier')
+        proc.bind(input, _mssql.SQLUUID, '@iuniqueidentifier')
+        proc.bind(None, _mssql.SQLUUID, '@ouniqueidentifier', output=True)
+        proc.execute()
+        eq_(input, proc.parameters['@ouniqueidentifier'])
 
 class TestCallProcFancy(object):
     # "Fancy" because we test some exotic cases like passing None or Unicode
