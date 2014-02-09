@@ -1,11 +1,10 @@
 import decimal
 import datetime
-
-from nose.plugins.skip import SkipTest
+import unittest
 
 import _mssql
 
-from .helpers import mssqlconn, pymssqlconn, eq_
+from .helpers import mssqlconn, pymssqlconn, eq_, skip_test
 
 FIXED_TYPES = (
     'BigInt',
@@ -26,7 +25,7 @@ VARIABLE_TYPES = (
     ('Text', None)  # Leave this one in the last position in case it fails (see https://code.google.com/p/pymssql/issues/detail?id=113#c2)
 )
 
-class TestFixedTypeConversion(object):
+class TestFixedTypeConversion(unittest.TestCase):
 
     def setUp(self):
         self.mssql = mssqlconn()
@@ -187,7 +186,8 @@ class TestFixedTypeConversion(object):
         proc.execute()
         eq_(input, proc.parameters['@ouniqueidentifier'])
 
-class TestCallProcFancy(object):
+
+class TestCallProcFancy(unittest.TestCase):
     # "Fancy" because we test some exotic cases like passing None or Unicode
     # strings to a called procedure
 
@@ -275,7 +275,7 @@ class TestCallProcFancy(object):
         # This test fails with FreeTDS 0.91 (and probably older versions)
         # because they don't seem to encode the Unicode string properly.
         # See http://code.google.com/p/pymssql/issues/detail?id=109
-        raise SkipTest
+        skip_test()
 
         for a, b in cursor:
             eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
@@ -326,7 +326,7 @@ class TestCallProcFancy(object):
         eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
 
 
-class TestStringTypeConversion(object):
+class TestStringTypeConversion(unittest.TestCase):
 
     def setUp(self):
         self.mssql = mssqlconn()

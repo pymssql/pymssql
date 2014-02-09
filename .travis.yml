@@ -5,17 +5,17 @@ python:
 - 3.3
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors nose SQLAlchemy
+- pip install --use-mirrors pytest SQLAlchemy
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
 - pip --version
 - time pip install --use-wheel --no-index --find-links=http://wheels.astropy.org/ --find-links=http://wheels2.astropy.org/ Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
-- python setup.py develop
+- python setup.py install
 script:
 - . bin/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
-- nosetests -w tests -v --nocapture
+- py.test -v
 branches:
   except:
     - 1.0

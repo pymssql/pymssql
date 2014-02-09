@@ -2,11 +2,9 @@ from __future__ import with_statement
 from os import path, makedirs, environ
 import shutil
 
-from nose.plugins.skip import SkipTest
-
 import _mssql
 
-from .helpers import tmpdir
+from .helpers import tmpdir, skip_test
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
 
 def setup_module():
@@ -51,7 +49,7 @@ class TestConfig(object):
     def test_dbsetldbname(self):
         # sybdb.h defines DBSETLDBNAME, we should try to use that to get
         # the DB in the config dump for debugging purposes
-        raise SkipTest # test_dbsetldbname
+        skip_test() # test_dbsetldbname
 
     def test_tds_protocol_version_42(self):
         config_dump = self.connect(

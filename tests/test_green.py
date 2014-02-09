@@ -1,15 +1,14 @@
 import datetime
 import unittest
 
-from nose.plugins.skip import SkipTest
+import pymssql
+from .helpers import mssqlconn, pymssqlconn, skip_test
+
 try:
     import gevent
     import gevent.socket
 except ImportError:
-    raise SkipTest('gevent is not available')
-
-import pymssql
-from .helpers import mssqlconn, pymssqlconn
+    skip_test('gevent is not available')
 
 
 class GreenletTests(unittest.TestCase):

@@ -7,11 +7,9 @@ try:
 except ImportError:
     import unittest
 
-from nose.plugins.skip import SkipTest
-
 import _mssql
 
-from .helpers import config
+from .helpers import config, skip_test
 server = config.server
 username = config.user
 password = config.password
@@ -77,7 +75,7 @@ class TestCons(unittest.TestCase):
 
     def test_instance(self):
         if not instance:
-            raise SkipTest
+            skip_test()
         server_join = r'%s\%s' % (server, instance)
         cdump = self.connect(server=server_join, user=username, password=password)
         dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]

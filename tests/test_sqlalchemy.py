@@ -1,3 +1,5 @@
+import unittest
+
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -32,7 +34,7 @@ saotbl = SAObj.__table__
 saotbl.drop(engine, checkfirst=True)
 saotbl.create(engine)
 
-class TestSA(object):
+class TestSA(unittest.TestCase):
 
     def tearDown(self):
         # issue rollback first, otherwise clearing the table might give us
