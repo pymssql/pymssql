@@ -8,8 +8,7 @@ before_install:
 - pip install --use-mirrors nose SQLAlchemy
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
 - pip --version
-- time pip install --use-wheel --no-index --find-links=https://github.com/msabramo/cython/releases/tag/0.19.1 Cython
-# - easy_install  --find-links=http://marc-abramowitz.com/download/python/eggs/linux Cython
+- time pip install --use-wheel --no-index --find-links=http://wheels.astropy.org/ --find-links=http://wheels2.astropy.org/ Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
 - python setup.py develop
