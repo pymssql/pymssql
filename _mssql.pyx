@@ -54,8 +54,8 @@ import uuid
 
 from sqlfront cimport *
 
-from libc.stdio cimport fprintf, sprintf, stderr, FILE
-from libc.string cimport strlen, strcpy, strncpy, memcpy
+from libc.stdio cimport fprintf, snprintf, stderr, FILE
+from libc.string cimport strlen, strncpy, memcpy
 
 from cpython cimport bool
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
@@ -211,10 +211,14 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int *mssql_lastmsgstate
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
-    cdef char error_type[16]
 
     if severity < _min_error_severity:
         return INT_CANCEL
+
+    if dberrstr == NULL:
+        dberrstr = ''
+    if oserrstr == NULL:
+        oserrstr = ''
 
     IF PYMSSQL_DEBUG == 1 or PYMSSQL_DEBUG_ERRORS == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
@@ -245,20 +249,23 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
 
     if oserr != DBNOERR and oserr != 0:
         if severity == EXCOMM:
-            strcpy(error_type, 'Net-Lib')
+            snprintf(
+                mssql_message, sizeof(mssql_message),
+                '%sDB-Lib error message %d, severity %d:\n%s\nNet-Lib error during %s (%d)\n',
+                mssql_lastmsgstr, dberr, severity, dberrstr, oserrstr, oserr)
         else:
-            strcpy(error_type, 'Operating System')
-        sprintf(
-            mssql_message,
-            '%sDB-Lib error message %d, severity %d:\n%s\n%s error during %s (%d)\n',
-            mssql_lastmsgstr, dberr, severity, dberrstr, error_type, oserrstr, oserr)
+            snprintf(
+                mssql_message, sizeof(mssql_message),
+                '%sDB-Lib error message %d, severity %d:\n%s\nOperating System error during %s (%d)\n',
+                mssql_lastmsgstr, dberr, severity, dberrstr, oserrstr, oserr)
     else:
-        sprintf(
-            mssql_message,
+        snprintf(
+            mssql_message, sizeof(mssql_message),
             '%sDB-Lib error message %d, severity %d:\n%s\n',
             mssql_lastmsgstr, dberr, severity, dberrstr)
 
     strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
+    mssql_lastmsgstr[ PYMSSQL_MSGSIZE - 1 ] = '\0'
 
     return INT_CANCEL
 
@@ -577,7 +584,8 @@ cdef class MSSQLConnection:
         cdef char *server_cstr = server_bytes
 
         # Connect to the server
-        self.dbproc = dbopen(login, server_cstr)
+        with nogil:
+            self.dbproc = dbopen(login, server_cstr)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
@@ -763,7 +771,8 @@ cdef class MSSQLConnection:
         cdef int *intValue
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
-        cdef char *strValue, *tmp
+        cdef char *strValue
+        cdef char *tmp
         cdef BYTE *binValue
         cdef DBTYPEINFO decimal_type_info
 
@@ -875,7 +884,8 @@ cdef class MSSQLConnection:
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
-            strcpy(strValue, tmp)
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = '\0';
             dbValue[0] = <BYTE *>strValue
             return 0
 
@@ -1171,7 +1181,8 @@ cdef class MSSQLConnection:
 
             self.num_columns = dbnumcols(self.dbproc)
 
-            sprintf(log_message, "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
+            snprintf(log_message, sizeof(log_message), "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
+            log_message[ sizeof(log_message) - 1 ] = '\0'
             log(log_message)
 
             column_names = list()
@@ -1337,7 +1348,8 @@ cdef class MSSQLStoredProcedure:
         check_cancel_and_raise(rtc, self.conn)
 
     def __dealloc__(self):
-        cdef _mssql_parameter_node *n, *p
+        cdef _mssql_parameter_node *n
+        cdef _mssql_parameter_node *p
         log("_mssql.MSSQLStoredProcedure.__dealloc__()")
 
         n = self.params_list
@@ -1359,7 +1371,8 @@ cdef class MSSQLStoredProcedure:
         """
         cdef int length = -1
         cdef RETCODE rtc
-        cdef BYTE status, *data
+        cdef BYTE status
+        cdef BYTE *data
         cdef bytes param_name_bytes
         cdef char *param_name_cstr
         cdef _mssql_parameter_node *pn
@@ -1578,7 +1591,8 @@ cdef int get_api_coltype(int coltype):
         return BINARY
 
 cdef char *_remove_locale(char *s, size_t buflen):
-    cdef char c, *stripped = s
+    cdef char c
+    cdef char *stripped = s
     cdef int i, x = 0, last_sep = -1
 
     for i, c in enumerate(s[0:buflen]):
@@ -1817,6 +1831,36 @@ def connect(*args, **kwargs):
 MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
 MssqlConnection = MSSQLConnection
+
+###########################
+## Test Helper Functions ##
+###########################
+
+def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr):
+    """
+    Expose err_handler function and its side effects to facilitate testing.
+    """
+    cdef DBPROCESS *dbproc = NULL
+    cdef char *dberrstrc = NULL
+    cdef char *oserrstrc = NULL
+    if dberrstr:
+        dberrstr_byte_string = dberrstr.encode('UTF-8')
+        dberrstrc = dberrstr_byte_string
+    if oserrstr:
+        oserrstr_byte_string = oserrstr.encode('UTF-8')
+        oserrstrc = oserrstr_byte_string
+    if connection:
+        dbproc = (<MSSQLConnection>connection).dbproc
+    results = (
+        err_handler(dbproc, severity, dberr, oserr, dberrstrc, oserrstrc),
+        get_last_msg_str(connection),
+        get_last_msg_no(connection),
+        get_last_msg_severity(connection),
+        get_last_msg_state(connection)
+    )
+    clr_err(connection)
+    return results
+    
 
 #####################
 ## Max Connections ##
