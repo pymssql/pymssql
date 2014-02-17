@@ -14,6 +14,7 @@ class ErrHandleTests(unittest.TestCase):
 		oserrstr = None
 		
 		expect = "DB-Lib error message %d, severity %d:\n%s\n" % ( dberr, severity, dberrstr )
+		expect = expect.encode('UTF-8')
         
 		values = _mssql.test_err_handler( connection, severity, dberr, oserr, dberrstr, oserrstr )
 		self.assertEqual( values[0] , 2 )
@@ -30,6 +31,7 @@ class ErrHandleTests(unittest.TestCase):
 		
 		expect = "DB-Lib error message %d, severity %d:\n%s\nNet-Lib error during %s (%d)\n" % ( 
 			dberr, severity, dberrstr, oserrstr, oserr )
+		expect = expect.encode('UTF-8')
         
 		values = _mssql.test_err_handler( connection, severity, dberr, oserr, dberrstr, oserrstr )
 		self.assertEqual( values[0] , 2 )
@@ -45,6 +47,7 @@ class ErrHandleTests(unittest.TestCase):
 		
 		expect = "DB-Lib error message %d, severity %d:\n%s\nOperating System error during %s (%d)\n" % ( 
 			dberr, severity, dberrstr, oserrstr, oserr )
+		expect = expect.encode('UTF-8')
         
 		values = _mssql.test_err_handler( connection, severity, dberr, oserr, dberrstr, oserrstr )
 		self.assertEqual( values[0] , 2 )
@@ -60,7 +63,7 @@ class ErrHandleTests(unittest.TestCase):
 		dberrstr = "toblerone4"
 		oserrstr = "limpet"
 		
-		expect = "" 
+		expect = b"" 
         
 		values = _mssql.test_err_handler( connection, severity, dberr, oserr, dberrstr, oserrstr )
 		self.assertEqual( values[0] , 2 )
