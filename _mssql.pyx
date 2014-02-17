@@ -1844,9 +1844,11 @@ def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, o
     cdef char *dberrstrc = NULL
     cdef char *oserrstrc = NULL
     if dberrstr:
-        dberrstrc = dberrstr
+        dberrstr_byte_string = dberrstr.encode('UTF-8')
+        dberrstrc = dberrstr_byte_string
     if oserrstr:
-        oserrstrc = oserrstr
+        oserrstr_byte_string = oserrstr.encode('UTF-8')
+        oserrstrc = oserrstr_byte_string
     if connection:
         dbproc = (<MSSQLConnection>connection).dbproc
     results = (
