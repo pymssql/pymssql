@@ -573,7 +573,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type appname: string
-    :keyword azure: Set tu True to indicate you are connection to Azure. You should provide the DB name in the 'database' parameter.
+    :keyword azure: Set to True to indicate you are connection to Azure. You should provide the DB name in the 'database' parameter.
     :type azure: boolean
     """
 
