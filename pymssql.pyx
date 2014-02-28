@@ -548,7 +548,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433'):
+        host='', appname=None, port='1433', azure=False):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -573,6 +573,8 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type appname: string
+    :keyword azure: Set tu True to indicate you are connection to Azure. You should provide the DB name in the 'database' parameter.
+    :type azure: boolean
     """
 
     _mssql.login_timeout = login_timeout
