@@ -8,6 +8,9 @@ import pickle
 import sys
 import unittest
 
+from .helpers import skip_test
+
+
 def get_bytes_buffer():
     try:
         # Python 2
@@ -205,7 +208,7 @@ class TestTypes(unittest.TestCase):
 
     def test_uuid(self):
         if sys.version_info < (2, 5):
-            raise SkipTest
+            skip_test()
         import uuid
         testval = uuid.uuid4()
         stestval = str(testval)
