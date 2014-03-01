@@ -1,5 +1,4 @@
 include ez_setup.py
-include pymssql_version.py
 include ChangeLog
 include LICENSE
 include *.pxd
