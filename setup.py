@@ -406,6 +406,7 @@ setup(
       "Operating System :: Unix",
     ],
     zip_safe = False,
+    setup_requires=['setuptools_git'],
     tests_require=['nose', 'unittest2'],
     test_suite='nose.collector',
     ext_modules = ext_modules(),
