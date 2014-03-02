@@ -89,7 +89,8 @@ cdef list connection_object_list = list()
 cdef int MAX_INT = 2147483647
 
 # Store the module version
-__version__ = PYMSSQL_VERSION.decode('ascii')
+__full_version__ = PYMSSQL_VERSION.decode('ascii')
+__version__ = '.'.join(__full_version__.split('.')[:3]) # drop '.dev' from 'X.Y.Z.dev'
 
 #############################
 ## DB-API type definitions ##
@@ -1860,7 +1861,7 @@ def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, o
     )
     clr_err(connection)
     return results
-    
+
 
 #####################
 ## Max Connections ##

@@ -82,7 +82,7 @@ def extract_version():
         content = f.read()
 
     # Parse file content that looks like this:
-    # #define PYMSSQL_VERSION "2.0.1.2"
+    # #define PYMSSQL_VERSION "2.0.1"
     version = content.split()[2].replace('"', '')
 
     return version
