@@ -572,7 +572,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :keyword appname: Set the application name to use for the connection
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
-    :type appname: string
+    :type port: string
     :keyword azure: Set to True to indicate you are connection to Azure. You should provide the DB name in the 'database' parameter.
     :type azure: boolean
     """
@@ -595,8 +595,9 @@ def connect(server='.', user='', password='', database='', timeout=0,
         server = host
 
     try:
-        conn = _mssql.connect(server, user, password, charset, database,
-            appname, port)
+        conn = _mssql.connect(server=server, user=user, password=password,
+            charset=charset, database=database, appname=appname, port=port,
+            azure=port)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e.args[0])
