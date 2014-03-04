@@ -548,7 +548,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433', azure=False):
+        host='', appname=None, port='1433'):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -573,8 +573,6 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type port: string
-    :keyword azure: Set to True to indicate you are connection to Azure. You should provide the DB name in the 'database' parameter.
-    :type azure: boolean
     """
 
     _mssql.login_timeout = login_timeout
@@ -595,9 +593,8 @@ def connect(server='.', user='', password='', database='', timeout=0,
         server = host
 
     try:
-        conn = _mssql.connect(server=server, user=user, password=password,
-            charset=charset, database=database, appname=appname, port=port,
-            azure=port)
+        conn = _mssql.connect(server, user, password, charset, database,
+            appname, port)
 
     except _mssql.MSSQLDatabaseException, e:
         raise OperationalError(e.args[0])

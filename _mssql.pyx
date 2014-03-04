@@ -516,7 +516,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', azure=False):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -584,14 +584,14 @@ cdef class MSSQLConnection:
         # For Python 3, we need to convert unicode to byte strings
         cdef bytes dbname_bytes
         cdef char *dbname_cstr
-        # If connection to Azure is requested and supported, put the DB name in the login LOGINREC
-        if azure and database:
+        # Put the DB name in the login LOGINREC because it helps with connections to Azure
+        if database:
             if FREETDS_SUPPORTS_DBSETLDBNAME:
                 dbname_bytes = database.encode('ascii')
                 dbname_cstr = dbname_bytes
                 DBSETLDBNAME(login, dbname_cstr)
             else:
-                log("_mssql.MSSQLConnection.__init__(): Warning: Connections to Azure are not supported by this version of FreeTDS.")
+                log("_mssql.MSSQLConnection.__init__(): Warning: This version of FreeTDS doesn't support selecting the DB name when setting up the connection. This will keep connections to Azure from working.")
 
         # Set the login timeout
         dbsetlogintime(login_timeout)
