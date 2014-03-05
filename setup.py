@@ -239,12 +239,8 @@ class build_ext(_build_ext):
             # and libraries
             from distutils.cygwinccompiler import Mingw32CCompiler
             extra_cc_args = []
-            # Distutils bug: self.compiler can be a string or a CCompiler
-            # subclass instance, see http://bugs.python.org/issue6377
-            if isinstance(self.compiler, str):
-                compiler = self.compiler
-            elif isinstance(self.compiler, Mingw32CCompiler):
-                compiler = 'mingw32'
+            if isinstance(self.compiler, Mingw32CCompiler):
+                # Compiler is Mingw32
                 freetds_dir = 'ming'
                 extra_cc_args = [
                     '-Wl,-allow-multiple-definition',
@@ -258,7 +254,7 @@ class build_ext(_build_ext):
                     'ws2_32', 'wsock32', 'kernel32',
                 ]
             else:
-                compiler = 'msvc'
+                # Assume compiler is Visual Studio
                 freetds_dir = 'vs2008'
                 libraries = [
                     'db-lib', 'tds',
@@ -314,10 +310,6 @@ class release(Command):
         pass
 
     def run(self):
-        self.username = None
-        self.password = None
-        self.store = None
-
         if WINDOWS:
             self.release_windows()
         else:
