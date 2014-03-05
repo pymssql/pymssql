@@ -226,8 +226,9 @@ if sys.platform != 'win32':
 
 class build_ext(_build_ext):
     """
-    Subclass the Cython build_ext command so it extracts freetds.zip if it
-    hasn't already been done.
+    Subclass the Cython build_ext command so it:
+    * Can handle different C compilers on Windows
+    * Links in the libraries we collected
     """
 
     def build_extensions(self):
