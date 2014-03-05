@@ -59,7 +59,13 @@ except ImportError:
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
 
-have_c_files = osp.exists('_mssql.c') and osp.exists('pymssql.c')
+ROOT = osp.abspath(osp.dirname(__file__))
+
+def fpath(*parts):
+    """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
+    return osp.join(ROOT, *parts)
+
+have_c_files = osp.exists(fpath('src', '_mssql.c')) and osp.exists(fpath('src', 'pymssql.c'))
 
 from distutils import log
 from distutils.cmd import Command
@@ -121,7 +127,6 @@ _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
-ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 SYSTEM = platform.system()
 
@@ -144,7 +149,7 @@ else:
     FREETDS = None
 
     if sys.platform == 'darwin':
-        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
@@ -160,7 +165,7 @@ else:
 
     if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if SYSTEM == 'Linux':
-            FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+            FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
             print("""setup.py: Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
@@ -262,7 +267,7 @@ class build_ext(_build_ext):
                     'ws2_32', 'wsock32', 'kernel32', 'shell32',
                 ]
 
-            FREETDS = osp.join(ROOT, 'freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
