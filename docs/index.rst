@@ -51,6 +51,12 @@ Features
 * Supports stored procedures with both return values and output parameters
 * A comprehensive test suite
 
+Supported related software
+--------------------------
+
+The minimum version of FreeTDS supported by pymssql is 0.91 released on August
+17 2011.
+
 License
 -------
 

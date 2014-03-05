@@ -2,11 +2,14 @@
 FreeTDS configuration
 =====================
 
-Basic info on setting up connections with FreeTDS.
-
 pymssql uses FreeTDS package to connect to SQL Server instances. You have to
 tell it how to find your database servers. The most basic info is host name,
 port number, and protocol version to use.
+
+.. note:: Oldest version of FreeTDS supported.
+
+   The minimum version of FreeTDS supported by pymsql is 0.91 released on August
+   17 2011.
 
 The system-wide FreeTDS configuration file is ``/etc/freetds.conf`` or
 ``C:\freetds.conf``, depending upon your system. It is also possible to use a
