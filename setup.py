@@ -138,14 +138,11 @@ print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 
+include_dirs = []
+library_dirs = []
 if sys.platform == 'win32':
     WINDOWS = True
-    include_dirs = []
-    library_dirs = []
 else:
-    include_dirs = []
-    library_dirs = []
-
     FREETDS = None
 
     if sys.platform == 'darwin':
