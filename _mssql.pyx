@@ -66,9 +66,6 @@ from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
 cdef extern from "pymssql_version.h":
     const char *PYMSSQL_VERSION
 
-cdef extern from "cpp_helpers.h":
-    cdef bint FREETDS_SUPPORTS_DBSETLDBNAME
-
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
@@ -586,12 +583,9 @@ cdef class MSSQLConnection:
         cdef char *dbname_cstr
         # Put the DB name in the login LOGINREC because it helps with connections to Azure
         if database:
-            if FREETDS_SUPPORTS_DBSETLDBNAME:
-                dbname_bytes = database.encode('ascii')
-                dbname_cstr = dbname_bytes
-                DBSETLDBNAME(login, dbname_cstr)
-            else:
-                log("_mssql.MSSQLConnection.__init__(): Warning: This version of FreeTDS doesn't support selecting the DB name when setting up the connection. This will keep connections to Azure from working.")
+            dbname_bytes = database.encode('ascii')
+            dbname_cstr = dbname_bytes
+            DBSETLDBNAME(login, dbname_cstr)
 
         # Set the login timeout
         dbsetlogintime(login_timeout)
