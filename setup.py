@@ -59,7 +59,13 @@ except ImportError:
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
 
-have_c_files = osp.exists('_mssql.c') and osp.exists('pymssql.c')
+ROOT = osp.abspath(osp.dirname(__file__))
+
+def fpath(*parts):
+    """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
+    return osp.join(ROOT, *parts)
+
+have_c_files = osp.exists(fpath('src', '_mssql.c')) and osp.exists(fpath('src', 'pymssql.c'))
 
 from distutils import log
 from distutils.cmd import Command
@@ -121,7 +127,6 @@ _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
-ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 SYSTEM = platform.system()
 
@@ -133,18 +138,15 @@ print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 
+include_dirs = []
+library_dirs = []
 if sys.platform == 'win32':
     WINDOWS = True
-    include_dirs = []
-    library_dirs = []
 else:
-    include_dirs = []
-    library_dirs = []
-
     FREETDS = None
 
     if sys.platform == 'darwin':
-        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
@@ -160,7 +162,7 @@ else:
 
     if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if SYSTEM == 'Linux':
-            FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+            FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
             print("""setup.py: Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
@@ -224,8 +226,9 @@ if sys.platform != 'win32':
 
 class build_ext(_build_ext):
     """
-    Subclass the Cython build_ext command so it extracts freetds.zip if it
-    hasn't already been done.
+    Subclass the Cython build_ext command so it:
+    * Can handle different C compilers on Windows
+    * Links in the libraries we collected
     """
 
     def build_extensions(self):
@@ -236,12 +239,8 @@ class build_ext(_build_ext):
             # and libraries
             from distutils.cygwinccompiler import Mingw32CCompiler
             extra_cc_args = []
-            # Distutils bug: self.compiler can be a string or a CCompiler
-            # subclass instance, see http://bugs.python.org/issue6377
-            if isinstance(self.compiler, str):
-                compiler = self.compiler
-            elif isinstance(self.compiler, Mingw32CCompiler):
-                compiler = 'mingw32'
+            if isinstance(self.compiler, Mingw32CCompiler):
+                # Compiler is Mingw32
                 freetds_dir = 'ming'
                 extra_cc_args = [
                     '-Wl,-allow-multiple-definition',
@@ -255,14 +254,14 @@ class build_ext(_build_ext):
                     'ws2_32', 'wsock32', 'kernel32',
                 ]
             else:
-                compiler = 'msvc'
+                # Assume compiler is Visual Studio
                 freetds_dir = 'vs2008'
                 libraries = [
                     'db-lib', 'tds',
                     'ws2_32', 'wsock32', 'kernel32', 'shell32',
                 ]
 
-            FREETDS = osp.join(ROOT, 'freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
@@ -311,10 +310,6 @@ class release(Command):
         pass
 
     def run(self):
-        self.username = None
-        self.password = None
-        self.store = None
-
         if WINDOWS:
             self.release_windows()
         else:
