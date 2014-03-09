@@ -66,6 +66,9 @@ from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
 cdef extern from "pymssql_version.h":
     const char *PYMSSQL_VERSION
 
+cdef extern from "cpp_helpers.h":
+    cdef bint FREETDS_SUPPORTS_DBSETLDBNAME
+
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
 cdef int _mssql_last_msg_severity = 0
@@ -513,7 +516,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', azure=False):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -577,6 +580,18 @@ cdef class MSSQLConnection:
             _charset = charset_bytes
             strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
+
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes dbname_bytes
+        cdef char *dbname_cstr
+        # If connection to Azure is requested and supported, put the DB name in the login LOGINREC
+        if azure and database:
+            if FREETDS_SUPPORTS_DBSETLDBNAME:
+                dbname_bytes = database.encode('ascii')
+                dbname_cstr = dbname_bytes
+                DBSETLDBNAME(login, dbname_cstr)
+            else:
+                log("_mssql.MSSQLConnection.__init__(): Warning: Connections to Azure are not supported by this version of FreeTDS.")
 
         # Set the login timeout
         dbsetlogintime(login_timeout)
