@@ -15,11 +15,6 @@ Features
 .. _SQL Server instances: http://www.windowsazure.com/en-us/services/sql-database/
 .. _Azure: https://www.windowsazure.com/
 
-Documentation
--------------
-
-- Make it explicit the minimum FreeTDS version supported: 0.91
-
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
 
