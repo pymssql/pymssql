@@ -88,6 +88,8 @@ Functions
         SET QUOTED_IDENTIFIER ON;
         SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
 
+    .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+
 ``MSSQLConnection`` object properties
 -------------------------------------
 
