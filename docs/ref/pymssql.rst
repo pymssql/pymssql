@@ -54,6 +54,8 @@ Functions
     :keyword port: the TCP port to use to connect to the server
     :type port: string
 
+  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+
 .. function:: get_dbversion()
 
    TBD

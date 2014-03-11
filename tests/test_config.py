@@ -37,19 +37,13 @@ class TestConfig(object):
             database = 'tempdb',
             )
         assert b'user_name = bob' in config_dump
-        # it would be nice if this was the DB name, see test_dbsetldbname()
-        assert b'database = \n' in config_dump
+        assert b'database = tempdb\n' in config_dump
         # test default port
         assert b'port = 1433' in config_dump
         # not sure why 7.1 version is used instead of 8.0 which is the
         # default
         assert b'major_version = 7' in config_dump
         assert b'minor_version = 1' in config_dump
-
-    def test_dbsetldbname(self):
-        # sybdb.h defines DBSETLDBNAME, we should try to use that to get
-        # the DB in the config dump for debugging purposes
-        skip_test() # test_dbsetldbname
 
     def test_tds_protocol_version_42(self):
         config_dump = self.connect(

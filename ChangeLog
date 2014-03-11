@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 2.x.y - To be released
+==============================
+
+Features
+--------
+
+- Compatibility with Azure
+
+  It is now possible to transparently connect to `SQL Server instances`_
+  accessible as part of the Azure_ cloud services.
+
+  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+
+.. _SQL Server instances: http://www.windowsazure.com/en-us/services/sql-database/
+.. _Azure: https://www.windowsazure.com/
+
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
 

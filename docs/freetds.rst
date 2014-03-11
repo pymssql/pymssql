@@ -2,8 +2,6 @@
 FreeTDS configuration
 =====================
 
-Basic info on setting up connections with FreeTDS.
-
 pymssql uses FreeTDS package to connect to SQL Server instances. You have to
 tell it how to find your database servers. The most basic info is host name,
 port number, and protocol version to use.

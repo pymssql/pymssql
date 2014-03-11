@@ -572,7 +572,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :keyword appname: Set the application name to use for the connection
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
-    :type appname: string
+    :type port: string
     """
 
     _mssql.login_timeout = login_timeout
