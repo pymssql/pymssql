@@ -55,12 +55,3 @@ We would be happy to have:
 * Help from the community with maintenance of this documentation.
 
 If interested, please connect with us on the mailing list.
-
-.. seealso::
-
-  `PYPI Page`_, recent changelog, and Downloads
-
-  `FreeTDS User Guide`_
-
-.. _PYPI Page: https://pypi.python.org/pypi/pymssql/
-.. _FreeTDS User Guide: http://www.freetds.org/userguide/

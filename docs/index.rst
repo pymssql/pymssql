@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-====================
-pymssql Introduction
-====================
+=======
+pymssql
+=======
 
 .. image:: https://travis-ci.org/pymssql/pymssql.png?branch=master
         :target: https://travis-ci.org/pymssql/pymssql
@@ -16,10 +16,8 @@ pymssql Introduction
 .. image:: http://img.shields.io/pypi/v/pymssql.svg
         :target: https://pypi.python.org/pypi/pymssql/
 
-A simple database interface to `Microsoft SQL Server`_ (MS-SQL) for `Python`_
-that builds on top of `FreeTDS`_ to provide a Python DB-API (`PEP-249`_)
-interface to *SQL Server*.
-
+A simple database interface for `Python`_ that builds on top of `FreeTDS`_ to
+provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
 The 2.x branch of pymssql is built on the latest release of FreeTDS which
 **removes many of the limitations** found with older FreeTDS versions and
@@ -69,10 +67,10 @@ Recent Changes
 <Need to import>
 
 .. _Docs & Project Home: http://pymssql.org
-.. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
 .. _Python: http://www.python.org/
-.. _PEP-249: http://www.python.org/dev/peps/pep-0249/
 .. _FreeTDS: http://www.freetds.org/
+.. _PEP-249: http://www.python.org/dev/peps/pep-0249/
+.. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
 .. _Cython: http://cython.org
 .. _FAQ & Troubleshooting: http://pymssql.org/faq.html
 .. _PYPI Project: https://pypi.python.org/pypi/pymssql/
