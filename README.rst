@@ -1,179 +1,47 @@
-pymssql
-#######
+
+pymssql - DB-API interface to Microsoft SQL Server
+==================================================
 
 .. image:: https://travis-ci.org/pymssql/pymssql.png?branch=master
         :target: https://travis-ci.org/pymssql/pymssql
 
-.. image:: https://pypip.in/d/pymssql/badge.png
-        :target: https://crate.io/packages/pymssql
+.. image:: http://img.shields.io/pypi/dm/pymssql.svg
+        :target: https://pypi.python.org/pypi/pymssql/
 
-.. image:: https://pypip.in/v/pymssql/badge.png
-        :target: https://crate.io/packages/pymssql
+.. image:: http://img.shields.io/pypi/v/pymssql.svg
+        :target: https://pypi.python.org/pypi/pymssql/
 
-Introduction
-============
+A simple database interface to `Microsoft SQL Server`_ (MS-SQL) for `Python`_
+that builds on top of `FreeTDS`_ to provide a Python DB-API (`PEP-249`_)
+interface to SQL Server.
 
-pymssql is the Python language extension module that provides access to Microsoft SQL Servers from Python scripts. It is compliant with `Python DB-API 2.0 Specification <http://www.python.org/dev/peps/pep-0249/>`_ and works on most popular operating systems.
+.. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
+.. _Python: http://www.python.org/
+.. _PEP-249: http://www.python.org/dev/peps/pep-0249/
+.. _FreeTDS: http://www.freetds.org/
 
-Building
-========
+Detailed information on pymssql is available on the website:
 
-To build pymssql you should have:
+http://pymssql.org
 
-* python >= 2.5 including development files. Please research your OS usual
-  software distribution channels, e.g, ``python-dev`` or ``python-devel``
-  packages.
-* Cython >= 0.15
-* FreeTDS >= 0.91 including development files. Please research your OS usual
-  software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
-  packages.
+New development is happening on GitHub at:
 
-Windows
--------
+https://github.com/pymssql/pymssql
 
-MinGW
-^^^^^
+There is a Google Group for discussion at:
 
-Add to the above requirements:
+https://groups.google.com/forum/?fromgroups#!forum/pymssql
 
-* MinGW
 
-then you can run::
+Do you use pymssql?
+-------------------
 
-  python setup.py build -c mingw32
+Can you take a minute and fill out this survey to help us prioritize development tasks?
 
-which will build pymssql in the normal python fashion.
+https://www.surveymonkey.com/s/KMQ8BM5
 
-MS Visual C++
-^^^^^^^^^^^^^
 
-Environment Setup:
-~~~~~~~~~~~~~~~~~~
+.. image:: https://d2weczhvl823v0.cloudfront.net/pymssql/pymssql/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
 
-The commands below should be ran inside a Visual Studio command prompt or a
-command prompt window where the ``vcsvars*.bat`` file has been previously run so
-it can set the needed environment vars.
-
-Building FreeTDS:
-~~~~~~~~~~~~~~~~~
-
-Build FreeTDS from the current_ or stable_ tarball.
-
-.. _current: http://ibiblio.org/pub/Linux/ALPHA/freetds/current/
-.. _stable: http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/
-
-Use ``nmake`` (included with VS C++) to build FreeTDS.  To do that,
-
-Define in the environment or on the command line:
-
-1. ``CONFIGURATION`` = ``debug``/``release``
-2. ``PLATFORM`` = ``win32``/``x64``
-
-These will determine what is built and where outputs are placed.
-
-Example invocations::
-
-  nmake.exe -f Nmakefile -nologo PLATFORM=win32 CONFIGURATION=debug
-  nmake.exe -f Nmakefile -nologo build-win32d
-
-Fixing build errors:  I ran into a couple build errors when using VS 2008, see
-the following links for resolutions:
-
-- http://www.freetds.org/userguide/osissues.htm
-- http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
-
-When this is done, the following files should be available (depending on
-``CONFIGURATION`` and ``PLATFORM`` used above)::
-
-  src\dblib\<PLATFORM>\<CONFIGURATION>\db-lib.lib
-  src\tds\<PLATFORM>\<CONFIGURATION>\tds.lib
-
-for example::
-
-  src\dblib\win32\release\db-lib.lib
-  src\dblib\win32\release\tds.lib
-
-Those files should then be copied to::
-
-  <pymssql root>\freetds\vs2008_<bitness>\lib\
-
-for example::
-
-  <pymssql root>\freetds\vs2008_32\lib\
-  <pymssql root>\freetds\vs2008_64\lib\
-
-The location obviously depends on whether you are performing a 32 or 64 bit
-build.
-
-.. note::
-
-  This process is currently only tested with Visual Studio 2008 targeting a
-  32-bit build. If you run into problems, please post to the mailing list.
-
-Then you can simply run::
-
-  python setup.py build
-
-or other ``setup.py`` commands as needed.
-
-Unix
-----
-
-To build on Unix you must also have:
-
-* gcc
-
-Then you can simply run::
-
-  python setup.py build
-
-or other ``setup.py`` commands as needed.
-
-Testing
-=======
-
-.. danger::
-
-  ALL DATA IN TESTING DBS WILL BE DELETED !!!!
-
-You will need to install two additional packages for testing::
-
-  easy_install nose SQLAlchemy
-
-You should build the package with::
-
-  python setup.py develop
-
-You need to setup a ``tests.cfg`` file in ``tests/`` with the correct DB
-connection information for your environement::
-
-  cd tests/
-  cp tests.cfg.tpl tests.cfg
-  vim|emacs|notepad tests.cfg
-
-To run the tests::
-
-  cd tests/
-  nosetests
-
-Which will go through and run all the tests with the settings from the ``DEFAULT``
-section of ``tests.cfg``.
-
-To run with a different ``tests.cfg`` section::
-
-  nosetests --pymssql-section=<secname>
-
-example::
-
-  nosetests --pymssql-section=AllTestsWillRun
-
-to avoid slow tests::
-
-  nosetests -a '!slow'
-
-to select specific tests to run::
-
-  nosetests test_types.py
-  nosetests test_types.py test_sprocs.py
-  nosetests test_types.py:TestTypes
-  nosetests test_types.py:TestTypes.test_image

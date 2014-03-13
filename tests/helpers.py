@@ -1,13 +1,35 @@
+import logging
 from os import path
 import time
 
-from nose.tools import eq_
+try:
+    from nose.tools import eq_
+    from nose.plugins.skip import SkipTest
+    from nose.plugins.attrib import attr
+
+    def skip_test(reason='No reason given to skip_test'):
+        raise SkipTest(reason)
+
+    mark_slow = attr('slow')
+except ImportError:
+    import pytest
+
+    def eq_(a, b):
+        assert a == b
+
+    def skip_test(reason='No reason given to skip_test'):
+        pytest.skip(reason)
+
+    def mark_slow(f):
+        return f
 
 import _mssql
 import pymssql
 
+
 class Config(object):
     pass
+
 config = Config()
 
 cdir = path.dirname(__file__)
@@ -15,23 +37,26 @@ tmpdir = path.join(cdir, 'tmp')
 cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
 
+
 def mssqlconn():
     return _mssql.connect(
-            server=config.server,
-            user=config.user,
-            password=config.password,
-            database=config.database,
-            port=config.port,
-        )
+        server=config.server,
+        user=config.user,
+        password=config.password,
+        database=config.database,
+        port=config.port,
+    )
+
 
 def pymssqlconn():
     return pymssql.connect(
-            server=config.server,
-            user=config.user,
-            password=config.password,
-            database=config.database,
-            port=config.port,
-        )
+        server=config.server,
+        user=config.user,
+        password=config.password,
+        database=config.database,
+        port=config.port,
+    )
+
 
 def get_app_lock():
     global global_mssqlconn
@@ -57,7 +82,11 @@ def get_app_lock():
             break
 
     t2 = time.time()
-    print("*** %d: sp_getapplock for 'pymssql_tests' returned %d - it took %d seconds" % (t2, result, t2 - t1))
+    print(
+        "*** %d: sp_getapplock for 'pymssql_tests' returned %d - "
+        "it took %d seconds"
+        % (t2, result, t2 - t1))
+
 
 def release_app_lock():
     t1 = time.time()
@@ -68,15 +97,20 @@ def release_app_lock():
         @LockOwner = 'Session';
     SELECT @result AS result;
     """)
-    print("*** %d: sp_releaseapplock for 'pymssql_tests' returned %d" % (t1, result))
+    print(
+        "*** %d: sp_releaseapplock for 'pymssql_tests' returned %d"
+        % (t1, result))
+
 
 def drop_table(conn, tname):
     sql = "if object_id('%s') is not null drop table %s" % (tname, tname)
     conn.execute_non_query(sql)
 
+
 def clear_table(conn, tname):
     sql = 'delete from %s' % tname
     conn.execute_non_query(sql)
+
 
 class PyTableBase(object):
     tname = 'pymssql'
@@ -112,6 +146,7 @@ class PyTableBase(object):
         cur.execute(sql, params)
         return cur
 
+
 class TableManager(object):
     def __init__(self, conn, tname, *cols):
         self.conn = conn
@@ -125,7 +160,8 @@ class TableManager(object):
 
     def drop(self):
         #mssql
-        sql = "if object_id('%s') is not null drop table %s" % (self.tname, self.tname)
+        sql = "if object_id('%s') is not null drop table %s" % (
+            self.tname, self.tname)
         try:
             self.execute(sql)
         except Exception as e:
@@ -155,6 +191,7 @@ class TableManager(object):
         cur.execute(sql)
         return cur.fetchone()[0]
 
+
 class DBAPIBase(object):
 
     def newconn(self):
@@ -176,12 +213,13 @@ class DBAPIBase(object):
         cur.executemany(sql, params_seq)
         return cur
 
+
 class CursorBase(DBAPIBase):
     """
-        This is a "base" object because I have an uncommitted test module
-        that runs these tests against psycopg to see what its behavior is.
-        When psycopg comparison isn't needed anymore, this class can be moved to
-        test_pymssql and used directly.
+    This is a "base" object because I have an uncommitted test module
+    that runs these tests against psycopg to see what its behavior is.
+    When psycopg comparison isn't needed anymore, this class can be moved to
+    test_pymssql and used directly.
     """
     def __init__(self):
         DBAPIBase.__init__(self)
@@ -230,9 +268,11 @@ class CursorBase(DBAPIBase):
         eq_(res[0], 1)
         res = cur.fetchone()
         eq_(res[0], 2)
+
         for x in range(0, 5):
             if cur.fetchone() is None:
-                # make sure another call is also None and no execption is raised
+                # make sure another call is also None and no exception is
+                # raised
                 assert cur.fetchone() is None
                 break
             if x == 5:
@@ -267,6 +307,26 @@ class CursorBase(DBAPIBase):
         cur.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
         eq_(cur.fetchall(), [{'first_name': u'foo', 'last_name': u'bar'}])
 
+    def test_as_dict_no_column_name(self):
+        cur = self.conn.cursor(as_dict=True)
+        try:
+            cur.execute(
+                "SELECT MAX(x), MIN(x) AS [MIN(x)] "
+                "FROM (VALUES (1), (2), (3)) AS foo(x)")
+            assert False, "Didn't raise InterfaceError"
+        except pymssql.ColumnsWithoutNamesError as exc:
+            eq_(exc.columns_without_names, [0])
+
+    def test_as_dict_no_column_name_2(self):
+        cur = self.conn.cursor(as_dict=True)
+        try:
+            cur.execute(
+                "SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y) "
+                "FROM (VALUES (1, 2), (2, 3), (3, 4)) AS foo(x, y)")
+            assert False, "Didn't raise InterfaceError"
+        except pymssql.ColumnsWithoutNamesError as exc:
+            eq_(exc.columns_without_names, [0, 2])
+
     def test_fetchmany(self):
         cur = self.conn.cursor()
         cur.execute('select * from test')
@@ -279,10 +339,13 @@ class CursorBase(DBAPIBase):
         eq_(len(cur.fetchmany(2)), 0)
 
     def test_execute_many(self):
-        cur = self.executemany("delete from test where id = %(id)s", [{'id': 1}, {'id': 2}])
+        cur = self.executemany(
+            "delete from test where id = %(id)s",
+            [{'id': 1}, {'id': 2}])
         self.conn.commit()
         eq_(self.t1.count(), 3)
         eq_(cur.rowcount, 2)
+
 
 def clear_db():
     conn = mssqlconn()
@@ -295,7 +358,6 @@ def clear_db():
         'U': 'drop table [%(name)s]',
     }
     delete_sql = []
-    to_repeat_sql = []
     for type, drop_sql in mapping.items():
         sql = 'select name, object_name( parent_object_id ) as parent_name '\
             'from sys.objects where type in (\'%s\')' % '", "'.join(type)
@@ -304,3 +366,66 @@ def clear_db():
             delete_sql.append(drop_sql % dict(row))
     for sql in delete_sql:
         conn.execute_non_query(sql)
+
+
+class StoredProc(object):
+    def __init__(self, name, args, body, mssql=None):
+        self.name = name
+        self.args = args
+        self.body = body
+        self.mssql = mssql
+        logger_name = '.'.join([__name__, self.__class__.__name__, self.name])
+        self.logger = logging.getLogger(logger_name)
+
+    def create(self, mssql=None):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+
+        try:
+            self.drop(mssql)
+        except:
+            pass
+
+        mssql.execute_non_query("""
+        CREATE PROCEDURE [dbo].[%(name)s]
+            %(args)s
+        AS
+        BEGIN
+            %(body)s
+        END
+        """ % {
+            'name': self.name,
+            'args': '\n'.join(self.args),
+            'body': self.body,
+        })
+        self.logger.debug("Created stored proc: %r" % self.name)
+        return self
+
+    def execute(self, mssql=None, args=()):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+        proc = mssql.init_procedure(self.name)
+        for arg in args:
+            proc.bind(*arg)
+        self.logger.debug("Calling stored proc: %r" % self.name)
+        proc.execute()
+        self.logger.debug("Called stored proc: %r" % self.name)
+
+    def drop(self, mssql=None):
+        mssql = mssql or self.mssql
+        if not mssql:
+            mssql = self.mssql = mssqlconn()
+        mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % self.name)
+        self.logger.debug("Dropped stored proc: %r" % self.name)
+        if self.mssql:
+            self.mssql.close()
+            self.logger.debug("Closed mssql connection: %r" % self.mssql)
+            self.mssql = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.drop()

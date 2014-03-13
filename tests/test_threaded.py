@@ -3,157 +3,106 @@ import threading
 import time
 import unittest
 
-from nose.plugins.skip import SkipTest
-from nose.plugins.attrib import attr
+from _mssql import MSSQLDatabaseException
 
-import _mssql
+from .helpers import mssqlconn, StoredProc, mark_slow
 
-from .helpers import mssqlconn
+
+error_sproc = StoredProc(
+    "pymssqlErrorThreadTest",
+    args=(),
+    body="SELECT unknown_column FROM unknown_table")
+
 
 class TestingThread(threading.Thread):
+    def __init__(self):
+        super(TestingThread, self).__init__()
+        self.results = []
+        self.exc = None
 
     def run(self):
-        self.running = True
-        self.exc = None
         try:
-            mssql = mssqlconn()
-            for i in range(0, 1000):
-                mssql.execute_query('SELECT %d', (i,))
-                for row in mssql:
-                    assert row[0] == i
-            mssql.close()
-        except Exception as e:
-            self.exc = e
-        finally:
-            self.running = False
+            with mssqlconn() as mssql:
+                for i in range(0, 1000):
+                    num = mssql.execute_scalar('SELECT %d', (i,))
+                    assert num == i
+                    self.results.append(num)
+        except Exception as exc:
+            self.exc = exc
 
-class TestingErrorThread(threading.Thread):
 
+class TestingErrorThread(TestingThread):
     def run(self):
-        self.running = True
-        self.exc = None
         try:
-            mssql = mssqlconn()
-            for i in range(0, 1000):
-                try:
-                    mssql.execute_query('SELECT unknown_column')
-                except:
-                    pass
-            mssql.close()
-        except Exception as e:
-            self.exc = e
-        finally:
-            self.running = False
+            with mssqlconn() as mssql:
+                mssql.execute_query('SELECT unknown_column')
+        except Exception as exc:
+            self.exc = exc
 
-class SprocTestingErrorThread(threading.Thread):
 
+class SprocTestingErrorThread(TestingThread):
     def run(self):
-        self.running = True
-        self.exc = None
         try:
-            mssql = mssqlconn()
-            for i in range(0, 1000):
-                try:
-                    proc = mssql.init_procedure('pymssqlErrorThreadTest')
-                    proc.execute()
-                except:
-                    pass
-            mssql.close()
-        except Exception as e:
-            self.exc = e
-        finally:
-            self.running = False
+            with mssqlconn() as mssql:
+                error_sproc.execute(mssql=mssql)
+        except Exception as exc:
+            self.exc = exc
+
 
 class ThreadedTests(unittest.TestCase):
+    def run_threads(self, num, thread_class):
+        threads = [thread_class() for _ in range(num)]
+        for thread in threads:
+            thread.start()
 
-    @attr('slow')
+        results = []
+        exceptions = []
+
+        while len(threads) > 0:
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            for thread in threads:
+                if not thread.is_alive():
+                    threads.remove(thread)
+                if thread.results:
+                    results.append(thread.results)
+                if thread.exc:
+                    exceptions.append(thread.exc)
+            time.sleep(5)
+
+        sys.stdout.write(" ")
+        sys.stdout.flush()
+
+        return results, exceptions
+
+    @mark_slow
     def testThreadedUse(self):
-        threads = []
-        for i in range(0, 50):
-            thread = TestingThread()
-            thread.start()
-            threads.append(thread)
+        results, exceptions = self.run_threads(
+            num=50,
+            thread_class=TestingThread)
+        self.assertEqual(len(exceptions), 0)
+        for result in results:
+            self.assertEqual(result, list(range(0, 1000)))
 
-        running = True
-        while running:
-            sys.stdout.write(".")
-            sys.stdout.flush()
-            running = False
-            for thread in threads:
-                if thread.exc:
-                    raise thread.exc
-                if thread.running:
-                    running = True
-                    break
-            time.sleep(5)
-
-        sys.stdout.write(" ")
-        sys.stdout.flush()
-
-    @attr('slow')
+    @mark_slow
     def testErrorThreadedUse(self):
-        threads = []
-        for i in range(0, 2):
-            thread = TestingErrorThread()
-            thread.start()
-            threads.append(thread)
+        results, exceptions = self.run_threads(
+            num=2,
+            thread_class=TestingErrorThread)
+        self.assertEqual(len(exceptions), 2)
+        for exc in exceptions:
+            self.assertEqual(type(exc), MSSQLDatabaseException)
 
-        running = True
-        while running:
-            sys.stdout.write(".")
-            sys.stdout.flush()
-            running = False
-            for thread in threads:
-                if thread.exc:
-                    raise thread.exc
-                if thread.running:
-                    running = True
-                    break
-            time.sleep(5)
-
-        sys.stdout.write(" ")
-        sys.stdout.flush()
-
+    @mark_slow
     def testErrorSprocThreadedUse(self):
-        spname = 'pymssqlErrorThreadTest'
-        mssql = mssqlconn()
-        try:
-            mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
-        except:
-            pass
-        mssql.execute_non_query("""
-        CREATE PROCEDURE [dbo].[%s]
-        AS
-        BEGIN
-            SELECT unknown_column FROM unknown_table;
-        END
-        """ % spname)
+        with error_sproc.create():
+            results, exceptions = self.run_threads(
+                num=5,
+                thread_class=SprocTestingErrorThread)
+        self.assertEqual(len(exceptions), 5)
+        for exc in exceptions:
+            self.assertEqual(type(exc), MSSQLDatabaseException)
 
-        threads = []
-        for i in range(0, 5):
-            thread = SprocTestingErrorThread()
-            thread.start()
-            threads.append(thread)
-
-        try:
-            sys.stdout.write(".")
-            sys.stdout.flush()
-            running = True
-            while running:
-                running = False
-                for thread in threads:
-                    if thread.exc:
-                        raise thread.exc
-                    if thread.running:
-                        running = True
-                        break
-                time.sleep(5)
-
-            sys.stdout.write(" ")
-            sys.stdout.flush()
-        finally:
-            mssql.execute_non_query("DROP PROCEDURE [dbo].[%s]" % spname)
-            mssql.close()
 
 suite = unittest.TestSuite()
 suite.addTest(unittest.makeSuite(ThreadedTests))

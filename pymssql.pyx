@@ -20,14 +20,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA  02110-1301  USA
 
-__author__ = 'Damien Churchill <damoxc@gmail.com>'
-__version__ = '2.0.0'
-
 import _mssql
 cimport _mssql
 from cpython cimport bool
 
-# comliant with DB SIG 2.0
+cdef extern from "pymssql_version.h":
+    const char *PYMSSQL_VERSION
+
+__author__ = 'Damien Churchill <damoxc@gmail.com>'
+__full_version__ = PYMSSQL_VERSION.decode('ascii')
+__version__ = '.'.join(__full_version__.split('.')[:3]) # drop '.dev' from 'X.Y.Z.dev'
+
+# Strives for compliance with DB-API 2.0 (PEP 249)
+# http://www.python.org/dev/peps/pep-0249/
 apilevel = '2.0'
 
 # module may be shared, but not connections
@@ -35,6 +40,8 @@ threadsafety = 1
 
 # this module uses extended python format codes
 paramstyle = 'pyformat'
+
+from _mssql import set_wait_callback
 
 # store a tuple of programming error codes
 cdef object prog_errors = (
@@ -126,6 +133,15 @@ class ProgrammingError(DatabaseError):
 
 class NotSupportedError(DatabaseError):
     pass
+
+class ColumnsWithoutNamesError(InterfaceError):
+    def __init__(self, columns_without_names):
+        self.columns_without_names = columns_without_names
+
+    def __str__(self):
+        return 'Specified as_dict=True and ' \
+            'there are columns with no names: %r' \
+            % (self.columns_without_names,)
 
 def row2dict(row):
     """Filter dict so it only has string keys; used when as_dict == True"""
@@ -229,7 +245,7 @@ cdef class Connection:
 
     def close(self):
         """
-        Close the connection to the databsae. Implicitly rolls back all
+        Close the connection to the database. Implicitly rolls back all
         uncommitted transactions.
         """
         if self.conn:
@@ -403,6 +419,15 @@ cdef class Cursor:
             self.description = self._source._conn.get_header()
             self._rownumber = self._source._conn.rows_affected
 
+            if self.as_dict and self.description:
+                columns_without_names = [
+                    idx
+                    for idx, column_descriptor in enumerate(self.description)
+                    if len(column_descriptor[0]) == 0
+                ]
+                if columns_without_names:
+                    raise ColumnsWithoutNamesError(columns_without_names)
+
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
                 raise ProgrammingError, e.args[0]
@@ -439,12 +464,11 @@ cdef class Cursor:
         Helper method used by fetchone and fetchmany to fetch and handle
         converting the row if as_dict = False.
         """
-        row = next(iter(self._source._conn))
-        self._rownumber = self._source._conn.rows_affected
-        if self.as_dict:
-            return row2dict(row)
-        row = dict([(k, v) for k, v in row.items() if isinstance(k, int)])
-        return tuple([row[r] for r in sorted(row) if type(r) == int])
+        row_format = _mssql.ROW_FORMAT_DICT if self.as_dict else _mssql.ROW_FORMAT_TUPLE
+        row = next(self._source._conn.get_iterator(row_format))
+        if not self.as_dict:
+            return row
+        return row2dict(row)
 
     def fetchone(self):
         if self.description is None:
@@ -486,13 +510,12 @@ cdef class Cursor:
             raise OperationalError('Statement not executed or executed statement has no resultset')
 
         try:
-            if self.as_dict:
-                rows = [row2dict(row) for row in self._source._conn]
-            else:
-                rows = [dict([(k, v) for k, v in row.items() if isinstance(k, int)])
-                        for row in self._source._conn]
-                rows = [tuple([row[r] for r in sorted(row.keys()) if \
-                        type(r) == int]) for row in rows]
+            rows = []
+            while True:
+                try:
+                    rows.append(self.getrow())
+                except StopIteration:
+                    break
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
@@ -549,7 +572,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :keyword appname: Set the application name to use for the connection
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
-    :type appname: string
+    :type port: string
     """
 
     _mssql.login_timeout = login_timeout

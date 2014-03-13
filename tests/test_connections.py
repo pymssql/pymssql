@@ -7,11 +7,9 @@ try:
 except ImportError:
     import unittest
 
-from nose.plugins.skip import SkipTest
-
 import _mssql
 
-from .helpers import config
+from .helpers import config, skip_test
 server = config.server
 username = config.user
 password = config.password
@@ -77,7 +75,7 @@ class TestCons(unittest.TestCase):
 
     def test_instance(self):
         if not instance:
-            raise SkipTest
+            skip_test()
         server_join = r'%s\%s' % (server, instance)
         cdump = self.connect(server=server_join, user=username, password=password)
         dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
@@ -86,3 +84,29 @@ class TestCons(unittest.TestCase):
         self.assertEqual(dump_server_host_name, server)
         dump_port = re.search('port = (\S+)', cdump).groups()[0]
         self.assertEqual(dump_port, 0)
+
+    def test_repeated_failed_connections(self):
+        # This is a test for https://github.com/pymssql/pymssql/issues/145
+        # (Repeated failed connections result in error string getting longer
+        # and longer)
+
+        last_exc_message = None
+
+        for i in range(5):
+            try:
+                _mssql.connect(
+                    server='www.google.com',
+                    port=80,
+                    user='joe',
+                    password='secret',
+                    database='tempdb')
+            except Exception as exc:
+                exc_message = exc.args[0][1]
+                self.assertIn(
+                    b'Adaptive Server connection failed',
+                    exc_message)
+
+                if last_exc_message:
+                    self.assertEqual(exc_message, last_exc_message)
+
+                last_exc_message = exc_message

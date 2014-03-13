@@ -1,11 +1,10 @@
-from nose.plugins.skip import SkipTest
-from nose.tools import eq_
+import unittest
 
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from .helpers import config
+from .helpers import config, eq_
 
 engine = sa.create_engine(
         'mssql+pymssql://%s:%s@%s:%s/%s' % (
@@ -35,7 +34,7 @@ saotbl = SAObj.__table__
 saotbl.drop(engine, checkfirst=True)
 saotbl.create(engine)
 
-class TestSA(object):
+class TestSA(unittest.TestCase):
 
     def tearDown(self):
         # issue rollback first, otherwise clearing the table might give us
@@ -56,6 +55,5 @@ class TestSA(object):
         sess.add(s)
         sess.commit()
         res = sess.execute(sa.select([saotbl.c.data]))
-        #raise SkipTest # SA pickle columns cause us problems, delete this skip to see
         row = res.fetchone()
         eq_(row['data'], ['one'])

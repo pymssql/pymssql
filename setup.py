@@ -25,7 +25,6 @@ import contextlib
 import os
 import os.path as osp
 import sys
-import getpass
 import platform
 
 # Hack to prevent stupid TypeError: 'NoneType' object is not callable error on
@@ -60,7 +59,13 @@ except ImportError:
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
 
-have_c_files = osp.exists('_mssql.c') and osp.exists('pymssql.c')
+ROOT = osp.abspath(osp.dirname(__file__))
+
+def fpath(*parts):
+    """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
+    return osp.join(ROOT, *parts)
+
+have_c_files = osp.exists(fpath('src', '_mssql.c')) and osp.exists(fpath('src', 'pymssql.c'))
 
 from distutils import log
 from distutils.cmd import Command
@@ -77,6 +82,16 @@ else:
 
     from Cython.Distutils import build_ext as _build_ext
 import struct
+
+def extract_version():
+    with open(osp.join(ROOT, 'pymssql_version.h')) as f:
+        content = f.read()
+
+    # Parse file content that looks like this:
+    # #define PYMSSQL_VERSION "2.0.1"
+    version = content.split()[2].replace('"', '')
+
+    return version
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
@@ -112,7 +127,6 @@ _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
-ROOT = osp.abspath(osp.dirname(__file__))
 WINDOWS = False
 SYSTEM = platform.system()
 
@@ -124,18 +138,15 @@ print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 
+include_dirs = []
+library_dirs = []
 if sys.platform == 'win32':
     WINDOWS = True
-    include_dirs = []
-    library_dirs = []
 else:
-    include_dirs = []
-    library_dirs = []
-
     FREETDS = None
 
     if sys.platform == 'darwin':
-        FREETDS = osp.join(ROOT, 'freetds', 'darwin_%s' % BITNESS)
+        FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
@@ -151,7 +162,7 @@ else:
 
     if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if SYSTEM == 'Linux':
-            FREETDS = osp.join(ROOT, 'freetds', 'nix_%s' % BITNESS)
+            FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
             print("""setup.py: Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
@@ -215,8 +226,9 @@ if sys.platform != 'win32':
 
 class build_ext(_build_ext):
     """
-    Subclass the Cython build_ext command so it extracts freetds.zip if it
-    hasn't already been done.
+    Subclass the Cython build_ext command so it:
+    * Can handle different C compilers on Windows
+    * Links in the libraries we collected
     """
 
     def build_extensions(self):
@@ -227,12 +239,8 @@ class build_ext(_build_ext):
             # and libraries
             from distutils.cygwinccompiler import Mingw32CCompiler
             extra_cc_args = []
-            # Distutils bug: self.compiler can be a string or a CCompiler
-            # subclass instance, see http://bugs.python.org/issue6377
-            if isinstance(self.compiler, str):
-                compiler = self.compiler
-            elif isinstance(self.compiler, Mingw32CCompiler):
-                compiler = 'mingw32'
+            if isinstance(self.compiler, Mingw32CCompiler):
+                # Compiler is Mingw32
                 freetds_dir = 'ming'
                 extra_cc_args = [
                     '-Wl,-allow-multiple-definition',
@@ -246,14 +254,14 @@ class build_ext(_build_ext):
                     'ws2_32', 'wsock32', 'kernel32',
                 ]
             else:
-                compiler = 'msvc'
+                # Assume compiler is Visual Studio
                 freetds_dir = 'vs2008'
                 libraries = [
                     'db-lib', 'tds',
                     'ws2_32', 'wsock32', 'kernel32', 'shell32',
                 ]
 
-            FREETDS = osp.join(ROOT, 'freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
@@ -302,10 +310,6 @@ class release(Command):
         pass
 
     def run(self):
-        self.username = None
-        self.password = None
-        self.store = None
-
         if WINDOWS:
             self.release_windows()
         else:
@@ -327,58 +331,12 @@ class release(Command):
         bdist.ensure_finalized()
         bdist.run()
 
-        (name, version, fullname) = self.get_info()
-
-        self.upload(fullname + '.zip', '%s %s source zipped' % (name, version))
-        self.upload(fullname + '.win32.zip', '%s %s win32 zip installer' % (name, version))
-        self.upload(fullname + '.win32-py2.6.exe', '%s %s windows installer' % (name, version))
-        self.upload(fullname + '-py2.6-win32.egg', '%s %s windows egg' % (name, version))
-
     def release_unix(self):
         # generate linux source distributions
         sdist = self.distribution.get_command_obj('sdist')
         sdist.formats = 'gztar,bztar'
         sdist.ensure_finalized()
         sdist.run()
-
-        (name, version, fullname) = self.get_info()
-        self.upload(fullname + '.tar.gz', '%s %s source gzipped' % (name, version))
-        self.upload(fullname + '.tar.bz2', '%s %s source bzipped' % (name, version))
-
-    def get_info(self):
-        """
-        Return the project name and version
-        """
-        return (
-            self.distribution.get_name(),
-            self.distribution.get_version(),
-            self.distribution.get_fullname()
-        )
-
-    def upload(self, filename, comment):
-        from gc_upload import upload
-
-        if self.username is None:
-            username = raw_input('Username: ')
-            password = getpass.getpass('Password: ')
-
-            if self.store is None:
-                store = raw_input('Store credentials for later use? [Y/n]')
-                self.store = store in ('', 'y', 'Y')
-
-            if self.store:
-                self.username = username
-                self.password = password
-
-        else:
-            username = self.username
-            password = self.password
-
-        filename = osp.join('dist', filename)
-        log.info('uploading %s to googlecode', filename)
-        (status, reason, url) = upload(filename, 'pymssql', username, password, comment)
-        if not url:
-            log.error('upload to googlecode failed: %s', reason)
 
 class DevelopCmd(STDevelopCmd):
     def run(self):
@@ -407,23 +365,43 @@ def ext_modules():
 
 setup(
     name  = 'pymssql',
-    version = '2.0.0b1',
-    description = 'A simple database interface to MS-SQL for Python.',
-    long_description = 'A simple database interface to MS-SQL for Python.',
+    version = extract_version(),
+    description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
+    long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
+    maintainer = 'pymssql Google Group',
+    maintainer_email = 'pymssql@googlegroups.com',
     license = 'LGPL',
-    url = 'http://pymssql.sourceforge.net',
+    platforms = 'any',
+    keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
+    url = 'http://pymssql.org',
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
         'release': release,
         'develop': DevelopCmd
     },
-    data_files = [
-        ('', ['_mssql.pyx', 'pymssql.pyx'])
+    classifiers=[
+      "Development Status :: 5 - Production/Stable",
+      "Intended Audience :: Developers",
+      "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+      "Programming Language :: Python",
+      "Programming Language :: Python :: 2.6",
+      "Programming Language :: Python :: 2.7",
+      "Programming Language :: Python :: 3",
+      "Programming Language :: Python :: 3.2",
+      "Programming Language :: Python :: 3.3",
+      "Programming Language :: Python :: Implementation :: CPython",
+      "Topic :: Database",
+      "Topic :: Database :: Database Engines/Servers",
+      "Topic :: Software Development :: Libraries :: Python Modules",
+      "Operating System :: Microsoft :: Windows",
+      "Operating System :: POSIX",
+      "Operating System :: Unix",
     ],
     zip_safe = False,
+    setup_requires=['setuptools_git'],
     tests_require=['nose', 'unittest2'],
     test_suite='nose.collector',
     ext_modules = ext_modules(),

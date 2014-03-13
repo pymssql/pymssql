@@ -35,26 +35,39 @@ DEF EXCOMM = 9
 DEF DBVERSION_71 = 5
 DEF DBVERSION_72 = 6
 
-from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
+ROW_FORMAT_TUPLE = 1
+ROW_FORMAT_DICT = 2
 
-if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
-    import uuid
+cdef int _ROW_FORMAT_TUPLE = ROW_FORMAT_TUPLE
+cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
+
+from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
 import os
 import sys
 import socket
 import decimal
+import binascii
 import datetime
 import re
+import uuid
 
 from sqlfront cimport *
 
-from libc.stdio cimport fprintf, sprintf, stderr, FILE
-from libc.string cimport strlen, strcpy, strncpy, memcpy
+from libc.stdio cimport fprintf, snprintf, stderr, FILE
+from libc.string cimport strlen, strncpy, memcpy
 
 from cpython cimport bool
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from cpython.long cimport PY_LONG_LONG
+from cpython.ref cimport Py_INCREF
+from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
+
+cdef extern from "pymssql_version.h":
+    const char *PYMSSQL_VERSION
+
+cdef extern from "cpp_helpers.h":
+    cdef bint FREETDS_SUPPORTS_DBSETLDBNAME
 
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
@@ -62,8 +75,11 @@ cdef int _mssql_last_msg_severity = 0
 cdef int _mssql_last_msg_state = 0
 cdef int _mssql_last_msg_line = 0
 cdef char *_mssql_last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_str[0] = <char>0
 cdef char *_mssql_last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_srv[0] = <char>0
 cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
+_mssql_last_msg_proc[0] = <char>0
 IF PYMSSQL_DEBUG == 1:
     cdef int _row_count = 0
 
@@ -76,7 +92,8 @@ cdef list connection_object_list = list()
 cdef int MAX_INT = 2147483647
 
 # Store the module version
-__version__ = '1.9.909'
+__full_version__ = PYMSSQL_VERSION.decode('ascii')
+__version__ = '.'.join(__full_version__.split('.')[:3]) # drop '.dev' from 'X.Y.Z.dev'
 
 #############################
 ## DB-API type definitions ##
@@ -166,6 +183,13 @@ login_timeout = 60
 
 min_error_severity = 6
 
+wait_callback = None
+
+def set_wait_callback(a_callable):
+    global wait_callback
+
+    wait_callback = a_callable
+
 # Buffer size for large numbers
 DEF NUMERIC_BUF_SZ = 45
 
@@ -191,10 +215,14 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int *mssql_lastmsgstate
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
-    cdef char error_type[16]
 
     if severity < _min_error_severity:
         return INT_CANCEL
+
+    if dberrstr == NULL:
+        dberrstr = ''
+    if oserrstr == NULL:
+        oserrstr = ''
 
     IF PYMSSQL_DEBUG == 1 or PYMSSQL_DEBUG_ERRORS == 1:
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
@@ -223,17 +251,25 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
 
-    sprintf(mssql_message, '%s DB-Lib error message %d, severity %d:\n%s\n',
-        mssql_lastmsgstr, dberr, severity, dberrstr)
-
     if oserr != DBNOERR and oserr != 0:
         if severity == EXCOMM:
-            strcpy(error_type, 'Net-Lib')
+            snprintf(
+                mssql_message, sizeof(mssql_message),
+                '%sDB-Lib error message %d, severity %d:\n%s\nNet-Lib error during %s (%d)\n',
+                mssql_lastmsgstr, dberr, severity, dberrstr, oserrstr, oserr)
         else:
-            strcpy(error_type, 'Operating System')
-        sprintf(mssql_message, '%s error during %s', error_type, oserrstr)
+            snprintf(
+                mssql_message, sizeof(mssql_message),
+                '%sDB-Lib error message %d, severity %d:\n%s\nOperating System error during %s (%d)\n',
+                mssql_lastmsgstr, dberr, severity, dberrstr, oserrstr, oserr)
+    else:
+        snprintf(
+            mssql_message, sizeof(mssql_message),
+            '%sDB-Lib error message %d, severity %d:\n%s\n',
+            mssql_lastmsgstr, dberr, severity, dberrstr)
 
     strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
+    mssql_lastmsgstr[ PYMSSQL_MSGSIZE - 1 ] = '\0'
 
     return INT_CANCEL
 
@@ -309,8 +345,44 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
 
 cdef int db_sqlexec(DBPROCESS *dbproc):
     cdef RETCODE rtc
+
+    # The dbsqlsend function sends Transact-SQL statements, stored in the
+    # command buffer of the DBPROCESS, to SQL Server.
+    #
+    # It does not wait for a response. This gives us an opportunity to do other
+    # things while waiting for the server response.
+    #
+    # After dbsqlsend returns SUCCEED, dbsqlok must be called to verify the
+    # accuracy of the command batch. Then dbresults can be called to process
+    # the results.
     with nogil:
-        rtc = dbsqlexec(dbproc)
+        rtc = dbsqlsend(dbproc)
+        if rtc != SUCCEED:
+            return rtc
+
+    # If we've reached here, dbsqlsend didn't fail so the query is in progress.
+
+    # Wait for results to come back and return the return code, optionally
+    # calling wait_callback first...
+    return db_sqlok(dbproc)
+
+cdef int db_sqlok(DBPROCESS *dbproc):
+    cdef RETCODE rtc
+
+    # If there is a wait callback, call it with the file descriptor we're
+    # waiting on.
+    # The wait_callback is a good place to do things like yield to another
+    # gevent greenlet -- e.g.: gevent.socket.wait_read(read_fileno)
+    if wait_callback:
+        read_fileno = dbiordesc(dbproc)
+        wait_callback(read_fileno)
+
+    # dbsqlok following dbsqlsend is the equivalent of dbsqlexec. This function
+    # must be called after dbsqlsend returns SUCCEED. When dbsqlok returns,
+    # then dbresults can be called to process the results.
+    with nogil:
+        rtc = dbsqlok(dbproc)
+
     return rtc
 
 cdef void clr_err(MSSQLConnection conn):
@@ -318,10 +390,12 @@ cdef void clr_err(MSSQLConnection conn):
         conn.last_msg_no = 0
         conn.last_msg_severity = 0
         conn.last_msg_state = 0
+        conn.last_msg_str[0] = 0
     else:
         _mssql_last_msg_no = 0
         _mssql_last_msg_severity = 0
         _mssql_last_msg_state = 0
+        _mssql_last_msg_str[0] = 0
 
 cdef RETCODE db_cancel(MSSQLConnection conn):
     cdef RETCODE rtc
@@ -343,8 +417,9 @@ cdef RETCODE db_cancel(MSSQLConnection conn):
 ##############################
 cdef class MSSQLRowIterator:
 
-    def __init__(self, connection):
+    def __init__(self, connection, int row_format):
         self.conn = connection
+        self.row_format = row_format
 
     def __iter__(self):
         return self
@@ -352,7 +427,7 @@ cdef class MSSQLRowIterator:
     def __next__(self):
         assert_connected(self.conn)
         clr_err(self.conn)
-        return self.conn.fetch_next_row_dict(1)
+        return self.conn.fetch_next_row(1, self.row_format)
 
 ############################
 ## MSSQL Connection Class ##
@@ -514,6 +589,18 @@ cdef class MSSQLConnection:
             strncpy(self._charset, _charset, PYMSSQL_CHARSETBUFSIZE)
             DBSETLCHARSET(login, self._charset)
 
+        # For Python 3, we need to convert unicode to byte strings
+        cdef bytes dbname_bytes
+        cdef char *dbname_cstr
+        # Put the DB name in the login LOGINREC because it helps with connections to Azure
+        if database:
+            if FREETDS_SUPPORTS_DBSETLDBNAME:
+                dbname_bytes = database.encode('ascii')
+                dbname_cstr = dbname_bytes
+                DBSETLDBNAME(login, dbname_cstr)
+            else:
+                log("_mssql.MSSQLConnection.__init__(): Warning: This version of FreeTDS doesn't support selecting the DB name when setting up the connection. This will keep connections to Azure from working.")
+
         # Set the login timeout
         dbsetlogintime(login_timeout)
 
@@ -521,7 +608,8 @@ cdef class MSSQLConnection:
         cdef char *server_cstr = server_bytes
 
         # Connect to the server
-        self.dbproc = dbopen(login, server_cstr)
+        with nogil:
+            self.dbproc = dbopen(login, server_cstr)
 
         # Frees the login record, can be called immediately after dbopen.
         dbloginfree(login)
@@ -550,7 +638,7 @@ cdef class MSSQLConnection:
             "SET TEXTSIZE 2147483647;"
         )
 
-        rtc = dbsqlexec(self.dbproc)
+        rtc = db_sqlexec(self.dbproc)
         if (rtc == FAIL):
             raise MSSQLDriverException("Could not set connection properties")
 
@@ -564,10 +652,16 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.__dealloc__()")
         self.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def __iter__(self):
         assert_connected(self)
         clr_err(self)
-        return MSSQLRowIterator(self)
+        return MSSQLRowIterator(self, ROW_FORMAT_DICT)
 
     cpdef set_msghandler(self, object handler):
         """
@@ -699,7 +793,7 @@ cdef class MSSQLConnection:
             else:
                 return (<char *>data)[:length]
 
-        elif dbtype == SQLUUID and (PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5):
+        elif dbtype == SQLUUID:
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
@@ -711,7 +805,8 @@ cdef class MSSQLConnection:
         cdef int *intValue
         cdef double *dblValue
         cdef PY_LONG_LONG *longValue
-        cdef char *strValue, *tmp
+        cdef char *strValue
+        cdef char *tmp
         cdef BYTE *binValue
         cdef DBTYPEINFO decimal_type_info
 
@@ -823,7 +918,8 @@ cdef class MSSQLConnection:
 
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
-            strcpy(strValue, tmp)
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = '\0';
             dbValue[0] = <BYTE *>strValue
             return 0
 
@@ -834,6 +930,13 @@ cdef class MSSQLConnection:
             binValue = <BYTE *>PyMem_Malloc(len(value))
             memcpy(binValue, <char *>value, len(value))
             length[0] = len(value)
+            dbValue[0] = <BYTE *>binValue
+            return 0
+
+        if dbtype[0] == SQLUUID:
+            binValue = <BYTE *>PyMem_Malloc(16)
+            memcpy(binValue, <char *>value.bytes_le, 16)
+            length[0] = 16
             dbValue[0] = <BYTE *>binValue
             return 0
 
@@ -929,7 +1032,7 @@ cdef class MSSQLConnection:
         """
         log("_mssql.MSSQLConnection.execute_row()")
         self.format_and_run_query(query_string, params)
-        return self.fetch_next_row_dict(0)
+        return self.fetch_next_row(0, ROW_FORMAT_DICT)
 
     cpdef execute_scalar(self, query_string, params=None):
         """
@@ -968,9 +1071,9 @@ cdef class MSSQLConnection:
             self.last_dbresults = 0
             return None
 
-        return self.get_row(rtc)[0]
+        return self.get_row(rtc, ROW_FORMAT_TUPLE)[0]
 
-    cdef fetch_next_row(self, int throw):
+    cdef fetch_next_row(self, int throw, int row_format):
         cdef RETCODE rtc
         log("_mssql.MSSQLConnection.fetch_next_row() BEGIN")
         try:
@@ -997,28 +1100,9 @@ cdef class MSSQLConnection:
                     raise StopIteration
                 return None
 
-            return self.get_row(rtc)
+            return self.get_row(rtc, row_format)
         finally:
             log("_mssql.MSSQLConnection.fetch_next_row() END")
-
-    cdef fetch_next_row_dict(self, int throw):
-        cdef int col
-        log("_mssql.MSSQLConnection.fetch_next_row_dict()")
-
-        row_dict = {}
-        row = self.fetch_next_row(throw)
-
-        for col in xrange(1, self.num_columns + 1):
-            name = self.column_names[col - 1]
-            value = row[col - 1]
-
-            # Add key by column name, only if the column has a name
-            if name:
-                row_dict[name] = value
-
-            row_dict[col - 1] = value
-
-        return row_dict
 
     cdef format_and_run_query(self, query_string, params=None):
         """
@@ -1053,6 +1137,7 @@ cdef class MSSQLConnection:
 
             # Execute the query
             rtc = db_sqlexec(self.dbproc)
+
             check_cancel_and_raise(rtc, self)
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
@@ -1088,6 +1173,17 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.get_header() END")
 
+    def get_iterator(self, int row_format):
+        """
+        get_iterator(row_format) -- allows the format of the iterator to be specified
+
+        While the iter(conn) call will always return a dictionary, this
+        method allows the return type of the row to be specified.
+        """
+        assert_connected(self)
+        clr_err(self)
+        return MSSQLRowIterator(self, row_format)
+
     cdef get_result(self):
         cdef int coltype
         cdef char log_message[200]
@@ -1119,7 +1215,8 @@ cdef class MSSQLConnection:
 
             self.num_columns = dbnumcols(self.dbproc)
 
-            sprintf(log_message, "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
+            snprintf(log_message, sizeof(log_message), "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
+            log_message[ sizeof(log_message) - 1 ] = '\0'
             log(log_message)
 
             column_names = list()
@@ -1136,19 +1233,24 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.get_result() END")
 
-    cdef get_row(self, int row_info):
+    cdef get_row(self, int row_info, int row_format):
         cdef DBPROCESS *dbproc = self.dbproc
         cdef int col
         cdef int col_type
         cdef int len
         cdef BYTE *data
+        cdef tuple trecord
+        cdef dict drecord
         log("_mssql.MSSQLConnection.get_row()")
 
         if PYMSSQL_DEBUG == 1:
             global _row_count
             _row_count += 1
 
-        record = tuple()
+        if row_format == _ROW_FORMAT_TUPLE:
+            trecord = PyTuple_New(self.num_columns)
+        elif row_format == _ROW_FORMAT_DICT:
+            drecord = dict()
 
         for col in xrange(1, self.num_columns + 1):
             with nogil:
@@ -1157,17 +1259,28 @@ cdef class MSSQLConnection:
                 len = get_length(dbproc, row_info, col)
 
             if data == NULL:
-                record += (None,)
-                continue
+                value = None
+            else:
+                IF PYMSSQL_DEBUG == 1:
+                    global _row_count
+                    fprintf(stderr, 'Processing row %d, column %d,' \
+                        'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
+                        data, col_type, len)
+                value = self.convert_db_value(data, col_type, len)
 
-            IF PYMSSQL_DEBUG == 1:
-                global _row_count
-                fprintf(stderr, 'Processing row %d, column %d,' \
-                    'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
-                    data, col_type, len)
+            if row_format == _ROW_FORMAT_TUPLE:
+                Py_INCREF(value)
+                PyTuple_SetItem(trecord, col - 1, value)
+            elif row_format == _ROW_FORMAT_DICT:
+                name = self.column_names[col - 1]
+                drecord[col - 1] = value
+                if name:
+                    drecord[name] = value
 
-            record += (self.convert_db_value(data, col_type, len),)
-        return record
+        if row_format == _ROW_FORMAT_TUPLE:
+            return trecord
+        elif row_format == _ROW_FORMAT_DICT:
+            return drecord
 
     def init_procedure(self, procname):
         """
@@ -1269,7 +1382,8 @@ cdef class MSSQLStoredProcedure:
         check_cancel_and_raise(rtc, self.conn)
 
     def __dealloc__(self):
-        cdef _mssql_parameter_node *n, *p
+        cdef _mssql_parameter_node *n
+        cdef _mssql_parameter_node *p
         log("_mssql.MSSQLStoredProcedure.__dealloc__()")
 
         n = self.params_list
@@ -1291,7 +1405,8 @@ cdef class MSSQLStoredProcedure:
         """
         cdef int length = -1
         cdef RETCODE rtc
-        cdef BYTE status, *data
+        cdef BYTE status
+        cdef BYTE *data
         cdef bytes param_name_bytes
         cdef char *param_name_cstr
         cdef _mssql_parameter_node *pn
@@ -1391,9 +1506,10 @@ cdef class MSSQLStoredProcedure:
             rtc = dbrpcsend(self.dbproc)
         check_cancel_and_raise(rtc, self.conn)
 
-        # Wait for the server to return
-        with nogil:
-            rtc = dbsqlok(self.dbproc)
+        # Wait for results to come back and return the return code, optionally
+        # calling wait_callback first...
+        rtc = db_sqlok(self.dbproc)
+
         check_cancel_and_raise(rtc, self.conn)
 
         # Need to call this regardless of whether or not there are output
@@ -1460,7 +1576,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
 
     error_msg = get_last_msg_str(conn)
     if len(error_msg) == 0:
-        error_msg = "Unknown error"
+        error_msg = b"Unknown error"
 
     ex = MSSQLDatabaseException((get_last_msg_no(conn), error_msg))
     (<MSSQLDatabaseException>ex).text = error_msg
@@ -1509,7 +1625,8 @@ cdef int get_api_coltype(int coltype):
         return BINARY
 
 cdef char *_remove_locale(char *s, size_t buflen):
-    cdef char c, *stripped = s
+    cdef char c
+    cdef char *stripped = s
     cdef int i, x = 0, last_sep = -1
 
     for i, c in enumerate(s[0:buflen]):
@@ -1567,7 +1684,13 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, unicode):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
+    if isinstance(value, bytearray):
+        return b'0x' + binascii.hexlify(bytes(value))
+
     if isinstance(value, (str, bytes)):
+        if value[0:2] == b'0x':
+            return value
+
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:
@@ -1579,7 +1702,6 @@ cdef _quote_simple_value(value, charset='utf8'):
         # Python 3: handle bytes
         # @todo - Marc - hack hack hack
         if isinstance(value, bytes):
-            import binascii
             return b'0x' + binascii.hexlify(value)
 
         # will still be string type if there was a null byte in it or if the
@@ -1648,7 +1770,7 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str, bytes,
+            (bool, int, long, float, unicode, str, bytes, bytearray,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
@@ -1674,7 +1796,7 @@ cdef _substitute_params(toformat, params, charset):
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
 
             # calculate string positions so we can keep track of the offset to
-            # be used in future substituations on this string.  This is
+            # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
             # original string, but we modify the original string each time we
             # loop, so we need to make an adjustment for the difference between
@@ -1697,7 +1819,7 @@ cdef _substitute_params(toformat, params, charset):
         offset = 0
         for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
             # calculate string positions so we can keep track of the offset to
-            # be used in future substituations on this string.  This is
+            # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
             # original string, but we modify the original string each time we
             # loop, so we need to make an adjustment for the difference between
@@ -1743,6 +1865,36 @@ def connect(*args, **kwargs):
 MssqlDatabaseException = MSSQLDatabaseException
 MssqlDriverException = MSSQLDriverException
 MssqlConnection = MSSQLConnection
+
+###########################
+## Test Helper Functions ##
+###########################
+
+def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr):
+    """
+    Expose err_handler function and its side effects to facilitate testing.
+    """
+    cdef DBPROCESS *dbproc = NULL
+    cdef char *dberrstrc = NULL
+    cdef char *oserrstrc = NULL
+    if dberrstr:
+        dberrstr_byte_string = dberrstr.encode('UTF-8')
+        dberrstrc = dberrstr_byte_string
+    if oserrstr:
+        oserrstr_byte_string = oserrstr.encode('UTF-8')
+        oserrstrc = oserrstr_byte_string
+    if connection:
+        dbproc = (<MSSQLConnection>connection).dbproc
+    results = (
+        err_handler(dbproc, severity, dberr, oserr, dberrstrc, oserrstrc),
+        get_last_msg_str(connection),
+        get_last_msg_no(connection),
+        get_last_msg_severity(connection),
+        get_last_msg_state(connection)
+    )
+    clr_err(connection)
+    return results
+
 
 #####################
 ## Max Connections ##

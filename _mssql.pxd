@@ -40,17 +40,17 @@ cdef class MSSQLConnection:
     cpdef execute_non_query(self, query, params=?)
     cpdef execute_row(self, query, params=?)
     cpdef execute_scalar(self, query, params=?)
-    cdef fetch_next_row(self, int)
-    cdef fetch_next_row_dict(self, int)
+    cdef fetch_next_row(self, int, int)
     cdef format_and_run_query(self, query_string, params=?)
     cdef format_sql_command(self, format, params=?)
     cdef get_result(self)
-    cdef get_row(self, int)
+    cdef get_row(self, int, int)
 
     cpdef set_msghandler(self, object handler)
 
 cdef class MSSQLRowIterator:
     cdef MSSQLConnection conn
+    cdef int row_format
 
 cdef class MSSQLStoredProcedure:
     cdef MSSQLConnection conn
