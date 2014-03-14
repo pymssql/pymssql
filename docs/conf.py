@@ -225,7 +225,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'pymssql.tex', u'pymssql Documentation',
-   u'pymssql developers', 'manual'),
+   u'pymssql developers', 'manual', True),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
