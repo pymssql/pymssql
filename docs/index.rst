@@ -97,7 +97,6 @@ Documentation
    building_and_developing
    freetds_and_dates
    changelog
-   history
    todo
 
 Indices and tables
