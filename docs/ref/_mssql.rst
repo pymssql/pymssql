@@ -251,6 +251,20 @@ Functions
    These methods facilitate the Python iterator protocol. You most likely will not
    call them directly, but indirectly by using iterators.
 
+.. method:: MSSQLConnection.set_msghandler(handler)
+
+   This method allows setting a message handler function for the connection to
+   allow a client to gain access to the messages returned from the server.
+
+   The signature of the message handler function *handler* passed to this
+   method must be::
+
+        def my_msg_handler(msgstate, severity, srvname, procname, line, msgtext):
+            # The body of the message handler.
+
+   *msgstate*, *severity* and *line* will be integers, *srvname*, *procname* and
+   *msgtext* will be strings.
+
 ``MSSQLStoredProcedure`` class
 ==============================
 
