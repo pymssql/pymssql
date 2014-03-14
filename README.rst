@@ -11,9 +11,8 @@ pymssql - DB-API interface to Microsoft SQL Server
 .. image:: http://img.shields.io/pypi/v/pymssql.svg
         :target: https://pypi.python.org/pypi/pymssql/
 
-A simple database interface to `Microsoft SQL Server`_ (MS-SQL) for `Python`_
-that builds on top of `FreeTDS`_ to provide a Python DB-API (`PEP-249`_)
-interface to SQL Server.
+A simple database interface for `Python`_ that builds on top of `FreeTDS`_ to
+provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
 .. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
 .. _Python: http://www.python.org/
