@@ -61,6 +61,53 @@ extensions to the DB-API.
 
     conn.close()
 
+Important note about Cursors
+============================
+
+A connection can have only one cursor with an active query at any time.
+If you have used other Python DBAPI databases, this can lead to surprising
+results.::
+
+    c1 = conn.cursor()
+    c1.execute('SELECT * FROM persons')
+
+    c2 = conn.cursor()
+    c2.execute('SELECT * FROM persons WHERE salesrep=%s', 'John Doe')
+
+    print( "all persons" )
+    print( c1.fetchall() )  # shows result from c2 query!
+
+    print( "John Doe" )
+    print( c2.fetchall() )  # shows no results at all!
+
+In this example, the result printed after "all persons" will be the
+result of the *second* query (the list where salesrep='John Doe')
+and the result printed after "John Doe" will be empty.  This happens
+because the underlying TDS protocol does not have client side cursors.
+The protocol requires that the client flush the results from the first
+query before it can begin another query.
+
+(Of course, this is a contrived example, intended to demonstrate the
+failure mode.  Actual use cases that follow this pattern are usually
+much more complicated.)
+
+Here are two reasonable workarounds to this:
+
+ - Create a second connection.  Each connection can have a query in
+   progress, so multiple connections can execute multiple conccurent queries.
+
+ - use the fetchall() method of the cursor to recover all the results
+   before beginning another query: ::
+
+    c1.execute('SELECT ...')
+    c1_list = c1.fetchall()
+
+    c2.execute('SELECT ...')
+    c2_list = c2.fetchall()
+
+    # use c1_list and c2_list here instead of fetching individually from
+    # c1 and c2
+
 Rows as dictionaries
 ====================
 
