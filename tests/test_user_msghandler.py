@@ -10,13 +10,17 @@ msgs = []
 
 def user_msg_handler1(msgstate, severity, srvname, procname, line, msgtext):
     global msgs
-    entry = ("msg_handler1: msgstate = %d, severity = %d, procname = '%s', "
+    procname = procname.decode('ascii')
+    msgtext = msgtext.decode('ascii')
+    entry = (u"msg_handler1: msgstate = %d, severity = %d, procname = '%s', "
              "line = %d, msgtext = '%s'") % (msgstate, severity, procname, line, msgtext)
     msgs.append(entry)
 
 
 def user_msg_handler2(msgstate, severity, srvname, procname, line, msgtext):
     global msgs
+    procname = procname.decode('ascii')
+    msgtext = msgtext.decode('ascii')
     entry = ("msg_handler2: msgstate = %d, severity = %d, procname = '%s', "
              "line = %d, msgtext = '%s'") % (msgstate, severity, procname, line, msgtext)
     msgs.append(entry)
@@ -110,6 +114,8 @@ class TestUserMsgHandler(unittest.TestCase):
     @staticmethod
     def user_msg_handler3(msgstate, severity, srvname, procname, line, msgtext):
         global msgs
+        procname = procname.decode('ascii')
+        msgtext = msgtext.decode('ascii')
         entry = ("msg_handler3 called")
         msgs.append(entry)
 
