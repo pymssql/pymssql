@@ -77,7 +77,7 @@ version = '.'.join(release.split('.')[:2])
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'history.rst']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -225,7 +225,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'pymssql.tex', u'pymssql Documentation',
-   u'pymssql developers', 'manual'),
+   u'pymssql developers', 'manual', True),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
