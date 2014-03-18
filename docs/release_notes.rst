@@ -30,6 +30,10 @@ Credits for the release go to:
   is responsible for the actual release of the 2.0 version by fixing many old
   tickets, coding the port to Python 3 and driving the migration to Git and
   GitHub.
+* Randy Syring who converted the repository to Mercurial, extended tests and
+  ported them to nose, enhanced the code in several fronts like multi-platform
+  (compilers, OSes) compatibility, error handling, support of new data types,
+  SQLAlchemy compatibility and expanded the documentation.
 * Damien Churchill <damoxc_at_gmail_com> who set the foundations of the new
   Cython-based code base, release engineering, new site features like Sphinx,
   SimpleJSON and others,
