@@ -6,9 +6,6 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "false" ]; then
 fi
 
 case $TRAVIS_PYTHON_VERSION in
-    2.5)
-        PYMSSQL_TEST_DATABASE=pymssql_dev_py25
-        ;;
     2.6)
         PYMSSQL_TEST_DATABASE=pymssql_dev_py26
         ;;

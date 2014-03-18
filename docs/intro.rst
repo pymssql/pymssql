@@ -12,6 +12,13 @@ The pymssql package consists of two modules:
 * :mod:`_mssql` -- use it if you care about performance and ease of use
   (``_mssql`` module is easier to use than ``pymssql``).
 
+Supported related software
+==========================
+
+:Python: Python 2.x: 2.6 or newer. Python 3.x: 3.3 or newer.
+:FreeTDS: 0.82 or newer.
+:Cython: 0.15 or newer.
+
 Project Discussion
 ==================
 
