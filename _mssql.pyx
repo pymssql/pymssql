@@ -1663,6 +1663,10 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, (int, long, decimal.Decimal)):
         return str(value).encode(charset)
 
+    if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
+        if isinstance(value, uuid.UUID):
+            return _quote_simple_value(str(value))
+
     if isinstance(value, unicode):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
@@ -1754,7 +1758,11 @@ cdef _substitute_params(toformat, params, charset):
     if not issubclass(type(params),
             (bool, int, long, float, unicode, str, bytes, bytearray,
             datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
-        raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
+        if PY_MAJOR_VERSION >= 2 and PY_MINOR_VERSION >= 5:
+            if not issubclass(type(params), uuid.UUID):
+                raise ValueError("'params' arg can be only a tuple or a dictionary.")
+        else:
+            raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
         quoted = _quote_data(params, charset)
