@@ -38,3 +38,10 @@
 #else
 #define FREETDS_SUPPORTS_DBSETLDBNAME 0
 #endif
+
+#ifdef CT_CONFIG
+#define FREETDS_HAS_CT_CONFIG 1
+#else
+#define FREETDS_HAS_CT_CONFIG 0
+#endif
+#define FREETDS_HAS_CT_CONFIG 1

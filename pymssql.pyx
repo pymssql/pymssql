@@ -627,30 +627,31 @@ def set_max_connections(int limit):
 cdef extern from "sybdb.h":
     char *dbversion()
 
-# Only recent versions of FreeTDS have the ct_config function
-# so this can break builds
-# Maybe later we can enable this or make it conditional
-DEF HAS_CT_CONFIG = False
-IF HAS_CT_CONFIG:
-    cdef extern from "ctpublic.h":
-        ctypedef int      CS_INT
-        ctypedef void     CS_VOID
-        struct            _CS_CONTEXT
-        ctypedef _CS_CONTEXT CS_CONTEXT
-        ctypedef CS_INT   CS_RETCODE
+cdef extern from "cpp_helpers.h":
+    cdef bint FREETDS_HAS_CT_CONFIG
 
-        int CS_GET, CS_VERSION
+cdef extern from "ctpublic.h":
+    ctypedef int      CS_INT
+    ctypedef void     CS_VOID
+    struct            _CS_CONTEXT
+    ctypedef _CS_CONTEXT CS_CONTEXT
+    ctypedef CS_INT   CS_RETCODE
 
-        CS_RETCODE ct_config(CS_CONTEXT * ctx, CS_INT action, CS_INT property,
-                             CS_VOID * buffer, CS_INT buflen, CS_INT * outlen)
+    int CS_GET, CS_VERSION
 
-    def get_freetds_version():
-        cdef CS_CONTEXT *ctx = NULL
-        cdef char buf[256]
-        cdef int outlen
+    CS_RETCODE ct_config(CS_CONTEXT * ctx, CS_INT action, CS_INT property,
+                        CS_VOID * buffer, CS_INT buflen, CS_INT * outlen)
 
+def get_freetds_version():
+    cdef CS_CONTEXT *ctx = NULL
+    cdef char buf[256]
+    cdef int outlen
+
+    if FREETDS_HAS_CT_CONFIG:
         ret = ct_config(ctx, CS_GET, CS_VERSION, buf, 256, &outlen)
         return buf
+    else:
+        raise NotSupportedError('This pymssql binary has been built against a version of FreeTDS that doesn\'t provide the ct_config() API.')
 
 def get_dbversion():
     return dbversion()

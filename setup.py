@@ -176,7 +176,7 @@ else:
     else:
         print('setup.py: Not using bundled FreeTDS')
 
-    libraries = ['sybdb']
+    libraries = ['sybdb', 'ct']
 
     with stdchannel_redirected(sys.stderr, os.devnull):
         if compiler.has_function('clock_gettime', libraries=['rt']):
@@ -251,6 +251,7 @@ class build_ext(_build_ext):
                 libraries = [
                     'libiconv', 'iconv',
                     'sybdb',
+                    'ct',
                     'ws2_32', 'wsock32', 'kernel32',
                 ]
             else:
