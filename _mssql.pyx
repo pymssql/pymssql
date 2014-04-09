@@ -288,38 +288,46 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
     cdef char *mssql_lastmsgsrv
     cdef char *mssql_lastmsgproc
     cdef int _min_error_severity = min_error_severity
+    cdef MSSQLConnection conn = None
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
             "msgstate = %d, severity = %d, msgtext = '%s', " \
             "srvname = '%s', procname = '%s', line = %d)\n",
-            <void *>dbproc, msgno, msgstate, severity, msgtext, srvname,
+            dbproc, msgno, msgstate, severity, msgtext, srvname,
             procname, line);
         fprintf(stderr, "+++ previous max severity = %d\n\n",
             _mssql_last_msg_severity);
 
+    for cnx in connection_object_list:
+        if (<MSSQLConnection>cnx).dbproc != dbproc:
+            continue
+
+        conn = <MSSQLConnection>cnx
+        break
+
+    if conn is not None and conn.msghandler is not None:
+        conn.msghandler(msgstate, severity, srvname, procname, line, msgtext)
+
     if severity < _min_error_severity:
         return INT_CANCEL
 
-    mssql_lastmsgstr = _mssql_last_msg_str
-    mssql_lastmsgsrv = _mssql_last_msg_srv
-    mssql_lastmsgproc = _mssql_last_msg_proc
-    mssql_lastmsgno = &_mssql_last_msg_no
-    mssql_lastmsgseverity = &_mssql_last_msg_severity
-    mssql_lastmsgstate = &_mssql_last_msg_state
-    mssql_lastmsgline = &_mssql_last_msg_line
-
-    for conn in connection_object_list:
-        if dbproc != (<MSSQLConnection>conn).dbproc:
-            continue
-        mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-        mssql_lastmsgsrv = (<MSSQLConnection>conn).last_msg_srv
-        mssql_lastmsgproc = (<MSSQLConnection>conn).last_msg_proc
-        mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-        mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-        mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
-        mssql_lastmsgline = &(<MSSQLConnection>conn).last_msg_line
-        break
+    if conn is not None:
+        mssql_lastmsgstr = conn.last_msg_str
+        mssql_lastmsgsrv = conn.last_msg_srv
+        mssql_lastmsgproc = conn.last_msg_proc
+        mssql_lastmsgno = &conn.last_msg_no
+        mssql_lastmsgseverity = &conn.last_msg_severity
+        mssql_lastmsgstate = &conn.last_msg_state
+        mssql_lastmsgline = &conn.last_msg_line
+    else:
+        mssql_lastmsgstr = _mssql_last_msg_str
+        mssql_lastmsgsrv = _mssql_last_msg_srv
+        mssql_lastmsgproc = _mssql_last_msg_proc
+        mssql_lastmsgno = &_mssql_last_msg_no
+        mssql_lastmsgseverity = &_mssql_last_msg_severity
+        mssql_lastmsgstate = &_mssql_last_msg_state
+        mssql_lastmsgline = &_mssql_last_msg_line
 
     # Calculate the maximum severity of all messages in a row
     # Fill the remaining fields as this is going to raise the exception
@@ -654,6 +662,16 @@ cdef class MSSQLConnection:
         assert_connected(self)
         clr_err(self)
         return MSSQLRowIterator(self, ROW_FORMAT_DICT)
+
+    cpdef set_msghandler(self, object handler):
+        """
+        set_msghandler(handler) -- set the msghandler for the connection
+
+        This function allows setting a msghandler for the connection to
+        allow a client to gain access to the messages returned from the
+        server.
+        """
+        self.msghandler = handler
 
     cpdef cancel(self):
         """
