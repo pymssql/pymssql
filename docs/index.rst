@@ -103,6 +103,7 @@ Documentation
    migrate_1_x_to_2_x
    faq
    building_and_developing
+   internals/index
    freetds_and_dates
    changelog
    todo
