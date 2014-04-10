@@ -7,6 +7,16 @@ Version 2.x.y - To be released
 Features
 --------
 
+- Custom message handlers (GH-139)
+
+  The DB-Library API includes a callback mechanism so application can provide
+  functions known as *message handlers* which get passed informative messages
+  sent by the server which then can be logged, shown to the user, etc.
+
+  ``_mssql`` now allows you to install your own *message handlers* written in
+  Python. See the ``_msssql`` examples and reference sections of the
+  documentation for more details.
+
 - Compatibility with Azure
 
   It is now possible to transparently connect to `SQL Server instances`_

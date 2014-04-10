@@ -102,9 +102,10 @@ An example of exception handling
 Custom message handlers
 =======================
 
-You can provide your own message handler callback function that will be called
-by the stack with informative messages send by the server. Set it by `_mssql`
-connection by using the `set_msghandler` method:
+You can provide your own message handler callback function that will be invoked
+by the stack with informative messages sent by the server. Set it on a per
+``_mssql`` :class:`connection <_mssql.MSSQLConnection>` basis by using the
+:meth:`_mssql.MSSQLConnection.set_msghandler` method:
 
 .. code-block:: python
 
