@@ -49,7 +49,8 @@ cdef object prog_errors = (
     207,    # invalid column name
     208,    # invalid object name
     2812,   # unknown procedure
-    4104    # multi-part identifier could not be bound
+    4104,   # multi-part identifier could not be bound
+    20018   # invalid object name
 )
 
 # store a tuple of integrity error codes

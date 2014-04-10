@@ -74,7 +74,7 @@ class TestTransaction(unittest.TestCase, PyTableBase):
         eq_(self.row_count(), 1)
         try:
             cur.execute("CREATE TABLE badschema.t1 ( test1 CHAR(5) NOT NULL)")
-        except pym.OperationalError as e:
+        except pym.ProgrammingError as e:
             if 'badschema' not in str(e):
                 raise
             # encountered an error, so we want to rollback
