@@ -61,6 +61,12 @@ Can you take a minute and fill out this survey to help us prioritize development
 
 https://www.surveymonkey.com/s/KMQ8BM5
 
+Survey Results
+^^^^^^^^^^^^^^
+
+* Excel (.xls) -- http://cl.ly/1R0m2B342I0k/download/SurveySummary_04092014.xls
+* PDF -- http://cl.ly/2P3o1N1K2h3p/download/Data_All_140409.pdf
+
 Recent Changes
 --------------
 
