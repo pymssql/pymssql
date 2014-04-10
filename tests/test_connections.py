@@ -9,7 +9,7 @@ except ImportError:
 
 import _mssql
 
-from .helpers import config, skip_test
+from .helpers import config, skip_test, mssqlconn
 server = config.server
 username = config.user
 password = config.password
@@ -110,3 +110,10 @@ class TestCons(unittest.TestCase):
                     self.assertEqual(exc_message, last_exc_message)
 
                 last_exc_message = exc_message
+
+    def test_valid_tds_version_property(self):
+        # Issue #211 (https://github.com/pymssql/pymssql/issues/211)
+        conn = mssqlconn()
+        self.assertIsNotNone(conn.tds_version)
+        self.assertTrue(conn.tds_version > 0)
+        conn.close()

@@ -132,8 +132,8 @@ Functions
 
 .. attribute:: MSSQLConnection.tds_version
 
-   The TDS version used by this connection. Can be one of ``'4.2'``, ``'7.0'``
-   and ``'8.0'``.
+   The TDS version used by this connection. Can be one of ``4.2``, ``5.0``
+   ``7.0``, ``8.0`` and ``9.0``.
 
 ``MSSQLConnection`` object methods
 ----------------------------------
