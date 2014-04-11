@@ -430,10 +430,10 @@ cdef class Cursor:
 
         except _mssql.MSSQLDatabaseException, e:
             if e.number in prog_errors:
-                raise ProgrammingError, e.args[0]
+                raise ProgrammingError, e
             if e.number in integrity_errors:
-                raise IntegrityError, e.args[0]
-            raise OperationalError, e.args[0]
+                raise IntegrityError, e
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -455,7 +455,7 @@ cdef class Cursor:
             return 1
 
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e.args[0]
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -480,7 +480,7 @@ cdef class Cursor:
         except StopIteration:
             return None
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e.args[0]
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -501,7 +501,7 @@ cdef class Cursor:
                     break
             return rows
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e.args[0]
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -519,7 +519,7 @@ cdef class Cursor:
             self._rownumber = self._source._conn.rows_affected
             return rows
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e.args[0]
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -530,7 +530,7 @@ cdef class Cursor:
             return row
 
         except _mssql.MSSQLDatabaseException, e:
-            raise OperationalError, e.args[0]
+            raise OperationalError, e
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
@@ -597,7 +597,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
             appname, port)
 
     except _mssql.MSSQLDatabaseException, e:
-        raise OperationalError(e.args[0])
+        raise OperationalError(e)
 
     except _mssql.MSSQLDriverException, e:
         raise InterfaceError(e.args[0])
