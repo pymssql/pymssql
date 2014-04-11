@@ -435,7 +435,7 @@ cdef class Cursor:
                 raise IntegrityError(e)
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     def executemany(self, operation, params_seq):
         self.description = None
@@ -457,7 +457,7 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     cdef getrow(self):
         """
@@ -482,7 +482,7 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     def fetchmany(self, size=None):
         if self.description is None:
@@ -503,7 +503,7 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     def fetchall(self):
         if self.description is None:
@@ -521,7 +521,7 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     def __next__(self):
         try:
@@ -532,7 +532,7 @@ cdef class Cursor:
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError(e)
         except _mssql.MSSQLDriverException, e:
-            raise InterfaceError, e.args[0]
+            raise InterfaceError(e.args[0])
 
     def setinputsizes(self, sizes=None):
         """
