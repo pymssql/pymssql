@@ -7,6 +7,7 @@ before_install:
 - sudo apt-get install freetds-dev
 - pip install --use-mirrors pytest SQLAlchemy
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
+- pip install Sphinx sphinx-rtd-theme
 - pip --version
 - time pip install --use-wheel --no-index --find-links=http://wheels.astropy.org/ --find-links=http://wheels2.astropy.org/ Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
@@ -16,6 +17,7 @@ script:
 - . bin/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
 - py.test -v
+- cd docs && test -z "$(make SPHINXOPTS='-q' html 2>&1 | egrep -w 'SEVERE:|ERROR:')"
 branches:
   except:
     - 1.0
