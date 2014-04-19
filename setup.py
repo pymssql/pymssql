@@ -65,7 +65,7 @@ def fpath(*parts):
     """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
     return osp.join(ROOT, *parts)
 
-have_c_files = osp.exists(fpath('src', '_mssql.c')) and osp.exists(fpath('src', 'pymssql.c'))
+have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
 
 from distutils import log
 from distutils.cmd import Command
