@@ -171,3 +171,33 @@ db-lib.
             cursor.callproc('FindPerson', ('Jane Doe',))
             for row in cursor:
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
+
+Using pymssql with cooperative multi-tasking systems
+====================================================
+
+You can use the :func:`pymssql.set_wait_callback` function to install a callback
+function you should write yourself.
+
+This callback can yield to another greenlet, coroutine, etc. For example, for
+gevent_, you could use its :func:`gevent:gevent.socket.wait_read` function::
+
+    import gevent.socket
+    import pymssql
+
+    def wait_callback(read_fileno):
+        gevent.socket.wait_read(read_fileno)
+
+    pymssql.set_wait_callback(wait_callback)
+
+The above is useful if you're say, running a Gunicorn_ server with the gevent
+worker. With this callback in place, when you send a query to SQL server and are
+waiting for a response, you can yield to other greenlets and process other
+requests. This is super useful when you have high concurrency and/or slow
+database queries and lets you use less Gunicorn worker processes and still
+handle high concurrency.
+
+.. note:: set_wait_callback() is a pymssql extension to the DB-API 2.0.
+
+.. _gevent: http://gevent.org
+.. _wait_read: http://gevent.org/gevent.socket.html#gevent.socket.wait_read
+.. _Gunicorn: http://gunicorn.org
