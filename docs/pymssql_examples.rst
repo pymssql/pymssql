@@ -47,8 +47,7 @@ Basic features (strict DB-API compliance)
 Iterating through results
 =========================
 
-You can also use iterators instead of while loop. Iterators are pymssql
-extensions to the DB-API.
+You can also use iterators instead of while loop.
 
 ::
 
@@ -82,8 +81,8 @@ results::
     print( "John Doe" )
     print( c2.fetchall() )  # shows no results at all!
 
-In this example, the result printed after "all persons" will be the
-result of the *second* query (the list where salesrep='John Doe')
+In this example, the result printed after ``"all persons"`` will be the
+result of the *second* query (the list where ``salesrep='John Doe'``)
 and the result printed after "John Doe" will be empty.  This happens
 because the underlying TDS protocol does not have client side cursors.
 The protocol requires that the client flush the results from the first
@@ -99,7 +98,7 @@ Here are two reasonable workarounds to this:
   progress, so multiple connections can execute multiple conccurent queries.
 
 - use the fetchall() method of the cursor to recover all the results
-  before beginning another query: ::
+  before beginning another query::
 
     c1.execute('SELECT ...')
     c1_list = c1.fetchall()
@@ -174,6 +173,8 @@ db-lib.
 
 Using pymssql with cooperative multi-tasking systems
 ====================================================
+
+.. versionadded:: 2.1.0
 
 You can use the :func:`pymssql.set_wait_callback` function to install a callback
 function you should write yourself.

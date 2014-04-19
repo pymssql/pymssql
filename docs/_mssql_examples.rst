@@ -23,6 +23,10 @@ Quickstart usage of various features
     for row in conn:
         print "ID=%d, Name=%s" % (row['id'], row['name'])
 
+.. versionadded:: 2.1.0
+    Iterating over query results by iterating over the connection object
+    just like it's already possible with ``pymssql`` connections is new in 2.1.0.
+
 ::
 
     # examples of other query functions
@@ -101,6 +105,8 @@ An example of exception handling
 
 Custom message handlers
 =======================
+
+.. versionadded:: 2.1.1
 
 You can provide your own message handler callback function that will be invoked
 by the stack with informative messages sent by the server. Set it on a per

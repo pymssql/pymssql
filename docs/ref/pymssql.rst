@@ -54,13 +54,21 @@ Functions
     :keyword port: the TCP port to use to connect to the server
     :type port: string
 
-  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+    .. note::
+        If you need to connect to Azure make sure you:
+        * Use FreeTDS 0.91 or newer.
+        * Specify the database name you are connecting to in the ``connect()`` call.
+
+    .. versionadded:: 2.1.1
+        The ability to connect to Azure.
 
 .. function:: get_dbversion()
 
     TBD
 
     A pymssql extension to the DB-API 2.0.
+
+.. todo:: Document ``pymssql`` connection ``get_dbversion()``.
 
 .. function:: set_max_connections(number)
 
@@ -77,6 +85,8 @@ Functions
     A pymssql extension to the DB-API 2.0.
 
 .. function:: set_wait_callback(wait_callback_callable)
+
+    .. versionadded:: 2.1.0
 
     Allows pymssql to be used along cooperative multi-tasking systems and have
     it call a callback when it's waiting for a response from the server.
