@@ -60,15 +60,21 @@ Functions
 
    TBD
 
+   A pymssql extension to the DB-API 2.0.
+
 .. function:: set_max_connections(number)
 
     Sets maximum number of simultaneous database connections allowed to be open
     at any given time. Default is 25.
 
+   A pymssql extension to the DB-API 2.0.
+
 .. function:: get_max_connections()
 
     Gets current maximum number of simultaneous database connections allowed to
     be open at any given time.
+
+   A pymssql extension to the DB-API 2.0.
 
 ``Connection`` class
 ====================
@@ -132,6 +138,8 @@ Connection object methods
 
    You can turn autocommit mode on, what means every single operation commits
    itself as soon as it succeeds.
+
+   A pymssql extension to the DB-API 2.0.
 
 .. method:: Connection.close()
 
@@ -262,6 +270,8 @@ Cusor object methods
    These methods facilitate :ref:`Python iterator protocol <python:typeiter>`.
    You most likely will not call them directly, but indirectly by using
    iterators.
+
+   A pymssql extension to the DB-API 2.0.
 
 .. method:: Cursor.setinputsizes()
             Cursor.setoutputsize()
