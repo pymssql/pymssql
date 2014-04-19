@@ -103,7 +103,10 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
-intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/', None),
+    'gevent': ('http://gevent.org/', None),
+}
 
 # Python's docs don't change every week.
 intersphinx_cache_limit = 90  # days
