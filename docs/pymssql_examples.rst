@@ -61,12 +61,14 @@ extensions to the DB-API.
 
     conn.close()
 
+.. note:: Iterators are a pymssql extension to the DB-API.
+
 Important note about Cursors
 ============================
 
 A connection can have only one cursor with an active query at any time.
 If you have used other Python DBAPI databases, this can lead to surprising
-results.::
+results::
 
     c1 = conn.cursor()
     c1.execute('SELECT * FROM persons')
@@ -93,11 +95,11 @@ much more complicated.)
 
 Here are two reasonable workarounds to this:
 
- - Create a second connection.  Each connection can have a query in
-   progress, so multiple connections can execute multiple conccurent queries.
+- Create a second connection.  Each connection can have a query in
+  progress, so multiple connections can execute multiple conccurent queries.
 
- - use the fetchall() method of the cursor to recover all the results
-   before beginning another query: ::
+- use the fetchall() method of the cursor to recover all the results
+  before beginning another query: ::
 
     c1.execute('SELECT ...')
     c1_list = c1.fetchall()
@@ -125,6 +127,11 @@ columns by name instead of index. Note the ``as_dict`` argument.
 
     conn.close()
 
+.. note::
+
+    The ``as_dict`` parameter to ``cursor()`` is a pymssql extension to the
+    DB-API.
+
 Using the ``with`` statement (context managers)
 ===============================================
 
@@ -138,6 +145,11 @@ frees you from having to explicitly close cursors and connections.
             cursor.execute('SELECT * FROM persons WHERE salesrep=%s', 'John Doe')
             for row in cursor:
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
+
+.. note::
+
+    The context manager personality of connections and cursor is a pymssql
+    extension to the DB-API.
 
 Calling stored procedures
 =========================
