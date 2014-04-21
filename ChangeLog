@@ -32,8 +32,11 @@ Bug Fixes
 
 - Fixes in ``td_version``  ``_mssql`` connections property value
 
-  Made it work with TDS protocol version 7.2 and adapted values used to
-  represent later versions to the current numbering: 7.1 instead of 8.0.
+  Made it work with TDS protocol version 7.2. The value returned for TDS
+  version 7.1 is still 8.0 for backward compatibility (this is because such
+  feature got added in times when Microsoft documentation labeled the two
+  protocol versions that followed 7.0 as 8.0 and 9.0ñ later it changed them
+  to 7.1 and 7.2 respectively) and will be corrected in a future release.
 
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
