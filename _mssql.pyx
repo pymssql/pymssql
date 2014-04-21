@@ -528,7 +528,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -626,25 +626,27 @@ cdef class MSSQLConnection:
 
         self._connected = 1
 
-        log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
-        # Set some connection properties to some reasonable values
-        dbcmd(self.dbproc,
-            "SET ARITHABORT ON;"                \
-            "SET CONCAT_NULL_YIELDS_NULL ON;"   \
-            "SET ANSI_NULLS ON;"                \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET ANSI_PADDING ON;"              \
-            "SET ANSI_WARNINGS ON;"             \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"         \
-            # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
-            "SET TEXTSIZE 2147483647;"
-        )
+        if conn_properties is None:
+            conn_properties = \
+                "SET ARITHABORT ON;"                \
+                "SET CONCAT_NULL_YIELDS_NULL ON;"   \
+                "SET ANSI_NULLS ON;"                \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET ANSI_PADDING ON;"              \
+                "SET ANSI_WARNINGS ON;"             \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
+                "SET QUOTED_IDENTIFIER ON;"         \
+                "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+        if conn_properties:
+            log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
+            # Set connection properties, some reasonable values are used by
+            # default but they can be changed
+            dbcmd(self.dbproc, conn_properties)
 
-        rtc = db_sqlexec(self.dbproc)
-        if (rtc == FAIL):
-            raise MSSQLDriverException("Could not set connection properties")
+            rtc = db_sqlexec(self.dbproc)
+            if (rtc == FAIL):
+                raise MSSQLDriverException("Could not set connection properties")
 
         db_cancel(self)
         clr_err(self)

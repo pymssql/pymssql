@@ -24,6 +24,15 @@ Features
 
   .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
 
+- Customizable per-connection initialization SQL clauses
+
+  (both in pymssql and _mssql)
+
+  It is now possible to customize the SQL queries sent righ afterwards the
+  connection is established (e.g. ``'SET ANSI_NULLS ON;'``). Previously
+  it was a hard-coded list of queries. See the ``_mssql.MSSQLConnection``
+  documentation for more details.
+
 .. _SQL Server instances: http://www.windowsazure.com/en-us/services/sql-database/
 .. _Azure: https://www.windowsazure.com/
 

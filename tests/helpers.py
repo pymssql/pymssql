@@ -38,13 +38,14 @@ cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
 
 
-def mssqlconn():
+def mssqlconn(conn_properties=None):
     return _mssql.connect(
         server=config.server,
         user=config.user,
         password=config.password,
         database=config.database,
         port=config.port,
+        conn_properties=conn_properties
     )
 
 
