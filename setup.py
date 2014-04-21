@@ -275,22 +275,21 @@ class build_ext(_build_ext):
 
 class clean(_clean):
     """
-    Subclass clean so it removes all the Cython generated C files.
+    Subclass clean so it removes all the Cython generated files.
     """
 
     def run(self):
         _clean.run(self)
         for ext in self.distribution.ext_modules:
-            cy_sources = [s for s in ext.sources if s.endswith('.pyx')]
+            cy_sources = [osp.splitext(s)[0] for s in ext.sources]
             for cy_source in cy_sources:
-                c_source = cy_source[:-3] + 'c'
-                if osp.exists(c_source):
-                    log.info('removing %s', c_source)
-                    os.remove(c_source)
-                so_built = cy_source[:-3] + 'so'
-                if osp.exists(so_built):
-                    log.info('removing %s', so_built)
-                    os.remove(so_built)
+                # .so/.pyd files are created in place when using 'develop'
+                for ext in ('.c', '.so', '.pyd'):
+                    generated = cy_source + ext
+                    if osp.exists(generated):
+                        log.info('removing %s', generated)
+                        os.remove(generated)
+
 
 class release(Command):
     """
