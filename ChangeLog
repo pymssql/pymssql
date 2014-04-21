@@ -27,6 +27,13 @@ Features
 .. _SQL Server instances: http://www.windowsazure.com/en-us/services/sql-database/
 .. _Azure: https://www.windowsazure.com/
 
+Bug fixes
+---------
+
+- Handle errors when calling Stored Procedures via the ``.callproc()`` pymssql
+  cursor method. Now it will raise a DB-API ``DatabaseException``; previously
+  it left a ``_mssql.MSSQLDatabaseException`` exception to surface.
+
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
 

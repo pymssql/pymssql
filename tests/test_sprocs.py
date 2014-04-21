@@ -2,6 +2,7 @@ import decimal
 import datetime
 import unittest
 
+import pymssql
 import _mssql
 
 from .helpers import mssqlconn, pymssqlconn, eq_, skip_test
@@ -382,3 +383,45 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(None, _mssql.SQLVARCHAR, '@ovarchar', output=True)
         proc.execute()
         eq_(input, proc.parameters['@ovarchar'])
+
+
+class TestErrorInSP(unittest.TestCase):
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        cursor = self.pymssql.cursor()
+
+        sql = u"""
+        CREATE PROCEDURE [dbo].[SPThatRaisesAnError]
+        AS
+        BEGIN
+            -- RAISERROR -- Generates an error message and initiates error processing for the session.
+            -- http://msdn.microsoft.com/en-us/library/ms178592.aspx
+            -- Severity levels from 0 through 18 can be specified by any user.
+            RAISERROR('Error message', 18, 1)
+            RETURN
+        END
+        """
+        cursor.execute(sql)
+
+    def tearDown(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute('DROP PROCEDURE [dbo].[SPThatRaisesAnError]')
+        self.pymssql.close()
+
+    def test_tsql_tp_python_exception_translation(self):
+        """An error raised by a SP is translated to a PEP-249-dictated, pymssql layer exception."""
+        # See https://github.com/pymssql/pymssql/issues/61
+        cursor = self.pymssql.cursor()
+        # Must raise an exception
+        self.assertRaises(Exception, cursor.callproc, 'SPThatRaisesAnError')
+        # Must be a PEP-249 exception, not a _mssql-layer one
+        try:
+            cursor.callproc('SPThatRaisesAnError')
+        except Exception as e:
+            self.assertTrue(isinstance(e,  pymssql.Error))
+        # Must be a DatabaseError exception
+        try:
+            cursor.callproc('SPThatRaisesAnError')
+        except Exception as e:
+            self.assertTrue(isinstance(e,  pymssql.DatabaseError))
