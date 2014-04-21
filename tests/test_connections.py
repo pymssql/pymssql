@@ -135,7 +135,7 @@ class TestCons(unittest.TestCase):
                          'SET ANSI_NULLS ON;')
         conn.close()
 
-        self.assertRaises(TypeError, mssqlconn, conn_properties=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        self.assertRaises(AttributeError, mssqlconn, conn_properties=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
         self.assertRaises(_mssql.MSSQLDriverException, mssqlconn, conn_properties='BOGUS SQL')
 
         conn = _mssql.connect(

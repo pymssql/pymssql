@@ -638,11 +638,15 @@ cdef class MSSQLConnection:
                 "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
                 "SET QUOTED_IDENTIFIER ON;"         \
                 "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+        cdef bytes conn_props_bytes
+        cdef char *conn_props_cstr
         if conn_properties:
             log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
             # Set connection properties, some reasonable values are used by
-            # default but they can be changed
-            dbcmd(self.dbproc, conn_properties)
+            # default but they can be customized
+            conn_props_bytes = conn_properties.encode(charset)
+            conn_props_cstr = conn_props_bytes
+            dbcmd(self.dbproc, conn_props_bytes)
 
             rtc = db_sqlexec(self.dbproc)
             if (rtc == FAIL):

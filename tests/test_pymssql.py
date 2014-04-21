@@ -118,7 +118,7 @@ class TestBasicConnection(unittest.TestCase):
                         'SET ANSI_NULLS ON;')
         conn.close()
 
-        self.assertRaises(TypeError, self.connect, conn_props=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        self.assertRaises(AttributeError, self.connect, conn_props=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
         self.assertRaises(Exception, self.connect, conn_props='BOGUS SQL')
 
         conn = pym.connect(
