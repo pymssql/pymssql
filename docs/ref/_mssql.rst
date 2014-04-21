@@ -71,6 +71,11 @@ Functions
                          default, *SQL Server* selects the database which is set as
                          the default for the specific user
 
+    :param str appname: Set the application name to use for the connection
+
+    :param str port: the TCP port to use to connect to the server
+
+    :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
 
     With every new connection, the following SQL statements are sent to the
     server:
