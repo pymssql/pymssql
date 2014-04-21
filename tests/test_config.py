@@ -91,6 +91,14 @@ class TestConfig(object):
         assert b'major_version = 7' in config_dump
         assert b'minor_version = 2' in config_dump
 
+    def test_tds_protocol_version_73(self):
+        config_dump = self.connect(
+            server='dontnameyourserverthis',
+            tds_version='7.3'
+            )
+        assert b'major_version = 7' in config_dump
+        assert b'minor_version = 3' in config_dump
+
     def test_tds_protocol_version_invalid(self):
         try:
             self.connect(tds_version='1.0')

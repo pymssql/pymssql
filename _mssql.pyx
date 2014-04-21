@@ -34,6 +34,8 @@ DEF EXCOMM = 9
 # Provide constants missing in FreeTDS 0.82 so that we can build against it
 DEF DBVERSION_71 = 5
 DEF DBVERSION_72 = 6
+# This one is missing in both FreeTDS 0.82 and FreeTDS 0.91
+DEF DBVERSION_73 = 7
 
 ROW_FORMAT_TUPLE = 1
 ROW_FORMAT_DICT = 2
@@ -502,10 +504,12 @@ cdef class MSSQLConnection:
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
-            if version == 10:
-                return 9.0
+            if version == 11:
+                return 7.3
+            elif version == 10:
+                return 7.2
             elif version == 9:
-                return 8.0
+                return 8.0  # Actually 7.1, return 8.0 to keep backward compatibility
             elif version == 8:
                 return 7.0
             elif version == 6:
@@ -1664,6 +1668,8 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
         return DBVERSION_71
     if verstr == u'7.2':
         return DBVERSION_72
+    if verstr == u'7.3':
+        return DBVERSION_73
     if verstr == u'8.0':
         return DBVERSION_80
     raise MSSQLException('unrecognized tds version: %s' % verstr)
