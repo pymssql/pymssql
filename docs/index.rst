@@ -48,6 +48,8 @@ Features
   can use instead of the DB-API
 * Supports stored procedures with both return values and output parameters
 * A comprehensive test suite
+* Compatible with cooperative multi-tasking systems (gevent, etc.)
+* Can be used to connect to Azure
 
 License
 -------
@@ -86,7 +88,7 @@ Recent Changes
 
 
 Documentation
-=============
+-------------
 
 .. toctree::
    :maxdepth: 2
@@ -106,7 +108,7 @@ Documentation
    todo
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

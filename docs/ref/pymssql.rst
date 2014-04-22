@@ -54,21 +54,59 @@ Functions
     :keyword port: the TCP port to use to connect to the server
     :type port: string
 
-  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+    .. note::
+        If you need to connect to Azure make sure you:
+        * Use FreeTDS 0.91 or newer.
+        * Specify the database name you are connecting to in the ``connect()`` call.
+
+    .. versionadded:: 2.1.1
+        The ability to connect to Azure.
 
 .. function:: get_dbversion()
 
-   TBD
+    TBD
+
+    A pymssql extension to the DB-API 2.0.
+
+.. todo:: Document ``pymssql`` connection ``get_dbversion()``.
 
 .. function:: set_max_connections(number)
 
     Sets maximum number of simultaneous database connections allowed to be open
     at any given time. Default is 25.
 
+    A pymssql extension to the DB-API 2.0.
+
 .. function:: get_max_connections()
 
     Gets current maximum number of simultaneous database connections allowed to
     be open at any given time.
+
+    A pymssql extension to the DB-API 2.0.
+
+.. function:: set_wait_callback(wait_callback_callable)
+
+    .. versionadded:: 2.1.0
+
+    Allows pymssql to be used along cooperative multi-tasking systems and have
+    it call a callback when it's waiting for a response from the server.
+
+    The passed callback callable should receive one argument: The file
+    descriptor/handle of the network socket connected to the server, so its
+    signature must be::
+
+        def wait_callback_callable(read_fileno):
+            #...
+            pass
+
+    Its body should invoke the appropiate API of the multi-tasking framework you
+    are using use that results in the current greenlet yielding the CPU to its
+    siblings whilst there isn't incoming data in the socket.
+
+    See the :doc:`pymssql examples document </pymssql_examples>` for a more
+    concrete example.
+
+    A pymssql extension to the DB-API 2.0.
 
 ``Connection`` class
 ====================
@@ -132,6 +170,8 @@ Connection object methods
 
    You can turn autocommit mode on, what means every single operation commits
    itself as soon as it succeeds.
+
+   A pymssql extension to the DB-API 2.0.
 
 .. method:: Connection.close()
 
@@ -262,6 +302,8 @@ Cusor object methods
    These methods facilitate :ref:`Python iterator protocol <python:typeiter>`.
    You most likely will not call them directly, but indirectly by using
    iterators.
+
+   A pymssql extension to the DB-API 2.0.
 
 .. method:: Cursor.setinputsizes()
             Cursor.setoutputsize()

@@ -71,6 +71,11 @@ Functions
                          default, *SQL Server* selects the database which is set as
                          the default for the specific user
 
+    :param str appname: Set the application name to use for the connection
+
+    :param str port: the TCP port to use to connect to the server
+
+    :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
 
     With every new connection, the following SQL statements are sent to the
     server:
@@ -89,6 +94,9 @@ Functions
         SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
 
     .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+
+    .. versionadded:: 2.1.1
+        The ability to connect to Azure.
 
 ``MSSQLConnection`` object properties
 -------------------------------------
@@ -248,10 +256,14 @@ Functions
 .. method:: MSSQLConnection.__iter__()
             MSSQLConnection.next()
 
-   These methods facilitate the Python iterator protocol. You most likely will not
-   call them directly, but indirectly by using iterators.
+   .. versionadded:: 2.1.0
+
+   These methods implement the Python iterator protocol. You most likely will
+   not call them directly, but indirectly by using iterators.
 
 .. method:: MSSQLConnection.set_msghandler(handler)
+
+   .. versionadded:: 2.1.1
 
    This method allows setting a message handler function for the connection to
    allow a client to gain access to the messages returned from the server.
