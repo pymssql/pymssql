@@ -61,10 +61,6 @@ Functions
 
     :param str password: User's password
 
-    :param bool trusted: Boolean value signalling whether to use Windows
-                         Integrated Authentication to connect instead of SQL
-                         authentication with user and password (Windows only)
-
     :param str charset: Character set name to set for the connection.
 
     :param str database: The database you want to initially to connect to; by
