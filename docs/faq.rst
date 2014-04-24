@@ -329,8 +329,8 @@ incorrect"`` messages has code=18456 and severity=14.
 More troubleshooting
 ====================
 
-If the above hasn't covered the problem, please also check Limitations and
-known issues page. You can also consult FreeTDS troubleshooting `page for issues
-related to the TDS protocol`_.
+If the above hasn't covered the problem you can send a message describing it to
+the pymssql mailing list. You can also consult FreeTDS troubleshooting `page for
+issues related to the TDS protocol`_.
 
 .. _page for issues related to the TDS protocol: http://www.freetds.org/userguide/troubleshooting.htm
