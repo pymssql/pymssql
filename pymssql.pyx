@@ -576,8 +576,9 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type port: string
-    :keyword conn_properties: SQL queries to send to the server upon connection establishment
-    :type conn_properties: string
+    :keyword conn_properties: SQL queries to send to the server upon connection
+                              establishment. Can be a string or another kind
+                              of iterable of strings
     """
 
     _mssql.login_timeout = login_timeout

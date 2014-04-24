@@ -43,6 +43,7 @@ cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
+from collections import Iterable
 import os
 import sys
 import socket
@@ -203,6 +204,11 @@ cdef bytes ensure_bytes(s, encoding='utf-8'):
 cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
+
+if PY_MAJOR_VERSION == '3':
+    string_types = str,
+else:
+    string_types = basestring,
 
 ###################
 ## Error Handler ##
@@ -638,6 +644,8 @@ cdef class MSSQLConnection:
                 "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
                 "SET QUOTED_IDENTIFIER ON;"         \
                 "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+        elif isinstance(conn_properties, Iterable) and not isinstance(conn_properties, string_types):
+            conn_properties = ' '.join(conn_properties)
         cdef bytes conn_props_bytes
         cdef char *conn_props_cstr
         if conn_properties:

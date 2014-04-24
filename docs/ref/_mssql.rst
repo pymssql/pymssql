@@ -77,8 +77,9 @@ Functions
 
     :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
 
-    :param str conn_properties: SQL queries to send to the server upon connection
-                                establishment. Default value:
+    :param conn_properties: SQL queries to send to the server upon connection
+                            establishment. Can be a string or another kind
+                            of iterable of strings. Default value:
 
     .. code-block:: sql
 
@@ -97,7 +98,7 @@ Functions
         The *conn_properties* argument.
 
     .. versionchanged:: 2.1.1
-        Before 2.1.1, the initialization queries string now specified by
+        Before 2.1.1, the initialization queries now specified by
         *conn_properties* wasn't customizable and its value was hard-coded to
         the literal shown above.
 

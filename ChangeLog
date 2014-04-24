@@ -28,7 +28,7 @@ Features
 
   (both in pymssql and _mssql)
 
-  It is now possible to customize the SQL queries sent righ afterwards the
+  It is now possible to customize the SQL queries sent righ after the
   connection is established (e.g. ``'SET ANSI_NULLS ON;'``). Previously
   it was a hard-coded list of queries. See the ``_mssql.MSSQLConnection``
   documentation for more details.
