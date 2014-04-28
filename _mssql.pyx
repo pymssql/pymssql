@@ -1291,7 +1291,7 @@ cdef class MSSQLConnection:
         init_procedure(procname) -- creates and returns a MSSQLStoredProcedure
         object.
 
-        This methods initilizes a stored procedure or function on the server
+        This methods initializes a stored procedure or function on the server
         and creates a MSSQLStoredProcedure object that allows parameters to
         be bound.
         """
