@@ -413,6 +413,7 @@ cdef class Cursor:
             self._returnvalue = proc.execute()
         except _mssql.MSSQLDatabaseException, e:
             raise DatabaseError, e.args[0]
+        self.description = self._source._conn.get_header()
         return tuple([proc.parameters[p] for p in proc.parameters])
 
     def close(self):
