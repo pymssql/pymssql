@@ -22,7 +22,7 @@
 
 import _mssql
 cimport _mssql
-from cpython cimport bool
+from cpython cimport bool, PY_MAJOR_VERSION
 
 cdef extern from "pymssql_version.h":
     const char *PYMSSQL_VERSION
@@ -89,14 +89,26 @@ cdef dict DBTYPES = {
     'bool': _mssql.SQLBITN,
     'str': _mssql.SQLVARCHAR,
     'unicode': _mssql.SQLVARCHAR,
-    'int': _mssql.SQLINTN,
-    'long': _mssql.SQLINT8,
     'Decimal': _mssql.SQLDECIMAL,
     'datetime': _mssql.SQLDATETIME,
     'date': _mssql.SQLDATETIME,
     #Dump type for work vith None
     'NoneType': _mssql.SQLVARCHAR,
 }
+
+cdef int py2db_type(py_type, value):
+    if PY_MAJOR_VERSION == 3:
+        if py_type == 'int':
+            if value is not None and value >= -2147483648 and value <= 2147483647:  # -2^31 - 2^31-1
+                return _mssql.SQLINTN
+            else:
+                return _mssql.SQLINT8
+    else:
+        if py_type == 'int':
+            return _mssql.SQLINTN
+        if py_type == 'long':
+            return _mssql.SQLINT8
+    return DBTYPES[py_type]
 
 try:
     StandardError
@@ -392,7 +404,7 @@ cdef class Cursor:
 
             try:
                 type_name = param_type.__name__
-                db_type = DBTYPES[type_name]
+                db_type = py2db_type(type_name, param_value)
             except (AttributeError, KeyError):
                 raise NotSupportedError('Unable to determine database type from python %s type' % type_name)
 
