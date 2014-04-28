@@ -1,5 +1,6 @@
 import decimal
 import datetime
+import sys
 import unittest
 
 import pymssql
@@ -72,13 +73,22 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         eq_(input, proc.parameters['@obigint'])
 
-
     def testBigIntPymssql(self):
         """Same as testBigInt above but from pymssql. Uses pymssql.output class."""
-        input = 123456789
+
+        if sys.version_info >= (3, ):
+            py_type = int
+        else:
+            py_type = long
+
+        in_val = 123456789
         cursor = self.pymssql.cursor()
-        retval = cursor.callproc('pymssqlTestBigInt', [input, pymssql.output(long)])
-        eq_(input, retval[1])
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        eq_(in_val, retval[1])
+
+        in_val = 2147483647
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        eq_(in_val, retval[1])
 
     def testBit(self):
         input = True
