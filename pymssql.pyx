@@ -465,7 +465,7 @@ cdef class Cursor:
     cdef getrow(self):
         """
         Helper method used by fetchone and fetchmany to fetch and handle
-        converting the row if as_dict = False.
+        converting the row if as_dict = True.
         """
         row_format = _mssql.ROW_FORMAT_DICT if self.as_dict else _mssql.ROW_FORMAT_TUPLE
         row = next(self._source._conn.get_iterator(row_format))

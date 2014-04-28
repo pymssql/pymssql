@@ -286,7 +286,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            (None,))  # Russian string
+            (None,))
 
         a, b = cursor.fetchone()
 
@@ -297,7 +297,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            ('hello',))  # Russian string
+            ('hello',))
 
         a, b = cursor.fetchone()
 
@@ -308,7 +308,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            (u'hello',))  # Russian string
+            (u'hello',))
 
         a, b = cursor.fetchone()
 
@@ -409,7 +409,7 @@ class TestErrorInSP(unittest.TestCase):
         cursor.execute('DROP PROCEDURE [dbo].[SPThatRaisesAnError]')
         self.pymssql.close()
 
-    def test_tsql_tp_python_exception_translation(self):
+    def test_tsql_to_python_exception_translation(self):
         """An error raised by a SP is translated to a PEP-249-dictated, pymssql layer exception."""
         # See https://github.com/pymssql/pymssql/issues/61
         cursor = self.pymssql.cursor()
