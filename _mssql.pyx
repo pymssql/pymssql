@@ -88,8 +88,9 @@ cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 # List to store the connection objects in
 cdef list connection_object_list = list()
 
-# Store the 32bit max int
+# Store the 32bit int limit values
 cdef int MAX_INT = 2147483647
+cdef int MIN_INT = -2147483648
 
 # Store the module version
 __full_version__ = PYMSSQL_VERSION.decode('ascii')
@@ -833,6 +834,8 @@ cdef class MSSQLConnection:
         if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
             if value > MAX_INT:
                 raise MSSQLDriverException('value cannot be larger than %d' % MAX_INT)
+            elif value < MIN_INT:
+                raise MSSQLDriverException('value cannot be smaller than %d' % MIN_INT)
             intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             if dbtype[0] == SQLINT1:
