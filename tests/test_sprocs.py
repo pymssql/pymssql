@@ -243,13 +243,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             (None,))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, None)
-            eq_(b, None)
+        a, b = cursor.fetchone()
+        eq_(a, None)
+        eq_(b, None)
 
     def testCallProcWithAsciiString(self):
         cursor = self.pymssql.cursor()
@@ -257,13 +253,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             ('hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'hello!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+        a, b = cursor.fetchone()
+        eq_(a, 'hello!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
 
     def testCallProcWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
@@ -271,13 +263,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             (u'hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, u'hello!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+        a, b = cursor.fetchone()
+        eq_(a, u'hello!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
 
     # This is failing for me - the Unicode params somehow gets rendered to a
     # blank string. I am not sure if this is another bug or a user error on my
@@ -289,18 +277,15 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',))  # Russian string
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
+        a, b = cursor.fetchone()
 
         # This test fails with FreeTDS 0.91 (and probably older versions)
         # because they don't seem to encode the Unicode string properly.
         # See http://code.google.com/p/pymssql/issues/detail?id=109
         skip_test()
 
-        for a, b in cursor:
-            eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
+        eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
+        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
 
     def testExecuteWithNone(self):
         cursor = self.pymssql.cursor()
@@ -475,13 +460,9 @@ class TestSPWithQueryResult(unittest.TestCase):
             self.SP_NAME,
             ('hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        #a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'hello!')
-            eq_(b, 'hello!!')
+        a, b = cursor.fetchone()
+        eq_(a, 'hello!')
+        eq_(b, 'hello!!')
 
     def test_mssql(self):
         proc = self.mssql.init_procedure(self.SP_NAME)
