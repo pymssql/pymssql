@@ -14,7 +14,7 @@ before_install:
 install:
 - python setup.py install
 script:
-- . bin/travis_env.sh
+- . extra/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
 - py.test -v
 - cd docs && test -z "$(make SPHINXOPTS='-q' html 2>&1 | egrep -w 'SEVERE:|ERROR:')"

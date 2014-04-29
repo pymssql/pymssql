@@ -21,6 +21,7 @@
 #   Boston, MA    02110-1301, USA.
 #
 
+from __future__ import print_function
 import contextlib
 import os
 import os.path as osp
@@ -65,6 +66,10 @@ def fpath(*parts):
     """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
     return osp.join(ROOT, *parts)
 
+def report(*args, **kw):
+    if len(sys.argv) > 1 and sys.argv[1] in ('develop', 'build', 'build_ext'):
+        print('setup.py:', *args, **kw)
+
 have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
 
 from distutils import log
@@ -84,7 +89,7 @@ else:
 import struct
 
 def extract_version():
-    with open(osp.join(ROOT, 'pymssql_version.h')) as f:
+    with open(fpath('src', 'pymssql_version.h')) as f:
         content = f.read()
 
     # Parse file content that looks like this:
@@ -130,10 +135,10 @@ _extra_compile_args = [
 WINDOWS = False
 SYSTEM = platform.system()
 
-print("setup.py: platform.system() => %r" % SYSTEM)
-print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
-print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
-print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
+report("platform.system() => %r" % SYSTEM)
+report("platform.architecture() => %r" % (platform.architecture(),))
+report("platform.linux_distribution() => %r" % (platform.linux_distribution(),))
+report("platform.libc_ver() => %r" % (platform.libc_ver(),))
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -147,7 +152,7 @@ else:
 
     if sys.platform == 'darwin':
         FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
-        print("""setup.py: Detected Darwin/Mac OS X.
+        report("""Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
 
@@ -164,17 +169,17 @@ else:
         if SYSTEM == 'Linux':
             FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
-            print("""setup.py: Detected FreeBSD.
+            report("""Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
     and compiling it yourself.
             """)
 
     if FREETDS and osp.exists(FREETDS) and os.getenv('PYMSSQL_BUILD_WITH_BUNDLED_FREETDS'):
-        print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
+        report('Using bundled FreeTDS in %s' % FREETDS)
         include_dirs.append(osp.join(FREETDS, 'include'))
         library_dirs.append(osp.join(FREETDS, 'lib'))
     else:
-        print('setup.py: Not using bundled FreeTDS')
+        report('Not using bundled FreeTDS')
 
     libraries = ['sybdb']
 
@@ -221,8 +226,8 @@ if sys.platform == 'darwin':
 
 if sys.platform != 'win32':
     # Windows uses a different piece of code to detect these
-    print('setup.py: include_dirs = %r' % include_dirs)
-    print('setup.py: library_dirs = %r' % library_dirs)
+    report('include_dirs = %r' % include_dirs)
+    report('library_dirs = %r' % library_dirs)
 
 class build_ext(_build_ext):
     """
@@ -350,12 +355,12 @@ def ext_modules():
         source_extension = 'pyx'
 
     return [
-        Extension('_mssql', ['_mssql.%s' % source_extension],
+        Extension('_mssql', [fpath('src', '_mssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
             library_dirs = library_dirs
         ),
-        Extension('pymssql', ['pymssql.%s' % source_extension],
+        Extension('pymssql', [fpath('src', 'pymssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
             library_dirs = library_dirs
