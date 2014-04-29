@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.x.y - To be released
+Version 2.1.1 - To be released
 ==============================
 
 Features
@@ -34,7 +34,7 @@ Bug fixes
   cursor method. Now it will raise a DB-API ``DatabaseException``; previously
   it left a ``_mssql.MSSQLDatabaseException`` exception to surface.
 
-- Fixes in ``td_version``  ``_mssql`` connections property value
+- Fixes in ``tds_version``  ``_mssql`` connections property value
 
   Made it work with TDS protocol version 7.2.
 
