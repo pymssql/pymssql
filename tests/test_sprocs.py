@@ -490,3 +490,179 @@ class TestSPWithQueryResult(unittest.TestCase):
 
         for row_dict in self.mssql:
             eq_(row_dict, {0: 'hello!', 1: 'hello!!'})
+
+
+class TestPymssqlSPCalling(unittest.TestCase):
+
+    SP_NAME = 'pymssql_get_2_resultsets'
+    TBL_NAME = 'pymssql_demo_tbl'
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        cursor = self.pymssql.cursor()
+        data = {'spname': self.SP_NAME, 'tblname': self.TBL_NAME}
+        cursor.execute("IF OBJECT_ID('%(tblname)s', 'U') IS NOT NULL DROP TABLE %(tblname)s" % data)
+        cursor.execute("CREATE TABLE %(tblname)s (name VARCHAR(30))" % data)
+        for value in ('Tom', 'Dick', 'Harry'):
+            cursor.execute("INSERT INTO %(tblname)s VALUES (%%s)" % data, value)
+        # A SP that returns 0 rows and then 3 rows
+        cursor.execute("""
+        CREATE PROCEDURE %(spname)s AS
+        BEGIN
+            SET NOCOUNT ON
+            SELECT * FROM %(tblname)s WHERE name = 'not here';
+            SELECT * FROM %(tblname)s;
+        END
+        """ % data)
+        cursor.close()
+
+    def tearDown(self):
+        cursor = self.pymssql.cursor()
+        data = {'spname': self.SP_NAME, 'tblname': self.TBL_NAME}
+        cursor.execute('DROP PROCEDURE [dbo].[%(spname)s]' % data)
+        cursor.execute("DROP TABLE %(tblname)s" % data)
+        cursor.close()
+        self.pymssql.close()
+
+    def test_exec_sp(self):
+        # Invoking the SP using .exec()
+
+        cursor = self.pymssql.cursor()
+        # Call the SP
+        cursor.execute('EXEC %s' % self.SP_NAME)
+
+        # Asking for the rows we should get the first, empty set:
+        eq_(0, len(cursor.fetchall()))
+
+    def test_exec_sp_nextset(self):
+        # Invoking the SP using .exec()
+
+        # Call the SP and then call nextset(), we should directly get the
+        # three rows:
+        cursor = self.pymssql.cursor()
+        cursor.execute('EXEC %s' % self.SP_NAME)
+        cursor.nextset()
+        eq_([('Tom',), ('Dick',), ('Harry',)], cursor.fetchall())
+
+        cursor.close()
+
+    def test_callproc(self):
+        # Using the .callproc() API
+
+        # Call the SP
+        cursor = self.pymssql.cursor()
+        cursor.callproc(self.SP_NAME, ())
+
+        # Asking for the rows we should get the first, empty set:
+        eq_([], cursor.fetchall())
+
+    def test_callproc_nextset(self):
+        # Using the .callproc() API
+
+        # Call the SP and then call nextset(), we should directly get the
+        # three rows:
+        cursor = self.pymssql.cursor()
+        cursor.callproc(self.SP_NAME, ())
+        cursor.nextset()
+        eq_([('Tom',), ('Dick',), ('Harry',)], cursor.fetchall())
+
+        cursor.close()
+
+
+class TestMssqlSPCalling(unittest.TestCase):
+    """Identical to TestPymssqlSPCalling above but from the _mssql layer."""
+
+    SP_NAME = '_mssql_get_2_resultsets'
+    TBL_NAME = '_mssql_demo_tbl'
+
+    def setUp(self):
+        self.mssql = mssqlconn()
+        data = {'spname': self.SP_NAME, 'tblname': self.TBL_NAME}
+        self.mssql.execute_non_query("IF OBJECT_ID('%(tblname)s', 'U') IS NOT NULL DROP TABLE %(tblname)s" % data)
+        self.mssql.execute_non_query("CREATE TABLE %(tblname)s (name VARCHAR(30))" % data)
+        for value in ('Tom', 'Dick', 'Harry'):
+            self.mssql.execute_non_query("INSERT INTO %(tblname)s VALUES (%%s)" % data, value)
+
+        # A SP that returns 0 rows and then 3 rows
+        self.mssql.execute_non_query("""
+        CREATE PROCEDURE %(spname)s AS
+        BEGIN
+            SET NOCOUNT ON
+            SELECT * FROM %(tblname)s WHERE name = 'not here';
+            SELECT * FROM %(tblname)s;
+        END
+        """ % data)
+
+    def tearDown(self):
+        data = {'spname': self.SP_NAME, 'tblname': self.TBL_NAME}
+        self.mssql.execute_non_query('DROP PROCEDURE [dbo].[%(spname)s]' % data)
+        self.mssql.execute_non_query("DROP TABLE %(tblname)s" % data)
+        self.mssql.close()
+
+    def test_exec_sp(self):
+        # Using the .execute_query() API
+
+        # Call the SP
+        self.mssql.execute_query('EXEC %s' % self.SP_NAME)
+
+        # Asking for the rows we should get the first, empty set:
+        eq_([], list(iter(self.mssql)))
+
+    def test_exec_sp_nextresult(self):
+        # Using the .execute_query() API
+
+        # Call the SP and then call nextresult(), we should directly get the
+        # three rows:
+        self.mssql.execute_query('EXEC %s' % self.SP_NAME)
+        self.mssql.nextresult()
+        eq_([
+            {
+                0: 'Tom',
+                'name': 'Tom',
+            },
+            {
+                0: 'Dick',
+                'name': 'Dick',
+            },
+            {
+                0: 'Harry',
+                'name': 'Harry',
+            }
+            ],
+            list(iter(self.mssql))
+        )
+
+    def test_sp_api(self):
+        # Using the .init_procedure()/.execute() API
+
+        # Call the SP
+        proc = self.mssql.init_procedure(self.SP_NAME)
+        proc.execute()
+
+        # Asking for the rows we get the first, empty set:
+        eq_([], list(iter(self.mssql)))
+
+    def test_sp_api_nextresult(self):
+        # Using the .init_procedure()/.execute() API
+
+        # Call the SP and then call nextresult(), we should directly get the
+        # three rows:
+        proc = self.mssql.init_procedure(self.SP_NAME)
+        proc.execute()
+        self.mssql.nextresult()
+        eq_([
+            {
+                0: 'Tom',
+                'name': 'Tom',
+            },
+            {
+                0: 'Dick',
+                'name': 'Dick',
+            },
+            {
+                0: 'Harry',
+                'name': 'Harry',
+            }
+            ],
+            list(iter(self.mssql))
+        )
