@@ -28,7 +28,8 @@ Functions
 
 .. function:: connect(server='.', user='', password='', database='', \
                       timeout=0, login_timeout=60, charset='UTF-8', \
-                      as_dict=False, host='', appname=None, port='1433')
+                      as_dict=False, host='', appname=None, port='1433',\
+                      conn_properties)
 
     Constructor for creating a connection to the database. Returns a
     :class:`Connection` object.
