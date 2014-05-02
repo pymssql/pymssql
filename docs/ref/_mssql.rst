@@ -73,8 +73,9 @@ Functions
 
     :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
 
-    With every new connection, the following SQL statements are sent to the
-    server:
+    :param conn_properties: SQL queries to send to the server upon connection
+                            establishment. Can be a string or another kind
+                            of iterable of strings. Default value:
 
     .. code-block:: sql
 
@@ -88,6 +89,14 @@ Functions
         SET CURSOR_CLOSE_ON_COMMIT ON;
         SET QUOTED_IDENTIFIER ON;
         SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+
+    .. versionadded:: 2.1.1
+        The *conn_properties* argument.
+
+    .. versionchanged:: 2.1.1
+        Before 2.1.1, the initialization queries now specified by
+        *conn_properties* wasn't customizable and its value was hard-coded to
+        the literal shown above.
 
     .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
 

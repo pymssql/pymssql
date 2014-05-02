@@ -43,6 +43,7 @@ cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
+from collections import Iterable
 import os
 import sys
 import socket
@@ -204,6 +205,11 @@ cdef bytes ensure_bytes(s, encoding='utf-8'):
 cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
+
+if PY_MAJOR_VERSION == '3':
+    string_types = str,
+else:
+    string_types = basestring,
 
 ###################
 ## Error Handler ##
@@ -529,7 +535,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -627,25 +633,33 @@ cdef class MSSQLConnection:
 
         self._connected = 1
 
-        log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
-        # Set some connection properties to some reasonable values
-        dbcmd(self.dbproc,
-            "SET ARITHABORT ON;"                \
-            "SET CONCAT_NULL_YIELDS_NULL ON;"   \
-            "SET ANSI_NULLS ON;"                \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET ANSI_PADDING ON;"              \
-            "SET ANSI_WARNINGS ON;"             \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"         \
-            # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
-            "SET TEXTSIZE 2147483647;"
-        )
+        if conn_properties is None:
+            conn_properties = \
+                "SET ARITHABORT ON;"                \
+                "SET CONCAT_NULL_YIELDS_NULL ON;"   \
+                "SET ANSI_NULLS ON;"                \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET ANSI_PADDING ON;"              \
+                "SET ANSI_WARNINGS ON;"             \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
+                "SET QUOTED_IDENTIFIER ON;"         \
+                "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+        elif isinstance(conn_properties, Iterable) and not isinstance(conn_properties, string_types):
+            conn_properties = ' '.join(conn_properties)
+        cdef bytes conn_props_bytes
+        cdef char *conn_props_cstr
+        if conn_properties:
+            log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
+            # Set connection properties, some reasonable values are used by
+            # default but they can be customized
+            conn_props_bytes = conn_properties.encode(charset)
+            conn_props_cstr = conn_props_bytes
+            dbcmd(self.dbproc, conn_props_bytes)
 
-        rtc = db_sqlexec(self.dbproc)
-        if (rtc == FAIL):
-            raise MSSQLDriverException("Could not set connection properties")
+            rtc = db_sqlexec(self.dbproc)
+            if (rtc == FAIL):
+                raise MSSQLDriverException("Could not set connection properties")
 
         db_cancel(self)
         clr_err(self)

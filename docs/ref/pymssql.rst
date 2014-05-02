@@ -53,6 +53,10 @@ Functions
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type port: string
+    :keyword conn_properties: SQL queries to send to the server upon connection
+                              establishment. Can be a string or another kind
+                              of iterable of strings. Default value: See
+                              :class:`_mssql.connect <_mssql.MSSQLConnection>`
 
     .. note::
         If you need to connect to Azure make sure you:
@@ -61,6 +65,9 @@ Functions
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
+
+    .. versionadded:: 2.1.1
+        The *conn_properties* argument.
 
 .. function:: get_dbversion()
 

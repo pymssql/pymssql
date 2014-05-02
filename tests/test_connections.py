@@ -117,3 +117,32 @@ class TestCons(unittest.TestCase):
         self.assertIsNotNone(conn.tds_version)
         self.assertTrue(conn.tds_version > 0)
         conn.close()
+
+    def test_conn_props_override(self):
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;'
+                         'SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        conn.close()
+        self.assertRaises(_mssql.MSSQLDriverException, mssqlconn, conn_properties='BOGUS SQL')
+
+        conn = _mssql.connect(
+            conn_properties='SET TEXTSIZE 2147483647',
+            server=server,
+            user=username,
+            password=password
+        )
+        conn.close()
