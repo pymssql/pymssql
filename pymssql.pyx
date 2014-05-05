@@ -258,8 +258,8 @@ cdef class Connection:
         if status == self._autocommit:
             return
 
-        if not status:
-            self._conn.execute_non_query('BEGIN TRAN')
+        tran_type = 'ROLLBACK' if status else 'BEGIN'
+        self._conn.execute_non_query('%s TRAN' % tran_type)
 
         self._autocommit = status
 
