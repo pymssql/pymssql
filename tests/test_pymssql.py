@@ -83,50 +83,82 @@ class TestTransaction(unittest.TestCase, PyTableBase):
         # too
         eq_(self.row_count(), 0)
 
+
 class TestCursor(CursorBase):
     dbmod = pym
 
-    @classmethod
-    def newconn(cls):
-        cls.conn = pymssqlconn()
+    def newconn(self):
+        self.conn = pymssqlconn()
 
-class TestBasicConnection(unittest.TestCase):
 
-    def connect(self, conn_props=None):
-        return pym.connect(
-            server=config.server,
-            user=config.user,
-            password=config.password,
-            database=config.database,
-            port=config.port,
-            conn_properties=conn_props
-        )
+class TestAutocommit(unittest.TestCase, PyTableBase):
+    tname = 'test'
+    cols = (
+        'name varchar(50)',
+    )
 
-    def test_conn_props_override(self):
-        conn = self.connect(conn_props='SET TEXTSIZE 2147483647')
+    insert_query = 'INSERT INTO {tname} VALUES (%s)'.format(tname=tname)
+    select_query = 'SELECT * FROM {tname} WHERE name = (%s)'.format(tname=tname)
+
+    test_db_name = 'autocommit_test_database'
+
+    def setUp(self):
+        PyTableBase.setUp(self)
+
+    def tearDown(self):
+        self.conn._conn.execute_non_query("IF EXISTS(select * from sys.databases where name='{0}') DROP DATABASE {0}".format(self.test_db_name))
+
+    def test_db_creation_with_autocommit(self):
+        """
+            Try creating and dropping database with autocommit
+        """
+        cur = pymssqlconn(autocommit=True).cursor()
+        cur.execute("CREATE DATABASE {0}".format(self.test_db_name))
+        cur.execute("DROP DATABASE {0}".format(self.test_db_name))
+
+    def test_db_creation_without_autocommit(self):
+        """
+            Try creating and dropping database without autocommit, expecting it to fail
+        """
+        cur = pymssqlconn(autocommit=False).cursor()
+        try:
+            cur.execute("CREATE DATABASE autocommit_test_database")
+        except pym.OperationalError as e:
+            assert "CREATE DATABASE statement not allowed within multi-statement transaction" in e.args[1]
+        else:
+            assert False
+
+    def test_autocommit_flipping_tf(self):
+        insert_value = 'true-false'
+        conn = pymssqlconn(autocommit=True)
+        conn.autocommit(False)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        conn.commit()
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        cur.close()
         conn.close()
+        assert len(row) > 0
 
-        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;')
-        conn.close()
+    def test_autocommit_flipping_ft(self):
+        insert_value = 'false-true'
+        conn = pymssqlconn(autocommit=False)
+        conn.autocommit(True)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        assert len(row) > 0
 
-        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON;')
+    def test_autocommit_false_does_not_commit(self):
+        insert_value = 'false'
+        conn = pymssqlconn(autocommit=False)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        conn.rollback()
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        cur.close()
         conn.close()
-
-        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON')
-        conn.close()
-
-        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;'
-                        'SET ANSI_NULLS ON;')
-        conn.close()
-
-        conn = self.connect(conn_props=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
-        conn.close()
-        self.assertRaises(Exception, self.connect, conn_props='BOGUS SQL')
-
-        conn = pym.connect(
-            conn_properties='SET TEXTSIZE 2147483647',
-            server=config.server,
-            user=config.user,
-            password=config.password
-        )
-        conn.close()
+        assert row is None

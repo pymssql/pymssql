@@ -49,13 +49,14 @@ def mssqlconn(conn_properties=None):
     )
 
 
-def pymssqlconn():
+def pymssqlconn(**kwargs):
     return pymssql.connect(
         server=config.server,
         user=config.user,
         password=config.password,
         database=config.database,
         port=config.port,
+        **kwargs
     )
 
 
