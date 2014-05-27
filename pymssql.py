@@ -519,7 +519,7 @@ class pymssqlCnx:
 # connects to a database
 def connect(dsn = None, user = "sa", password = "", host = ".", database = "", 
 		    timeout = 0, login_timeout = 60, trusted = False, charset = None,
-		    as_dict = False, max_conn = 25):
+		    as_dict = False, max_conn = 25, appname = None):
 	"""
 	Constructor for creating a connection to the database. Returns
 	a connection object. Paremeters are as follows:
@@ -549,6 +549,7 @@ def connect(dsn = None, user = "sa", password = "", host = ".", database = "",
 	          character set with which to connect to the database
 	as_dict   whether rows should be returned as dictionaries instead of tuples
 	max_conn  how many simultaneous connections to allow; default is 25
+        appname   set the name of the application
 	
 	Examples:
 	con = pymssql.connect(host=r'DBHOST,1433', user='username',
@@ -597,12 +598,14 @@ def connect(dsn = None, user = "sa", password = "", host = ".", database = "",
 
 	_mssql.login_timeout = login_timeout
 
+        if appname == "":
+                 appname = dbhost
 	# open the connection
 	try:
 		if dbbase != "":
-			con = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset, database, max_conn=max_conn)
+			con = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset, database, max_conn=max_conn, appname=appname)
 		else:
-			con = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset, max_conn=max_conn)
+			con = _mssql.connect(dbhost, dbuser, dbpasswd, trusted, charset, max_conn=max_conn, appname = appname)
 	except _mssql.MssqlDatabaseException, e:
 		raise OperationalError, e[0]
 	except _mssql.MssqlDriverException, e:

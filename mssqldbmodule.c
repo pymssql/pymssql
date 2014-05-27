@@ -1263,6 +1263,7 @@ charset  - character set name to set for the connection.\n\
 database - database name to select initially as the current database.\n\
 max_conn - maximum number of simultaneous connections allowed; default\n\
            is 25\n\
+app_name - application name \n\
 ";
 
 static PyObject *_mssql_connect(_mssql_connection *self, PyObject *args,
@@ -1273,22 +1274,23 @@ static PyObject *_mssql_connect(_mssql_connection *self, PyObject *args,
 	char *database = NULL, *charset = NULL;
 	char *p;
 	int trusted = 0, max_conn = 25;
+	char *appname = NULL;
 	RETCODE rtc;
 	struct _mssql_connection_list_node *n;
 	PyObject *ologintimeout, *o;
 
 	static char *kwlist[] = { "server", "user", "password", "trusted",
-			"charset", "database", "max_conn", NULL };
+			"charset", "database", "max_conn", "appname", NULL };
 
-	if(!PyArg_ParseTupleAndKeywords(args, kwargs, "s|zzizzi:connect", kwlist,
-			&server, &user, &password, &trusted, &charset, &database, &max_conn))
+	if(!PyArg_ParseTupleAndKeywords(args, kwargs, "s|zzizziz:connect", kwlist,
+			&server, &user, &password, &trusted, &charset, &database, &max_conn, &appname))
 		return NULL;
 
 	clr_err(NULL);
 
 #ifdef PYMSSQLDEBUG
-	fprintf(stderr, "_mssql.connect(server=\"%s\", user=\"%s\", password=\"%s\", trusted=\"%d\", charset=\"%s\", database=\"%s\", max_conn=\"%d\")\n",
-			server, user, password, trusted, charset, database, max_conn);
+	fprintf(stderr, "_mssql.connect(server=\"%s\", user=\"%s\", password=\"%s\", trusted=\"%d\", charset=\"%s\", database=\"%s\", max_conn=\"%d\", appname=\"%s\")\n",
+			server, user, password, trusted, charset, database, max_conn, appname);
 #endif
 
 	// lame hack to improve portability, will break with IPv6
@@ -1315,12 +1317,18 @@ static PyObject *_mssql_connect(_mssql_connection *self, PyObject *args,
 	// these don't need to release GIL
 	DBSETLUSER(login, user);
 	DBSETLPWD(login, password);
-	DBSETLAPP(login, "pymssql");
+	if (appname != NULL)
+		DBSETLAPP(login, appname);
+	else
+		DBSETLAPP(login, server);
 	dbsetmaxprocs(max_conn);
 #ifdef MS_WINDOWS
 	DBSETLVERSION(login, DBVER60);
 #else
-	DBSETLHOST(login, server);
+        char hostname[1024];
+        hostname[1023] = '\0';
+        gethostname(hostname,1023);
+	DBSETLHOST(login, hostname);
 #endif
 
 #ifdef MS_WINDOWS
