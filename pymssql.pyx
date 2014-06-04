@@ -20,6 +20,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA  02110-1301  USA
 
+import datetime
+import time
+
 import _mssql
 cimport _mssql
 from cpython cimport bool, PY_MAJOR_VERSION
@@ -84,6 +87,14 @@ BINARY = DBAPIType(_mssql.BINARY)
 NUMBER = DBAPIType(_mssql.NUMBER)
 DATETIME = DBAPIType(_mssql.DATETIME)
 DECIMAL = DBAPIType(_mssql.DECIMAL)
+
+Date = datetime.date
+Time = datetime.time
+Timestamp = datetime.datetime
+DateFromTicks = lambda ticks: Date(*time.localtime(ticks)[:3])
+TimeFromTicks = lambda ticks: Time(*time.localtime(ticks)[3:6])
+TimestampFromTicks = lambda ticks: Timestamp(*time.localtime(ticks)[:6])
+Binary = bytes
 
 cdef dict DBTYPES = {
     'bool': _mssql.SQLBITN,
