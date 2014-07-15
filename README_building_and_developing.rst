@@ -78,7 +78,7 @@ When this is done, the following files should be available (depending on
 for example::
 
   src\dblib\win32\release\db-lib.lib
-  src\dblib\win32\release\tds.lib
+  src\tds\win32\release\tds.lib
 
 Those files should then be copied to::
 
