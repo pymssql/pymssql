@@ -14,9 +14,9 @@ error_sproc = StoredProc(
     body="SELECT unknown_column FROM unknown_table")
 
 
-class TestingThread(threading.Thread):
+class _TestingThread(threading.Thread):
     def __init__(self):
-        super(TestingThread, self).__init__()
+        super(_TestingThread, self).__init__()
         self.results = []
         self.exc = None
 
@@ -31,7 +31,7 @@ class TestingThread(threading.Thread):
             self.exc = exc
 
 
-class TestingErrorThread(TestingThread):
+class _TestingErrorThread(_TestingThread):
     def run(self):
         try:
             with mssqlconn() as mssql:
@@ -40,7 +40,7 @@ class TestingErrorThread(TestingThread):
             self.exc = exc
 
 
-class SprocTestingErrorThread(TestingThread):
+class _SprocTestingErrorThread(_TestingThread):
     def run(self):
         try:
             with mssqlconn() as mssql:
@@ -79,7 +79,7 @@ class ThreadedTests(unittest.TestCase):
     def testThreadedUse(self):
         results, exceptions = self.run_threads(
             num=50,
-            thread_class=TestingThread)
+            thread_class=_TestingThread)
         self.assertEqual(len(exceptions), 0)
         for result in results:
             self.assertEqual(result, list(range(0, 1000)))
@@ -88,7 +88,7 @@ class ThreadedTests(unittest.TestCase):
     def testErrorThreadedUse(self):
         results, exceptions = self.run_threads(
             num=2,
-            thread_class=TestingErrorThread)
+            thread_class=_TestingErrorThread)
         self.assertEqual(len(exceptions), 2)
         for exc in exceptions:
             self.assertEqual(type(exc), MSSQLDatabaseException)
@@ -98,7 +98,7 @@ class ThreadedTests(unittest.TestCase):
         with error_sproc.create():
             results, exceptions = self.run_threads(
                 num=5,
-                thread_class=SprocTestingErrorThread)
+                thread_class=_SprocTestingErrorThread)
         self.assertEqual(len(exceptions), 5)
         for exc in exceptions:
             self.assertEqual(type(exc), MSSQLDatabaseException)
