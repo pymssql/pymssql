@@ -195,15 +195,6 @@ class TableManager(object):
 
 class DBAPIBase(object):
 
-    def newconn(self):
-        self.conn = self.__class__.get_conn()
-
-    def __init__(self):
-        self.newconn()
-
-    def setUp(self):
-        self.conn.rollback()
-
     def execute(self, sql):
         cur = self.conn.cursor()
         cur.execute(sql)
@@ -222,12 +213,13 @@ class CursorBase(DBAPIBase):
     When psycopg comparison isn't needed anymore, this class can be moved to
     test_pymssql and used directly.
     """
-    def __init__(self):
-        DBAPIBase.__init__(self)
-        self.t1 = TableManager(self.conn, 'test', 'id int', 'name varchar(50)')
+    @classmethod
+    def setup_class(cls):
+        cls.newconn()
+        cls.t1 = TableManager(cls.conn, 'test', 'id int', 'name varchar(50)')
 
-    def setUp(self):
-        DBAPIBase.setUp(self)
+    def setup_method(self, method):
+        self.conn.rollback()
         self.t1.clear()
         self.execute("insert into test values (1, 'one')")
         self.execute("insert into test values (2, 'two')")

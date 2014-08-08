@@ -86,8 +86,9 @@ class TestTransaction(unittest.TestCase, PyTableBase):
 class TestCursor(CursorBase):
     dbmod = pym
 
-    def newconn(self):
-        self.conn = pymssqlconn()
+    @classmethod
+    def newconn(cls):
+        cls.conn = pymssqlconn()
 
 class TestBasicConnection(unittest.TestCase):
 
