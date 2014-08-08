@@ -2,26 +2,16 @@ import logging
 from os import path
 import time
 
-try:
-    from nose.tools import eq_
-    from nose.plugins.skip import SkipTest
-    from nose.plugins.attrib import attr
+import pytest
 
-    def skip_test(reason='No reason given to skip_test'):
-        raise SkipTest(reason)
+def eq_(a, b):
+    assert a == b
 
-    mark_slow = attr('slow')
-except ImportError:
-    import pytest
+def skip_test(reason='No reason given to skip_test'):
+    pytest.skip(reason)
 
-    def eq_(a, b):
-        assert a == b
-
-    def skip_test(reason='No reason given to skip_test'):
-        pytest.skip(reason)
-
-    def mark_slow(f):
-        return f
+def mark_slow(f):
+    return f
 
 import _mssql
 import pymssql
