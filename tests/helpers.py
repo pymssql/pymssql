@@ -303,9 +303,28 @@ class CursorBase(DBAPIBase):
     def test_as_dict_no_column_name(self):
         cur = self.conn.cursor(as_dict=True)
         try:
+            # SQL Server >= 2008:
+            #
+            #   SELECT MAX(x), MIN(x) AS [MIN(x)]
+            #   FROM (VALUES (1), (2), (3))
+            #   AS foo(x)
+            #
+            # SQL Server = 2005 (remove when we drop suport for it):
+            #
+            #   SELECT MAX(x), MIN(x) AS [MIN(x)]
+            #   FROM (SELECT 1
+            #         UNION ALL
+            #         SELECT 2
+            #         UNION ALL
+            #         SELECT 3)
+            #   AS foo(x)
             cur.execute(
                 "SELECT MAX(x), MIN(x) AS [MIN(x)] "
-                "FROM (VALUES (1), (2), (3)) AS foo(x)")
+                "FROM (SELECT 1"
+                "      UNION ALL"
+                "      SELECT 2"
+                "      UNION ALL"
+                "      SELECT 3) AS foo(x)")
             assert False, "Didn't raise InterfaceError"
         except pymssql.ColumnsWithoutNamesError as exc:
             eq_(exc.columns_without_names, [0])
@@ -313,9 +332,28 @@ class CursorBase(DBAPIBase):
     def test_as_dict_no_column_name_2(self):
         cur = self.conn.cursor(as_dict=True)
         try:
+            # SQL Server >= 2008:
+            #
+            #   SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y)
+            #   FROM (VALUES (1, 2), (2, 3), (3, 4))
+            #   AS foo(x, y)
+            #
+            # SQL Server = 2005 (remove when we drop suport for it):
+            #
+            #   SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y)
+            #   FROM (SELECT (1, 2)
+            #         UNION ALL
+            #         SELECT (2, 3)
+            #         UNION ALL
+            #         SELECT (3, 4))
+            #   AS foo(x, y)
             cur.execute(
                 "SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y) "
-                "FROM (VALUES (1, 2), (2, 3), (3, 4)) AS foo(x, y)")
+                "FROM (SELECT 1, 2"
+                "      UNION ALL"
+                "      SELECT 2, 3"
+                "      UNION ALL"
+                "      SELECT 3, 4) AS foo(x, y)")
             assert False, "Didn't raise InterfaceError"
         except pymssql.ColumnsWithoutNamesError as exc:
             eq_(exc.columns_without_names, [0, 2])
