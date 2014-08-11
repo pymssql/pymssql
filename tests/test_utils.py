@@ -181,5 +181,5 @@ def test_too_many_params():
 
 
 def test_unicode_characters_in_query():
-    res = substitute_params("testing ascii (ąčę) 1=%d 'one'=%s", (1, 'str'))
+    res = substitute_params("testing ascii (ąčę) 1=%d 'one'=%s", (1, 'one'))
     eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'one'")
