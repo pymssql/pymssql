@@ -204,4 +204,3 @@ class TestBasicConnection(unittest.TestCase):
             password=config.password
         )
         conn.close()
->>>>>>> upstream/master
