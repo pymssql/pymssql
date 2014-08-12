@@ -48,6 +48,8 @@ Features
   can use instead of the DB-API
 * Supports stored procedures with both return values and output parameters
 * A comprehensive test suite
+* Compatible with cooperative multi-tasking systems (gevent, etc.)
+* Can be used to connect to Azure
 
 License
 -------
@@ -60,6 +62,12 @@ Survey
 Can you take a minute and fill out this survey to help us prioritize development tasks?
 
 https://www.surveymonkey.com/s/KMQ8BM5
+
+Survey Results
+^^^^^^^^^^^^^^
+
+* Excel (.xls) -- http://cl.ly/1R0m2B342I0k/download/SurveySummary_04092014.xls
+* PDF -- http://cl.ly/2P3o1N1K2h3p/download/Data_All_140409.pdf
 
 Recent Changes
 --------------
@@ -80,7 +88,7 @@ Recent Changes
 
 
 Documentation
-=============
+-------------
 
 .. toctree::
    :maxdepth: 2
@@ -100,7 +108,7 @@ Documentation
    todo
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

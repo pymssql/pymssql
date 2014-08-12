@@ -9,7 +9,7 @@ except ImportError:
 
 import _mssql
 
-from .helpers import config, skip_test
+from .helpers import config, skip_test, mssqlconn
 server = config.server
 username = config.user
 password = config.password
@@ -110,3 +110,39 @@ class TestCons(unittest.TestCase):
                     self.assertEqual(exc_message, last_exc_message)
 
                 last_exc_message = exc_message
+
+    def test_valid_tds_version_property(self):
+        # Issue #211 (https://github.com/pymssql/pymssql/issues/211)
+        conn = mssqlconn()
+        self.assertIsNotNone(conn.tds_version)
+        self.assertTrue(conn.tds_version > 0)
+        conn.close()
+
+    def test_conn_props_override(self):
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON')
+        conn.close()
+
+        conn = mssqlconn(conn_properties='SET TEXTSIZE 2147483647;'
+                         'SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = mssqlconn(conn_properties=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        conn.close()
+        self.assertRaises(_mssql.MSSQLDriverException, mssqlconn, conn_properties='BOGUS SQL')
+
+        conn = _mssql.connect(
+            conn_properties='SET TEXTSIZE 2147483647',
+            server=server,
+            user=username,
+            password=password
+        )
+        conn.close()

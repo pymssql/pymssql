@@ -33,10 +33,10 @@ class TestConnectionAsDict(unittest.TestCase):
 
         cursor = self.conn.cursor()
         cursor.execute("""
-        CREATE TABLE dates_and_times (
+        CREATE TABLE daily_measurement (
             datetime DATETIME,
-            date DATE,
-            time TIME,
+            value FLOAT,
+            notes VARCHAR,
         )
         """)
 

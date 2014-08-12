@@ -61,19 +61,21 @@ Functions
 
     :param str password: User's password
 
-    :param bool trusted: Boolean value signalling whether to use Windows
-                         Integrated Authentication to connect instead of SQL
-                         authentication with user and password (Windows only)
-
     :param str charset: Character set name to set for the connection.
 
     :param str database: The database you want to initially to connect to; by
                          default, *SQL Server* selects the database which is set as
                          the default for the specific user
 
+    :param str appname: Set the application name to use for the connection
 
-    With every new connection, the following SQL statements are sent to the
-    server:
+    :param str port: the TCP port to use to connect to the server
+
+    :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
+
+    :param conn_properties: SQL queries to send to the server upon connection
+                            establishment. Can be a string or another kind
+                            of iterable of strings. Default value:
 
     .. code-block:: sql
 
@@ -88,7 +90,18 @@ Functions
         SET QUOTED_IDENTIFIER ON;
         SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
 
+    .. versionadded:: 2.1.1
+        The *conn_properties* argument.
+
+    .. versionchanged:: 2.1.1
+        Before 2.1.1, the initialization queries now specified by
+        *conn_properties* wasn't customizable and its value was hard-coded to
+        the literal shown above.
+
     .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+
+    .. versionadded:: 2.1.1
+        The ability to connect to Azure.
 
 ``MSSQLConnection`` object properties
 -------------------------------------
@@ -132,8 +145,13 @@ Functions
 
 .. attribute:: MSSQLConnection.tds_version
 
-   The TDS version used by this connection. Can be one of ``'4.2'``, ``'7.0'``
-   and ``'8.0'``.
+   The TDS version used by this connection. Can be one of ``4.2``, ``5.0``
+   ``7.0``, ``8.0`` and ``7.2``.
+
+   .. warning::
+      For historical and backward compatibility reasons, the value used to
+      represent TDS 7.1 is ``8.0``. This will change with pymssql 2.2.0 when it
+      will be fixed to be ``7.1`` for correctness and consistency.
 
 ``MSSQLConnection`` object methods
 ----------------------------------
@@ -248,8 +266,26 @@ Functions
 .. method:: MSSQLConnection.__iter__()
             MSSQLConnection.next()
 
-   These methods facilitate the Python iterator protocol. You most likely will not
-   call them directly, but indirectly by using iterators.
+   .. versionadded:: 2.1.0
+
+   These methods implement the Python iterator protocol. You most likely will
+   not call them directly, but indirectly by using iterators.
+
+.. method:: MSSQLConnection.set_msghandler(handler)
+
+   .. versionadded:: 2.1.1
+
+   This method allows setting a message handler function for the connection to
+   allow a client to gain access to the messages returned from the server.
+
+   The signature of the message handler function *handler* passed to this
+   method must be::
+
+        def my_msg_handler(msgstate, severity, srvname, procname, line, msgtext):
+            # The body of the message handler.
+
+   *msgstate*, *severity* and *line* will be integers, *srvname*, *procname* and
+   *msgtext* will be strings.
 
 ``MSSQLStoredProcedure`` class
 ==============================

@@ -47,8 +47,7 @@ Basic features (strict DB-API compliance)
 Iterating through results
 =========================
 
-You can also use iterators instead of while loop. Iterators are pymssql
-extensions to the DB-API.
+You can also use iterators instead of while loop.
 
 ::
 
@@ -61,12 +60,14 @@ extensions to the DB-API.
 
     conn.close()
 
+.. note:: Iterators are a pymssql extension to the DB-API.
+
 Important note about Cursors
 ============================
 
 A connection can have only one cursor with an active query at any time.
 If you have used other Python DBAPI databases, this can lead to surprising
-results.::
+results::
 
     c1 = conn.cursor()
     c1.execute('SELECT * FROM persons')
@@ -80,8 +81,8 @@ results.::
     print( "John Doe" )
     print( c2.fetchall() )  # shows no results at all!
 
-In this example, the result printed after "all persons" will be the
-result of the *second* query (the list where salesrep='John Doe')
+In this example, the result printed after ``"all persons"`` will be the
+result of the *second* query (the list where ``salesrep='John Doe'``)
 and the result printed after "John Doe" will be empty.  This happens
 because the underlying TDS protocol does not have client side cursors.
 The protocol requires that the client flush the results from the first
@@ -93,11 +94,11 @@ much more complicated.)
 
 Here are two reasonable workarounds to this:
 
- - Create a second connection.  Each connection can have a query in
-   progress, so multiple connections can execute multiple conccurent queries.
+- Create a second connection.  Each connection can have a query in
+  progress, so multiple connections can execute multiple conccurent queries.
 
- - use the fetchall() method of the cursor to recover all the results
-   before beginning another query: ::
+- use the fetchall() method of the cursor to recover all the results
+  before beginning another query::
 
     c1.execute('SELECT ...')
     c1_list = c1.fetchall()
@@ -125,6 +126,11 @@ columns by name instead of index. Note the ``as_dict`` argument.
 
     conn.close()
 
+.. note::
+
+    The ``as_dict`` parameter to ``cursor()`` is a pymssql extension to the
+    DB-API.
+
 Using the ``with`` statement (context managers)
 ===============================================
 
@@ -138,6 +144,11 @@ frees you from having to explicitly close cursors and connections.
             cursor.execute('SELECT * FROM persons WHERE salesrep=%s', 'John Doe')
             for row in cursor:
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
+
+.. note::
+
+    The context manager personality of connections and cursor is a pymssql
+    extension to the DB-API.
 
 Calling stored procedures
 =========================
@@ -159,3 +170,35 @@ db-lib.
             cursor.callproc('FindPerson', ('Jane Doe',))
             for row in cursor:
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
+
+Using pymssql with cooperative multi-tasking systems
+====================================================
+
+.. versionadded:: 2.1.0
+
+You can use the :func:`pymssql.set_wait_callback` function to install a callback
+function you should write yourself.
+
+This callback can yield to another greenlet, coroutine, etc. For example, for
+gevent_, you could use its :func:`gevent:gevent.socket.wait_read` function::
+
+    import gevent.socket
+    import pymssql
+
+    def wait_callback(read_fileno):
+        gevent.socket.wait_read(read_fileno)
+
+    pymssql.set_wait_callback(wait_callback)
+
+The above is useful if you're say, running a Gunicorn_ server with the gevent
+worker. With this callback in place, when you send a query to SQL server and are
+waiting for a response, you can yield to other greenlets and process other
+requests. This is super useful when you have high concurrency and/or slow
+database queries and lets you use less Gunicorn worker processes and still
+handle high concurrency.
+
+.. note:: set_wait_callback() is a pymssql extension to the DB-API 2.0.
+
+.. _gevent: http://gevent.org
+.. _wait_read: http://gevent.org/gevent.socket.html#gevent.socket.wait_read
+.. _Gunicorn: http://gunicorn.org

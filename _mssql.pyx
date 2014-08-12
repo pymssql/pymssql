@@ -43,6 +43,7 @@ cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
+from collections import Iterable
 import os
 import sys
 import socket
@@ -88,8 +89,9 @@ cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 # List to store the connection objects in
 cdef list connection_object_list = list()
 
-# Store the 32bit max int
+# Store the 32bit int limit values
 cdef int MAX_INT = 2147483647
+cdef int MIN_INT = -2147483648
 
 # Store the module version
 __full_version__ = PYMSSQL_VERSION.decode('ascii')
@@ -204,6 +206,11 @@ cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
 
+if PY_MAJOR_VERSION == '3':
+    string_types = str,
+else:
+    string_types = basestring,
+
 ###################
 ## Error Handler ##
 ###################
@@ -288,38 +295,46 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
     cdef char *mssql_lastmsgsrv
     cdef char *mssql_lastmsgproc
     cdef int _min_error_severity = min_error_severity
+    cdef MSSQLConnection conn = None
 
     IF PYMSSQL_DEBUG == 1:
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
             "msgstate = %d, severity = %d, msgtext = '%s', " \
             "srvname = '%s', procname = '%s', line = %d)\n",
-            <void *>dbproc, msgno, msgstate, severity, msgtext, srvname,
+            dbproc, msgno, msgstate, severity, msgtext, srvname,
             procname, line);
         fprintf(stderr, "+++ previous max severity = %d\n\n",
             _mssql_last_msg_severity);
 
+    for cnx in connection_object_list:
+        if (<MSSQLConnection>cnx).dbproc != dbproc:
+            continue
+
+        conn = <MSSQLConnection>cnx
+        break
+
+    if conn is not None and conn.msghandler is not None:
+        conn.msghandler(msgstate, severity, srvname, procname, line, msgtext)
+
     if severity < _min_error_severity:
         return INT_CANCEL
 
-    mssql_lastmsgstr = _mssql_last_msg_str
-    mssql_lastmsgsrv = _mssql_last_msg_srv
-    mssql_lastmsgproc = _mssql_last_msg_proc
-    mssql_lastmsgno = &_mssql_last_msg_no
-    mssql_lastmsgseverity = &_mssql_last_msg_severity
-    mssql_lastmsgstate = &_mssql_last_msg_state
-    mssql_lastmsgline = &_mssql_last_msg_line
-
-    for conn in connection_object_list:
-        if dbproc != (<MSSQLConnection>conn).dbproc:
-            continue
-        mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-        mssql_lastmsgsrv = (<MSSQLConnection>conn).last_msg_srv
-        mssql_lastmsgproc = (<MSSQLConnection>conn).last_msg_proc
-        mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-        mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-        mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
-        mssql_lastmsgline = &(<MSSQLConnection>conn).last_msg_line
-        break
+    if conn is not None:
+        mssql_lastmsgstr = conn.last_msg_str
+        mssql_lastmsgsrv = conn.last_msg_srv
+        mssql_lastmsgproc = conn.last_msg_proc
+        mssql_lastmsgno = &conn.last_msg_no
+        mssql_lastmsgseverity = &conn.last_msg_severity
+        mssql_lastmsgstate = &conn.last_msg_state
+        mssql_lastmsgline = &conn.last_msg_line
+    else:
+        mssql_lastmsgstr = _mssql_last_msg_str
+        mssql_lastmsgsrv = _mssql_last_msg_srv
+        mssql_lastmsgproc = _mssql_last_msg_proc
+        mssql_lastmsgno = &_mssql_last_msg_no
+        mssql_lastmsgseverity = &_mssql_last_msg_severity
+        mssql_lastmsgstate = &_mssql_last_msg_state
+        mssql_lastmsgline = &_mssql_last_msg_line
 
     # Calculate the maximum severity of all messages in a row
     # Fill the remaining fields as this is going to raise the exception
@@ -494,10 +509,14 @@ cdef class MSSQLConnection:
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
-            if version == 9:
-                return 8.0
+            if version == 10:
+                return 7.2
+            elif version == 9:
+                return 8.0  # Actually 7.1, return 8.0 to keep backward compatibility
             elif version == 8:
                 return 7.0
+            elif version == 6:
+                return 5.0
             elif version == 4:
                 return 4.2
 
@@ -516,7 +535,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1'):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -614,25 +633,33 @@ cdef class MSSQLConnection:
 
         self._connected = 1
 
-        log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
-        # Set some connection properties to some reasonable values
-        dbcmd(self.dbproc,
-            "SET ARITHABORT ON;"                \
-            "SET CONCAT_NULL_YIELDS_NULL ON;"   \
-            "SET ANSI_NULLS ON;"                \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET ANSI_PADDING ON;"              \
-            "SET ANSI_WARNINGS ON;"             \
-            "SET ANSI_NULL_DFLT_ON ON;"         \
-            "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
-            "SET QUOTED_IDENTIFIER ON;"         \
-            # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
-            "SET TEXTSIZE 2147483647;"
-        )
+        if conn_properties is None:
+            conn_properties = \
+                "SET ARITHABORT ON;"                \
+                "SET CONCAT_NULL_YIELDS_NULL ON;"   \
+                "SET ANSI_NULLS ON;"                \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET ANSI_PADDING ON;"              \
+                "SET ANSI_WARNINGS ON;"             \
+                "SET ANSI_NULL_DFLT_ON ON;"         \
+                "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
+                "SET QUOTED_IDENTIFIER ON;"         \
+                "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
+        elif isinstance(conn_properties, Iterable) and not isinstance(conn_properties, string_types):
+            conn_properties = ' '.join(conn_properties)
+        cdef bytes conn_props_bytes
+        cdef char *conn_props_cstr
+        if conn_properties:
+            log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
+            # Set connection properties, some reasonable values are used by
+            # default but they can be customized
+            conn_props_bytes = conn_properties.encode(charset)
+            conn_props_cstr = conn_props_bytes
+            dbcmd(self.dbproc, conn_props_bytes)
 
-        rtc = db_sqlexec(self.dbproc)
-        if (rtc == FAIL):
-            raise MSSQLDriverException("Could not set connection properties")
+            rtc = db_sqlexec(self.dbproc)
+            if (rtc == FAIL):
+                raise MSSQLDriverException("Could not set connection properties")
 
         db_cancel(self)
         clr_err(self)
@@ -654,6 +681,16 @@ cdef class MSSQLConnection:
         assert_connected(self)
         clr_err(self)
         return MSSQLRowIterator(self, ROW_FORMAT_DICT)
+
+    cpdef set_msghandler(self, object handler):
+        """
+        set_msghandler(handler) -- set the msghandler for the connection
+
+        This function allows setting a msghandler for the connection to
+        allow a client to gain access to the messages returned from the
+        server.
+        """
+        self.msghandler = handler
 
     cpdef cancel(self):
         """
@@ -811,6 +848,8 @@ cdef class MSSQLConnection:
         if dbtype[0] in (SQLINT1, SQLINT2, SQLINT4):
             if value > MAX_INT:
                 raise MSSQLDriverException('value cannot be larger than %d' % MAX_INT)
+            elif value < MIN_INT:
+                raise MSSQLDriverException('value cannot be smaller than %d' % MIN_INT)
             intValue = <int *>PyMem_Malloc(sizeof(int))
             intValue[0] = <int>value
             if dbtype[0] == SQLINT1:
@@ -1269,7 +1308,7 @@ cdef class MSSQLConnection:
         init_procedure(procname) -- creates and returns a MSSQLStoredProcedure
         object.
 
-        This methods initilizes a stored procedure or function on the server
+        This methods initializes a stored procedure or function on the server
         and creates a MSSQLStoredProcedure object that allows parameters to
         be bound.
         """
@@ -1663,6 +1702,9 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, (int, long, decimal.Decimal)):
         return str(value).encode(charset)
 
+    if isinstance(value, uuid.UUID):
+        return _quote_simple_value(str(value))
+
     if isinstance(value, unicode):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
@@ -1752,8 +1794,8 @@ cdef _substitute_params(toformat, params, charset):
         return toformat
 
     if not issubclass(type(params),
-            (bool, int, long, float, unicode, str, bytes, bytearray,
-            datetime.datetime, datetime.date, dict, tuple, decimal.Decimal)):
+            (bool, int, long, float, unicode, str, bytes, bytearray, dict, tuple,
+             datetime.datetime, datetime.date, dict, decimal.Decimal, uuid.UUID)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:

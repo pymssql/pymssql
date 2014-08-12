@@ -1,7 +1,9 @@
 import decimal
 import datetime
+import sys
 import unittest
 
+import pymssql
 import _mssql
 
 from .helpers import mssqlconn, pymssqlconn, eq_, skip_test
@@ -29,6 +31,7 @@ class TestFixedTypeConversion(unittest.TestCase):
 
     def setUp(self):
         self.mssql = mssqlconn()
+        self.pymssql = pymssqlconn()
 
         for name in FIXED_TYPES:
             dbtype = name.lower()
@@ -58,6 +61,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         for name in FIXED_TYPES:
             self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlTest%s]' % name)
 
+        self.pymssql.close()
         self.mssql.close()
 
 
@@ -68,6 +72,23 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(None, _mssql.SQLINT8, '@obigint', output=True)
         proc.execute()
         eq_(input, proc.parameters['@obigint'])
+
+    def testBigIntPymssql(self):
+        """Same as testBigInt above but from pymssql. Uses pymssql.output class."""
+
+        if sys.version_info >= (3, ):
+            py_type = int
+        else:
+            py_type = long
+
+        in_val = 123456789
+        cursor = self.pymssql.cursor()
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        eq_(in_val, retval[1])
+
+        in_val = 2147483647
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        eq_(in_val, retval[1])
 
     def testBit(self):
         input = True
@@ -285,7 +306,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            (None,))  # Russian string
+            (None,))
 
         a, b = cursor.fetchone()
 
@@ -296,7 +317,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            ('hello',))  # Russian string
+            ('hello',))
 
         a, b = cursor.fetchone()
 
@@ -307,7 +328,7 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.execute(
             u'someProcWithOneParam %s',
-            (u'hello',))  # Russian string
+            (u'hello',))
 
         a, b = cursor.fetchone()
 
@@ -382,3 +403,90 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(None, _mssql.SQLVARCHAR, '@ovarchar', output=True)
         proc.execute()
         eq_(input, proc.parameters['@ovarchar'])
+
+
+class TestErrorInSP(unittest.TestCase):
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        cursor = self.pymssql.cursor()
+
+        sql = u"""
+        CREATE PROCEDURE [dbo].[SPThatRaisesAnError]
+        AS
+        BEGIN
+            -- RAISERROR -- Generates an error message and initiates error processing for the session.
+            -- http://msdn.microsoft.com/en-us/library/ms178592.aspx
+            -- Severity levels from 0 through 18 can be specified by any user.
+            RAISERROR('Error message', 18, 1)
+            RETURN
+        END
+        """
+        cursor.execute(sql)
+
+    def tearDown(self):
+        cursor = self.pymssql.cursor()
+        cursor.execute('DROP PROCEDURE [dbo].[SPThatRaisesAnError]')
+        self.pymssql.close()
+
+    def test_tsql_to_python_exception_translation(self):
+        """An error raised by a SP is translated to a PEP-249-dictated, pymssql layer exception."""
+        # See https://github.com/pymssql/pymssql/issues/61
+        cursor = self.pymssql.cursor()
+        # Must raise an exception
+        self.assertRaises(Exception, cursor.callproc, 'SPThatRaisesAnError')
+        # Must be a PEP-249 exception, not a _mssql-layer one
+        try:
+            cursor.callproc('SPThatRaisesAnError')
+        except Exception as e:
+            self.assertTrue(isinstance(e,  pymssql.Error))
+        # Must be a DatabaseError exception
+        try:
+            cursor.callproc('SPThatRaisesAnError')
+        except Exception as e:
+            self.assertTrue(isinstance(e,  pymssql.DatabaseError))
+
+
+class TestSPWithQueryResult(unittest.TestCase):
+
+    SP_NAME = 'SPWithAQuery'
+
+    def setUp(self):
+        self.mssql = mssqlconn()
+        self.pymssql = pymssqlconn()
+
+        self.mssql.execute_non_query("""
+        CREATE PROCEDURE [dbo].[%(spname)s]
+                @some_arg NVARCHAR(64)
+        AS
+        BEGIN
+                SELECT @some_arg + N'!', @some_arg + N'!!'
+        END
+        """ % {'spname': self.SP_NAME})
+
+    def tearDown(self):
+        self.mssql.execute_non_query('DROP PROCEDURE [dbo].[%(spname)s]' % {'spname': self.SP_NAME})
+        self.pymssql.close()
+        self.mssql.close()
+
+    def testPymssql(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            self.SP_NAME,
+            ('hello',))
+
+        # For some reason, fetchone doesn't work
+        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
+        #a, b = cursor.fetchone()
+
+        for a, b in cursor:
+            eq_(a, 'hello!')
+            eq_(b, 'hello!!')
+
+    def test_mssql(self):
+        proc = self.mssql.init_procedure(self.SP_NAME)
+        proc.bind('hello', _mssql.SQLVARCHAR)
+        proc.execute()
+
+        for row_dict in self.mssql:
+            eq_(row_dict, {0: 'hello!', 1: 'hello!!'})

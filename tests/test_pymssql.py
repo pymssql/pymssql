@@ -2,7 +2,7 @@ import unittest
 
 import pymssql as pym
 
-from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_
+from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_, config
 
 class TestDBAPI2(object):
     def test_version(self):
@@ -162,3 +162,46 @@ class TestAutocommit(unittest.TestCase, PyTableBase):
         cur.close()
         conn.close()
         assert row is None
+
+
+class TestBasicConnection(unittest.TestCase):
+
+    def connect(self, conn_props=None):
+        return pym.connect(
+            server=config.server,
+            user=config.user,
+            password=config.password,
+            database=config.database,
+            port=config.port,
+            conn_properties=conn_props
+        )
+
+    def test_conn_props_override(self):
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;'
+                        'SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = self.connect(conn_props=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        conn.close()
+        self.assertRaises(Exception, self.connect, conn_props='BOGUS SQL')
+
+        conn = pym.connect(
+            conn_properties='SET TEXTSIZE 2147483647',
+            server=config.server,
+            user=config.user,
+            password=config.password
+        )
+        conn.close()
+>>>>>>> upstream/master

@@ -23,6 +23,10 @@ Quickstart usage of various features
     for row in conn:
         print "ID=%d, Name=%s" % (row['id'], row['name'])
 
+.. versionadded:: 2.1.0
+    Iterating over query results by iterating over the connection object
+    just like it's already possible with ``pymssql`` connections is new in 2.1.0.
+
 ::
 
     # examples of other query functions
@@ -87,9 +91,9 @@ An example of exception handling
 
     import _mssql
 
+    conn = _mssql.connect(server='SQL01', user='user', password='password',
+                          database='mydatabase')
     try:
-        conn = _mssql.connect(server='SQL01', user='user', password='password',
-                              database='mydatabase')
         conn.execute_non_query('CREATE TABLE t1(id INT, name VARCHAR(50))')
     except _mssql.MssqlDatabaseException as e:
         if e.number == 2714 and e.severity == 16:
@@ -98,5 +102,40 @@ An example of exception handling
             raise # re-raise real error
     finally:
         conn.close()
+
+Custom message handlers
+=======================
+
+.. versionadded:: 2.1.1
+
+You can provide your own message handler callback function that will be invoked
+by the stack with informative messages sent by the server. Set it on a per
+``_mssql`` :class:`connection <_mssql.MSSQLConnection>` basis by using the
+:meth:`_mssql.MSSQLConnection.set_msghandler` method:
+
+.. code-block:: python
+
+    import _mssql
+
+    def my_msg_handler(msgstate, severity, srvname, procname, line, msgtext):
+        """
+        Our custom handler -- It simpy prints a string to stdout assembled from
+        the pieces of information sent by the server.
+        """
+        print("my_msg_handler: msgstate = %d, severity = %d, procname = '%s', "
+              "line = %d, msgtext = '%s'" % (msgstate, severity, procname,
+                                             line, msgtext))
+
+    conn = _mssql.connect(server='SQL01', user='user', password='password')
+    try:
+        conn.set_msghandler(my_msg_handler)  # Install our custom handler
+        cnx.execute_non_query("USE mydatabase")  # It gets called at this point
+    finally:
+        conn.close()
+
+Something similar to this would be printed to the standard output::
+
+    my_msg_handler: msgstate = x, severity = y, procname = '', line = 1, msgtext = 'Changed database context to 'mydatabase'.'
+
 
 .. todo:: Add an example of invoking a Stored Procedure using ``_mssql``.
