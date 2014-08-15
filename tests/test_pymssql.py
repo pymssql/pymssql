@@ -1,9 +1,11 @@
 import unittest
 
+import pytest
+
 import pymssql as pym
 
-from .helpers import (pymssqlconn, PyTableBase, drop_table, CursorBase, eq_,
-    config, skip_test)
+from .helpers import (pymssqlconn, PyTableBase, CursorBase, eq_, config,
+                      skip_test)
 
 class TestDBAPI2(object):
     def test_version(self):
@@ -160,10 +162,11 @@ class TestAutocommit(unittest.TestCase, PyTableBase):
         try:
             cur.execute("CREATE DATABASE {0}".format(self.test_db_name))
         except pym.OperationalError as e:
-            if "CREATE DATABASE permission denied in database 'master'" in e.args[1]:
+            expected_msg = "CREATE DATABASE permission denied in database 'master'"
+            if expected_msg in str(e.args[1]):
                 skip_test('We have no CREATE DATABASE permission on test database')
             else:
-                raise
+                pytest.fail()
         else:
             cur.execute("DROP DATABASE {0}".format(self.test_db_name))
 
@@ -172,12 +175,10 @@ class TestAutocommit(unittest.TestCase, PyTableBase):
         Try creating and dropping database without autocommit, expecting it to fail
         """
         cur = pymssqlconn(autocommit=False).cursor()
-        try:
+        with pytest.raises(pym.OperationalError) as excinfo:
             cur.execute("CREATE DATABASE autocommit_test_database")
-        except pym.OperationalError as e:
-            assert "CREATE DATABASE statement not allowed within multi-statement transaction" in e.args[1]
-        else:
-            assert False
+        expected_msg = "CREATE DATABASE statement not allowed within multi-statement transaction"
+        assert expected_msg in excinfo.exconly()
 
     def test_autocommit_flipping_tf(self):
         insert_value = 'true-false'
