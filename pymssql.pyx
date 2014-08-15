@@ -577,7 +577,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433', autocommit=False):
+        host='', appname=None, port='1433', conn_properties=None, autocommit=False):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -602,8 +602,11 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
     :type port: string
+    :keyword conn_properties: SQL queries to send to the server upon connection
+                              establishment. Can be a string or another kind
+                              of iterable of strings
     :keyword autocommit whether to use default autocommiting mode or not
-    :type autocommit boolean
+    :type autocommit: boolean
     """
 
     _mssql.login_timeout = login_timeout

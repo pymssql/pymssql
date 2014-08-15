@@ -2,7 +2,8 @@ import unittest
 
 import pymssql as pym
 
-from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_, config
+from .helpers import (pymssqlconn, PyTableBase, drop_table, CursorBase, eq_,
+    config, skip_test)
 
 class TestDBAPI2(object):
     def test_version(self):
@@ -87,8 +88,51 @@ class TestTransaction(unittest.TestCase, PyTableBase):
 class TestCursor(CursorBase):
     dbmod = pym
 
-    def newconn(self):
-        self.conn = pymssqlconn()
+    @classmethod
+    def newconn(cls):
+        cls.conn = pymssqlconn()
+
+
+class TestBasicConnection(unittest.TestCase):
+
+    def connect(self, conn_props=None):
+        return pym.connect(
+            server=config.server,
+            user=config.user,
+            password=config.password,
+            database=config.database,
+            port=config.port,
+            conn_properties=conn_props
+        )
+
+    def test_conn_props_override(self):
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;SET ANSI_NULLS ON')
+        conn.close()
+
+        conn = self.connect(conn_props='SET TEXTSIZE 2147483647;'
+                        'SET ANSI_NULLS ON;')
+        conn.close()
+
+        conn = self.connect(conn_props=['SET TEXTSIZE 2147483647;', 'SET ANSI_NULLS ON'])
+        conn.close()
+        self.assertRaises(Exception, self.connect, conn_props='BOGUS SQL')
+
+        conn = pym.connect(
+            conn_properties='SET TEXTSIZE 2147483647',
+            server=config.server,
+            user=config.user,
+            password=config.password
+        )
+        conn.close()
 
 
 class TestAutocommit(unittest.TestCase, PyTableBase):
@@ -110,15 +154,22 @@ class TestAutocommit(unittest.TestCase, PyTableBase):
 
     def test_db_creation_with_autocommit(self):
         """
-            Try creating and dropping database with autocommit
+        Try creating and dropping database with autocommit
         """
         cur = pymssqlconn(autocommit=True).cursor()
-        cur.execute("CREATE DATABASE {0}".format(self.test_db_name))
-        cur.execute("DROP DATABASE {0}".format(self.test_db_name))
+        try:
+            cur.execute("CREATE DATABASE {0}".format(self.test_db_name))
+        except pym.OperationalError as e:
+            if "CREATE DATABASE permission denied in database 'master'" in e.args[1]:
+                skip_test('We have no CREATE DATABASE permission on test database')
+            else:
+                raise
+        else:
+            cur.execute("DROP DATABASE {0}".format(self.test_db_name))
 
     def test_db_creation_without_autocommit(self):
         """
-            Try creating and dropping database without autocommit, expecting it to fail
+        Try creating and dropping database without autocommit, expecting it to fail
         """
         cur = pymssqlconn(autocommit=False).cursor()
         try:
