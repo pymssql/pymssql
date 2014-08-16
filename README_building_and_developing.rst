@@ -125,14 +125,14 @@ Testing
 
 You will need to install two additional packages for testing::
 
-  easy_install SQLAlchemy
+  easy_install pytest SQLAlchemy
 
 You should build the package with::
 
   python setup.py develop
 
 You need to setup a ``tests.cfg`` file in ``tests/`` with the correct DB
-connection information for your environement::
+connection information for your environment::
 
   cp tests/tests.cfg.tpl tests/tests.cfg
   vim|emacs|notepad tests/tests.cfg
