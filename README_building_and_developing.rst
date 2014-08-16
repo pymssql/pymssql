@@ -125,7 +125,7 @@ Testing
 
 You will need to install two additional packages for testing::
 
-  easy_install nose SQLAlchemy
+  easy_install SQLAlchemy
 
 You should build the package with::
 
@@ -134,33 +134,32 @@ You should build the package with::
 You need to setup a ``tests.cfg`` file in ``tests/`` with the correct DB
 connection information for your environement::
 
-  cd tests/
-  cp tests.cfg.tpl tests.cfg
-  vim|emacs|notepad tests.cfg
+  cp tests/tests.cfg.tpl tests/tests.cfg
+  vim|emacs|notepad tests/tests.cfg
 
 To run the tests::
 
-  cd tests/
-  nosetests
+  cd tests # optional
+  py.test
 
 Which will go through and run all the tests with the settings from the ``DEFAULT``
 section of ``tests.cfg``.
 
 To run with a different ``tests.cfg`` section::
 
-  nosetests --pymssql-section=<secname>
+  py.test --pymssql-section=<secname>
 
 example::
 
-  nosetests --pymssql-section=AllTestsWillRun
+  py.test --pymssql-section=AllTestsWillRun
 
 to avoid slow tests::
 
-  nosetests -a '!slow'
+  py.test -m "not slow"
 
 to select specific tests to run::
 
-  nosetests test_types.py
-  nosetests test_types.py test_sprocs.py
-  nosetests test_types.py:TestTypes
-  nosetests test_types.py:TestTypes.test_image
+  py.test tests/test_types.py
+  py.test tests/test_types.py tests/test_sprocs.py
+  py.test tests/test_types.py::TestTypes
+  py.test tests/test_types.py::TestTypes::test_image

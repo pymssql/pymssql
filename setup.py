@@ -32,7 +32,7 @@ import platform
 # running python setup.py test (see
 # http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html)
 try:
-    import multiprocessing
+    import multiprocessing  # NOQA
 except ImportError:
     pass
 
@@ -40,12 +40,10 @@ sys.path.append(osp.join(osp.dirname(__file__), '.pyrex'))
 
 try:
     from setuptools import setup, Extension
-    from setuptools.command.develop import develop as STDevelopCmd
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
-    from setuptools.command.develop import develop as STDevelopCmd
 
 # Work around Setuptools' broken (Cython-unaware) monkeypatching
 # to support Pyrex. This monkeypatching makes the Cython step get skipped if
@@ -58,6 +56,9 @@ except ImportError:
     pass
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
+
+from setuptools.command.test import test as TestCommand
+
 
 ROOT = osp.abspath(osp.dirname(__file__))
 
@@ -337,12 +338,6 @@ class release(Command):
         sdist.ensure_finalized()
         sdist.run()
 
-class DevelopCmd(STDevelopCmd):
-    def run(self):
-        # add in the nose plugin only when we are using the develop command
-        self.distribution.entry_points['nose.plugins'] = ['pymssql_config = tests.nose_plugin:ConfigPlugin']
-        STDevelopCmd.run(self)
-
 def ext_modules():
     if have_c_files:
         source_extension = 'c'
@@ -362,6 +357,26 @@ def ext_modules():
         ),
     ]
 
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = None
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
+
 setup(
     name  = 'pymssql',
     version = extract_version(),
@@ -379,7 +394,7 @@ setup(
         'build_ext': build_ext,
         'clean': clean,
         'release': release,
-        'develop': DevelopCmd
+        'test': PyTest,
     },
     classifiers=[
       "Development Status :: 5 - Production/Stable",
@@ -402,12 +417,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_git'],
-    tests_require=['nose', 'unittest2'],
-    test_suite='nose.collector',
+    tests_require=['pytest', 'unittest2'],
     ext_modules = ext_modules(),
-
-    # don't remove this, otherwise the customization above in DevelopCmd
-    # will break.  You can safely add to it though, if needed.
-    entry_points = {}
 
 )
