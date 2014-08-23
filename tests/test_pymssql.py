@@ -1,8 +1,11 @@
 import unittest
 
+import pytest
+
 import pymssql as pym
 
-from .helpers import pymssqlconn, PyTableBase, drop_table, CursorBase, eq_, config
+from .helpers import (pymssqlconn, PyTableBase, CursorBase, eq_, config,
+                      skip_test)
 
 class TestDBAPI2(object):
     def test_version(self):
@@ -83,12 +86,14 @@ class TestTransaction(unittest.TestCase, PyTableBase):
         # too
         eq_(self.row_count(), 0)
 
+
 class TestCursor(CursorBase):
     dbmod = pym
 
     @classmethod
     def newconn(cls):
         cls.conn = pymssqlconn()
+
 
 class TestBasicConnection(unittest.TestCase):
 
@@ -130,3 +135,82 @@ class TestBasicConnection(unittest.TestCase):
             password=config.password
         )
         conn.close()
+
+
+class TestAutocommit(unittest.TestCase, PyTableBase):
+    tname = 'test'
+    cols = (
+        'name varchar(50)',
+    )
+
+    insert_query = 'INSERT INTO {tname} VALUES (%s)'.format(tname=tname)
+    select_query = 'SELECT * FROM {tname} WHERE name = (%s)'.format(tname=tname)
+
+    test_db_name = 'autocommit_test_database'
+
+    def setUp(self):
+        PyTableBase.setUp(self)
+
+    def tearDown(self):
+        self.conn._conn.execute_non_query("IF EXISTS(select * from sys.databases where name='{0}') DROP DATABASE {0}".format(self.test_db_name))
+
+    def test_db_creation_with_autocommit(self):
+        """
+        Try creating and dropping database with autocommit
+        """
+        cur = pymssqlconn(autocommit=True).cursor()
+        try:
+            cur.execute("CREATE DATABASE {0}".format(self.test_db_name))
+        except pym.OperationalError as e:
+            expected_msg = "CREATE DATABASE permission denied in database 'master'"
+            if expected_msg in str(e.args[1]):
+                skip_test('We have no CREATE DATABASE permission on test database')
+            else:
+                pytest.fail()
+        else:
+            cur.execute("DROP DATABASE {0}".format(self.test_db_name))
+
+    def test_db_creation_without_autocommit(self):
+        """
+        Try creating and dropping database without autocommit, expecting it to fail
+        """
+        cur = pymssqlconn(autocommit=False).cursor()
+        with pytest.raises(pym.OperationalError) as excinfo:
+            cur.execute("CREATE DATABASE autocommit_test_database")
+        expected_msg = "CREATE DATABASE statement not allowed within multi-statement transaction"
+        assert expected_msg in excinfo.exconly()
+
+    def test_autocommit_flipping_tf(self):
+        insert_value = 'true-false'
+        conn = pymssqlconn(autocommit=True)
+        conn.autocommit(False)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        conn.commit()
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        assert len(row) > 0
+
+    def test_autocommit_flipping_ft(self):
+        insert_value = 'false-true'
+        conn = pymssqlconn(autocommit=False)
+        conn.autocommit(True)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        assert len(row) > 0
+
+    def test_autocommit_false_does_not_commit(self):
+        insert_value = 'false'
+        conn = pymssqlconn(autocommit=False)
+        cur = conn.cursor()
+        cur.execute(self.insert_query, insert_value)
+        conn.rollback()
+        cur.execute(self.select_query, insert_value)
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        assert row is None

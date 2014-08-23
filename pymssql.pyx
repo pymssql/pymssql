@@ -235,14 +235,16 @@ cdef class Connection:
                 raise InterfaceError('Connection is closed.')
             return self.conn
 
-    def __init__(self, conn, as_dict):
+    def __init__(self, conn, as_dict, autocommit):
         self.conn = conn
-        self._autocommit = False
+        self._autocommit = autocommit
         self.as_dict = as_dict
-        try:
-            self._conn.execute_non_query('BEGIN TRAN')
-        except Exception, e:
-            raise OperationalError('Cannot start transaction: ' + str(e.args[0]))
+
+        if not autocommit:
+            try:
+                self._conn.execute_non_query('BEGIN TRAN')
+            except Exception, e:
+                raise OperationalError('Cannot start transaction: ' + str(e.args[0]))
 
     def __dealloc__(self):
         if self.conn:
@@ -258,6 +260,7 @@ cdef class Connection:
 
         tran_type = 'ROLLBACK' if status else 'BEGIN'
         self._conn.execute_non_query('%s TRAN' % tran_type)
+
         self._autocommit = status
 
     def __enter__(self):
@@ -574,7 +577,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433', conn_properties=None):
+        host='', appname=None, port='1433', conn_properties=None, autocommit=False):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -602,6 +605,8 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :keyword conn_properties: SQL queries to send to the server upon connection
                               establishment. Can be a string or another kind
                               of iterable of strings
+    :keyword autocommit whether to use default autocommiting mode or not
+    :type autocommit: boolean
     """
 
     _mssql.login_timeout = login_timeout
@@ -637,7 +642,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     if timeout != 0:
         conn.query_timeout = timeout
 
-    return Connection(conn, as_dict)
+    return Connection(conn, as_dict, autocommit)
 
 def get_max_connections():
     """
