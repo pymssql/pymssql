@@ -10,7 +10,7 @@ before_install:
 - pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
 - pip install Sphinx sphinx-rtd-theme
 - pip --version
-- time pip install --use-wheel --no-index --find-links=http://wheels.astropy.org/ --find-links=http://wheels2.astropy.org/ Cython
+- pip install --use-wheel Cython
 - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 install:
 - python setup.py install
