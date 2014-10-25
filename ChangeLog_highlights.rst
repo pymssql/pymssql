@@ -17,6 +17,8 @@ Features
   Python. See the ``_msssql`` examples and reference sections of the
   documentation for more details.
 
+  Thanks Marc Abramowitz.
+
 - Compatibility with Azure
 
   It is now possible to transparently connect to `SQL Server instances`_
@@ -26,19 +28,25 @@ Features
             newer.
 
 - Customizable per-connection initialization SQL clauses (both in ``pymssql``
-  and ``_mssql``)
+  and ``_mssql``) (GH-97)
 
   It is now possible to customize the SQL statements sent right after the
   connection is established (e.g. ``'SET ANSI_NULLS ON;'``). Previously
   it was a hard-coded list of queries. See the ``_mssql.MSSQLConnection``
   documentation for more details.
 
+  Thanks Marc Abramowitz.
+
 - Added ability to handle instances of ``uuid.UUID`` passed as parameters for
   SQL queries both in ``pymssql`` and ``_mssql``. (GH-209)
+
+  Thanks Marat Mavlyutov.
 
 - Allow using `SQL Server autocommit mode`_ from ``pymssql`` at connection
   opening time. This allows e.g. DDL statements like ``DROP DATABASE`` to be
   executed. (GH-210)
+
+  Thanks Marat Mavlyutov.
 
 - Documentation: Explicitly mention minimum versions supported of Python (2.6)
   and SQL Server (2005).
@@ -54,11 +62,11 @@ Bug fixes
 
 - Handle errors when calling Stored Procedures via the ``.callproc()`` pymssql
   cursor method. Now it will raise a DB-API ``DatabaseException``; previously
-  it left a ``_mssql.MSSQLDatabaseException`` exception to surface.
+  it allowed a ``_mssql.MSSQLDatabaseException`` exception to surface.
 
 - Fixes in ``tds_version`` ``_mssql`` connections property value
 
-  Made it work with TDS protocol version 7.2.
+  Made it work with TDS protocol version 7.2. (GH-211)
 
   The value returned for TDS version 7.1 is still 8.0 for backward
   compatibility (this is because such feature got added in times when
@@ -66,28 +74,35 @@ Bug fixes
   as 8.0 and 9.0; later it changed them to 7.1 and 7.2 respectively) and will
   be corrected in a future release (2.2).
 
-- PEP 249 compliance
+- PEP 249 compliance (GH-251)
 
   Added type constructors to increase compatibility with other libraries.
 
-- Fixed bug that caused ``tds_version`` property of ``_mssql`` connections to
-  contain invalid values under certain conditions (GH-211)
+  Thanks Aymeric Augustin.
+
+- pymssql: Made handling of integer SP params more robust (GH-237)
+
+- Check lower bound value when convering integer values from to Python to SQL
+  (GH-238)
 
 Internals
 ---------
 
 - Completed migration of the test suite from nose to py.test.
 
-- Added testing of successful build of documentation to Travis CI script.
+- Added a few more test cases to our suite.
 
 - Tests: Modified a couple of test cases so the full suite can be run against
   SQL Server 2005.
 
-- Build process: Cleanup ad-hoc anciliary files (GH-273)
+- Added testing of successful build of documentation to Travis CI script.
 
-- setup.py: Fixed handling of files actually included in the release tarballs so
-  no extraneous files are shipped and the documentation tree is actually
-  included. Also, removed unused code.
+- Build process: Cleanup intermediate and ad-hoc anciliary files (GH-231,
+  GH-273)
+
+- setup.py: Fixed handling of release tarballs contents so no extraneous files
+  are shipped and the documentation tree is actually included. Also, removed
+  unused code.
 
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
