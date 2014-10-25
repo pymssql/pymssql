@@ -1,8 +1,8 @@
 Recent Changes
 ==============
 
-Version 2.1.1 - 2014-10-25 - Ramiro Morales
-===========================================
+Version 2.1.1 - To be released
+==============================
 
 Features
 --------
