@@ -303,6 +303,24 @@ class CursorBase(DBAPIBase):
 
         eq_(cur.rowcount, 5)
 
+    def test_fetchone_rowcount_empty_resultset(self):
+        cur = self.execute('select top 0 * from test')
+        eq_(cur.rowcount, -1)
+        cur.fetchone()
+        eq_(cur.rowcount, 0)
+
+    def test_fetchmany_rowcount_empty_resultset(self):
+        cur = self.execute('select top 0 * from test')
+        eq_(cur.rowcount, -1)
+        cur.fetchmany()
+        eq_(cur.rowcount, 0)
+
+    def test_fetchall_rowcount_empty_resultset(self):
+        cur = self.execute('select top 0 * from test')
+        eq_(cur.rowcount, -1)
+        cur.fetchall()
+        eq_(cur.rowcount, 0)
+
     def test_as_dict(self):
         # test for http://code.google.com/p/pymssql/issues/detail?id=92
         cur = self.conn.cursor(as_dict=True)
