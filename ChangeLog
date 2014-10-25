@@ -9,53 +9,100 @@ Features
 
 - Custom message handlers (GH-139)
 
-  The DB-Library API includes a callback mechanism so application can provide
-  functions known as *message handlers* which get passed informative messages
+  The DB-Library API includes a callback mechanism so applications can provide
+  functions known as *message handlers* that get passed informative messages
   sent by the server which then can be logged, shown to the user, etc.
 
   ``_mssql`` now allows you to install your own *message handlers* written in
   Python. See the ``_msssql`` examples and reference sections of the
   documentation for more details.
 
+  Thanks Marc Abramowitz.
+
 - Compatibility with Azure
 
   It is now possible to transparently connect to `SQL Server instances`_
   accessible as part of the Azure_ cloud services.
 
-  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+  .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or
+            newer.
 
-- Customizable per-connection initialization SQL clauses
+- Customizable per-connection initialization SQL clauses (both in ``pymssql``
+  and ``_mssql``) (GH-97)
 
-  (both in pymssql and _mssql)
-
-  It is now possible to customize the SQL queries sent righ after the
+  It is now possible to customize the SQL statements sent right after the
   connection is established (e.g. ``'SET ANSI_NULLS ON;'``). Previously
   it was a hard-coded list of queries. See the ``_mssql.MSSQLConnection``
   documentation for more details.
 
+  Thanks Marc Abramowitz.
+
+- Added ability to handle instances of ``uuid.UUID`` passed as parameters for
+  SQL queries both in ``pymssql`` and ``_mssql``. (GH-209)
+
+  Thanks Marat Mavlyutov.
+
+- Allow using `SQL Server autocommit mode`_ from ``pymssql`` at connection
+  opening time. This allows e.g. DDL statements like ``DROP DATABASE`` to be
+  executed. (GH-210)
+
+  Thanks Marat Mavlyutov.
+
+- Documentation: Explicitly mention minimum versions supported of Python (2.6)
+  and SQL Server (2005).
+
+- Incremental enhancements to the documentation.
+
 .. _SQL Server instances: http://www.windowsazure.com/en-us/services/sql-database/
 .. _Azure: https://www.windowsazure.com/
+.. _SQL Server autocommit mode: http://msdn.microsoft.com/en-us/library/ms187878%28v=sql.105%29.aspx
 
 Bug fixes
 ---------
 
 - Handle errors when calling Stored Procedures via the ``.callproc()`` pymssql
   cursor method. Now it will raise a DB-API ``DatabaseException``; previously
-  it left a ``_mssql.MSSQLDatabaseException`` exception to surface.
+  it allowed a ``_mssql.MSSQLDatabaseException`` exception to surface.
 
-- Fixes in ``tds_version``  ``_mssql`` connections property value
+- Fixes in ``tds_version`` ``_mssql`` connections property value
 
-  Made it work with TDS protocol version 7.2.
+  Made it work with TDS protocol version 7.2. (GH-211)
 
   The value returned for TDS version 7.1 is still 8.0 for backward
   compatibility (this is because such feature got added in times when
   Microsoft documentation labeled the two protocol versions that followed 7.0
   as 8.0 and 9.0; later it changed them to 7.1 and 7.2 respectively) and will
-  be corrected in a future release.
+  be corrected in a future release (2.2).
 
-- PEP 249 compliance
+- PEP 249 compliance (GH-251)
 
   Added type constructors to increase compatibility with other libraries.
+
+  Thanks Aymeric Augustin.
+
+- pymssql: Made handling of integer SP params more robust (GH-237)
+
+- Check lower bound value when convering integer values from to Python to SQL
+  (GH-238)
+
+Internals
+---------
+
+- Completed migration of the test suite from nose to py.test.
+
+- Added a few more test cases to our suite.
+
+- Tests: Modified a couple of test cases so the full suite can be run against
+  SQL Server 2005.
+
+- Added testing of successful build of documentation to Travis CI script.
+
+- Build process: Cleanup intermediate and ad-hoc anciliary files (GH-231,
+  GH-273)
+
+- setup.py: Fixed handling of release tarballs contents so no extraneous files
+  are shipped and the documentation tree is actually included. Also, removed
+  unused code.
 
 Version 2.1.0 - 2014-02-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 =============================================================================
@@ -69,38 +116,39 @@ Features
 
   Thanks, Ramiro Morales!
 
-	See:
-	* https://github.com/pymssql/pymssql/pull/149
-	* https://github.com/pymssql/pymssql/pull/162
-	* https://github.com/pymssql/pymssql/pull/164
-	* https://github.com/pymssql/pymssql/pull/165
-	* https://github.com/pymssql/pymssql/pull/166
-	* https://github.com/pymssql/pymssql/pull/167
-	* https://github.com/pymssql/pymssql/pull/169
-	* https://github.com/pymssql/pymssql/pull/174
-	* https://github.com/pymssql/pymssql/pull/175
+  See:
+
+  * https://github.com/pymssql/pymssql/pull/149
+  * https://github.com/pymssql/pymssql/pull/162
+  * https://github.com/pymssql/pymssql/pull/164
+  * https://github.com/pymssql/pymssql/pull/165
+  * https://github.com/pymssql/pymssql/pull/166
+  * https://github.com/pymssql/pymssql/pull/167
+  * https://github.com/pymssql/pymssql/pull/169
+  * https://github.com/pymssql/pymssql/pull/174
+  * https://github.com/pymssql/pymssql/pull/175
 
 - "Green" support (GH-135)
 
-	Lets you use pymssql with cooperative multi-tasking systems like
-	gevent and have pymssql call a callback when it is waiting for a
-	response from the server. You can set this callback to yield to
-	another greenlet, coroutine, etc. For example, for gevent, you could
-	do::
+  Lets you use pymssql with cooperative multi-tasking systems like
+  gevent and have pymssql call a callback when it is waiting for a
+  response from the server. You can set this callback to yield to
+  another greenlet, coroutine, etc. For example, for gevent, you could
+  do::
 
-        def wait_callback(read_fileno):
-            gevent.socket.wait_read(read_fileno)
+      def wait_callback(read_fileno):
+          gevent.socket.wait_read(read_fileno)
 
-        pymssql.set_wait_callback(wait_callback)
+      pymssql.set_wait_callback(wait_callback)
 
-	The above is useful if you're say, running a gunicorn server with the
-	gevent worker. With this callback in place, when you send a query to
-	SQL server and are waiting for a response, you can yield to other
-	greenlets and process other requests. This is super useful when you
-	have high concurrency and/or slow database queries and lets you use
-	less gunicorn worker processes and still handle high concurrency.
+  The above is useful if you're say, running a gunicorn server with the
+  gevent worker. With this callback in place, when you send a query to
+  SQL server and are waiting for a response, you can yield to other
+  greenlets and process other requests. This is super useful when you
+  have high concurrency and/or slow database queries and lets you use
+  less gunicorn worker processes and still handle high concurrency.
 
-	See https://github.com/pymssql/pymssql/pull/135
+  See https://github.com/pymssql/pymssql/pull/135
 
 - Better error messages.
 
@@ -116,88 +164,91 @@ Features
       does not exist\nNet-Lib error during Connection refused\n')
 
   See:
-	* https://github.com/pymssql/pymssql/pull/151
+  * https://github.com/pymssql/pymssql/pull/151
 
-	In the area of error messages, we also made this change:
+  In the area of error messages, we also made this change:
 
-	execute: Raise ColumnsWithoutNamesError when as_dict=True and missing
-	column names (GH-160)
+  execute: Raise ColumnsWithoutNamesError when as_dict=True and missing
+  column names (GH-160)
 
-	because the previous behavior was very confusing; instead of raising
-	an exception, we would just return row dicts with those columns
-	missing. This prompted at least one question on the mailing list
-	(https://groups.google.com/forum/?fromgroups#!topic/pymssql/JoZpmNZFtxM),
-	so we thought it was better to handle this explicitly by raising an
-	exception, so the user would understand what went wrong.
+  because the previous behavior was very confusing; instead of raising
+  an exception, we would just return row dicts with those columns
+  missing. This prompted at least one question on the mailing list
+  (https://groups.google.com/forum/?fromgroups#!topic/pymssql/JoZpmNZFtxM),
+  so we thought it was better to handle this explicitly by raising an
+  exception, so the user would understand what went wrong.
 
-	See:
-	* https://github.com/pymssql/pymssql/pull/160
-	* https://github.com/pymssql/pymssql/pull/168
+  See:
+  * https://github.com/pymssql/pymssql/pull/160
+  * https://github.com/pymssql/pymssql/pull/168
 
 - Performance improvements
 
-	You are most likely to notice a difference from these when you are
-	fetching a large number of rows.
+  You are most likely to notice a difference from these when you are
+  fetching a large number of rows.
 
-	* Reworked row fetching (GH-159)
+  * Reworked row fetching (GH-159)
 
-	  There was a rather large amount of type conversion occuring when
-		fetching a row from pymssql. The number of conversions required have
-		been cut down significantly with these changes.
-	  Thanks Damien, Churchill!
+    There was a rather large amount of type conversion occuring when
+    fetching a row from pymssql. The number of conversions required have
+    been cut down significantly with these changes.
+    Thanks Damien, Churchill!
 
-		See:
-		* https://github.com/pymssql/pymssql/pull/158
-		* https://github.com/pymssql/pymssql/pull/159
+    See:
+    * https://github.com/pymssql/pymssql/pull/158
+    * https://github.com/pymssql/pymssql/pull/159
 
-	* Modify get_row() to use the CPython tuple API (GH-178)
+  * Modify get_row() to use the CPython tuple API (GH-178)
 
     This drops the previous method of building up a row tuple and switches
     to using the CPython API, which allows you to create a correctly sized
     tuple at the beginning and simply fill it in. This appears to offer
     around a 10% boost when fetching rows from a table where the data is
     already in memory.
-	  Thanks Damien, Churchill!
+    Thanks Damien, Churchill!
 
-		See:
-		* https://github.com/pymssql/pymssql/pull/178
+    See:
+    * https://github.com/pymssql/pymssql/pull/178
 
 - MSSQLConnection: Add `with` (context manager) support (GH-171)
 
   This adds `with` statement support for MSSQLConnection in the `_mssql`
-	module -- e.g.:
+  module -- e.g.::
 
-        with mssqlconn() as conn:
-            conn.execute_query("SELECT @@version AS version")
+      with mssqlconn() as conn:
+          conn.execute_query("SELECT @@version AS version")
 
-	We already have `with` statement support for the `pymssql` module.
-
+  We already have `with` statement support for the `pymssql` module.
   See:
-	* https://github.com/pymssql/pymssql/pull/171
+
+  * https://github.com/pymssql/pymssql/pull/171
 
 - Allow passing in binary data (GH-179)
 
-	Use the bytesarray type added in Python 2.6 to signify that this is
-	binary data and to quote it accordingly. Also modify the handling of
-	str/bytes types checking the first 2 characters for b'0x' and insert
-	that as binary data.
+  Use the bytesarray type added in Python 2.6 to signify that this is
+  binary data and to quote it accordingly. Also modify the handling of
+  str/bytes types checking the first 2 characters for b'0x' and insert
+  that as binary data.
+  See:
 
-	See:
-	* https://github.com/pymssql/pymssql/pull/179
+  * https://github.com/pymssql/pymssql/pull/179
 
 - Add support for binding uuid.UUID instances to stored procedures input
   params (GH-143)
-	Thanks, Ramiro Morales!
-	See:
-	* https://github.com/pymssql/pymssql/pull/143
-	* https://github.com/pymssql/pymssql/commit/1689c83878304f735eb38b1c63c31e210b028ea7
+  Thanks, Ramiro Morales!
+
+  See:
+  * https://github.com/pymssql/pymssql/pull/143
+  * https://github.com/pymssql/pymssql/commit/1689c83878304f735eb38b1c63c31e210b028ea7
 
 - The version number is now stored in one place, in pymssql_version.h
   This makes it easier to update the version number and not forget any
-	places, like I did with pymssql 2.0.1
-	* See https://github.com/pymssql/pymssql/commit/fd317df65fa62691c2af377e4661defb721b2699
+  places, like I did with pymssql 2.0.1
+
+  * See https://github.com/pymssql/pymssql/commit/fd317df65fa62691c2af377e4661defb721b2699
 
 - Improved support for using py.test as test runner (GH-183)
+
   * See: https://github.com/pymssql/pymssql/pull/183
 
 - Improved PEP-8 and pylint compliance
@@ -205,42 +256,49 @@ Features
 Bug Fixes
 ---------
 
-- GH-142 ("Change how *.pyx files are included in package") - this
-	should prevent pymssql.pyx and _mssql.pyx from getting copied into the
-	root of your virtualenv. Thanks, @Arfrever!
-	* See: https://github.com/pymssql/pymssql/issues/142
+- GH-142 ("Change how ``*.pyx`` files are included in package") - this
+  should prevent pymssql.pyx and _mssql.pyx from getting copied into the
+  root of your virtualenv. Thanks, @Arfrever!
+
+  * See: https://github.com/pymssql/pymssql/issues/142
 
 - GH-145 ("Prevent error string growing with repeated failed connection
   attempts.")
-	See:
-	* https://github.com/pymssql/pymssql/issues/145
-	* https://github.com/pymssql/pymssql/pull/146
+
+  See:
+
+  * https://github.com/pymssql/pymssql/issues/145
+  * https://github.com/pymssql/pymssql/pull/146
 
 - GH-151 ("err_handler: Don't clobber dberrstr with oserrstr")
-	* https://github.com/pymssql/pymssql/pull/151
+
+  * https://github.com/pymssql/pymssql/pull/151
 
 - GH-152 ("_mssql.pyx: Zero init global last_msg_* vars")
   See: https://github.com/pymssql/pymssql/pull/152
 
 - GH-177 ("binary columns sometimes are processed as varchar")
   Better mechanism for pymssql to detect that user is passing binary
-	data.
+  data.
+
   See: https://github.com/pymssql/pymssql/issues/177
 
 - buffer overflow fix (GH-182)
+
   * See: https://github.com/pymssql/pymssql/pull/181
   * See: https://github.com/pymssql/pymssql/pull/182
 
 - Return uniqueidentifer columns as uuid.UUID objects on Python 3
 
-
 Version 2.0.1 - 2013-10-27 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 -----------------------------------------------------------------------------
+
 * MANIFEST.in: Add "\*.rst" to prevent install error: "IOError: [Errno 2] No
   such file or directory: 'ChangeLog_highlights.rst'"
 
 Version 2.0.0 - 2013-10-25 - `Marc Abramowitz <http://marc-abramowitz.com/>`_
 -----------------------------------------------------------------------------
+
 * First official release of pymssql 2.X (`Cython`_-based code) to `PyPI`_!
 * Compared to pymssql 1.X, this version offers:
 
