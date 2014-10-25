@@ -68,6 +68,7 @@ the following links for resolutions:
 
 - http://www.freetds.org/userguide/osissues.htm
 - http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
+- http://lists.ibiblio.org/pipermail/freetds/2010q4/026342.html
 
 When this is done, the following files should be available (depending on
 ``CONFIGURATION`` and ``PLATFORM`` used above)::
