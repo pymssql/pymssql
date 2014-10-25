@@ -63,7 +63,10 @@ from setuptools.command.test import test as TestCommand
 ROOT = osp.abspath(osp.dirname(__file__))
 
 def fpath(*parts):
-    """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
+    """
+    Return fully qualified path for parts, e.g.
+    fpath('a', 'b') -> '<this dir>/a/b'
+    """
     return osp.join(ROOT, *parts)
 
 have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
@@ -82,6 +85,7 @@ else:
     Distribution(dict(setup_requires='Cython>=0.19.1'))
 
     from Cython.Distutils import build_ext as _build_ext
+from distutils.dir_util import remove_tree
 import struct
 
 def extract_version():
@@ -93,6 +97,24 @@ def extract_version():
     version = content.split()[2].replace('"', '')
 
     return version
+
+@contextlib.contextmanager
+def fs_cleanup(files=None, dirs=None):
+    """
+    A context manager to remove ``files`` and ``dirs`` from the
+    source tree. Useful to cleanup anciliary intermediate files.
+    """
+    yield
+    if files:
+        for fname in files:
+            path = fpath(fname)
+            if osp.exists(path):
+                os.remove(path)
+    if dirs:
+        for dname in dirs:
+            path = fpath(dname)
+            if osp.exists(path):
+                remove_tree(path)
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
@@ -179,9 +201,10 @@ else:
 
     libraries = ['sybdb']
 
-    with stdchannel_redirected(sys.stderr, os.devnull):
-        if compiler.has_function('clock_gettime', libraries=['rt']):
-            libraries.append('rt')
+    with fs_cleanup(files=['a.out'], dirs=['tmp']):
+        with stdchannel_redirected(sys.stderr, os.devnull):
+            if compiler.has_function('clock_gettime', libraries=['rt']):
+                libraries.append('rt')
 
 usr_local = '/usr/local'
 if osp.exists(usr_local):
@@ -273,6 +296,7 @@ class build_ext(_build_ext):
             for e in self.extensions:
                 e.libraries.extend(libraries)
         _build_ext.build_extensions(self)
+
 
 class clean(_clean):
     """
