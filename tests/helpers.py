@@ -285,6 +285,24 @@ class CursorBase(DBAPIBase):
         cur.fetchall()
         eq_(cur.rowcount, 5)
 
+    def test_fetchone_rowcount(self):
+        cur = self.execute('select * from test')
+        eq_(cur.rowcount, -1)
+
+        for _ in iter(cur.fetchone, None):
+            eq_(cur.rowcount, -1)
+
+        eq_(cur.rowcount, 5)
+
+    def test_fetchmany_rowcount(self):
+        cur = self.execute('select * from test')
+        eq_(cur.rowcount, -1)
+
+        for _ in iter(cur.fetchmany, []):
+            eq_(cur.rowcount, -1)
+
+        eq_(cur.rowcount, 5)
+
     def test_as_dict(self):
         # test for http://code.google.com/p/pymssql/issues/detail?id=92
         cur = self.conn.cursor(as_dict=True)
