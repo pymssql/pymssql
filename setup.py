@@ -281,7 +281,10 @@ class build_ext(_build_ext):
                 ]
             else:
                 # Assume compiler is Visual Studio
-                freetds_dir = 'vs2008'
+                if sys.version_info >= (3, 3):
+                    freetds_dir = 'vs2010'
+                else:
+                    freetds_dir = 'vs2008'
                 libraries = [
                     'db-lib', 'tds',
                     'ws2_32', 'wsock32', 'kernel32', 'shell32',
