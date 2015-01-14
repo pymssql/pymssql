@@ -53,7 +53,7 @@ Functions
     :keyword appname: Set the application name to use for the connection
     :type appname: string
     :keyword port: the TCP port to use to connect to the server
-    :type port: string
+    :type port: int
     :keyword conn_properties: SQL queries to send to the server upon connection
                               establishment. Can be a string or another kind
                               of iterable of strings. Default value: See
