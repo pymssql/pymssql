@@ -20,6 +20,31 @@ Supported related software
 :Cython: 0.15 or newer.
 :Microsoft SQL Server: 2005 or newer.
 
+Install
+=======
+
+pip
+---
+
+.. code-block:: console
+
+    pip install pymssql
+
+will install pymssql from `PyPI <https://pypi.python.org/pypi/pymssql>`_. This
+PyPI page contains:
+
+- source distribution (``.tar.gz``)
+- eggs (``.egg``) for Windows
+- wheels (``.whl``) for Windows
+- Windows installers (``.exe``) for Windows
+
+Windows installers
+------------------
+
+There are installers for Windows (``.exe`` files) available at `PyPI
+<https://pypi.python.org/pypi/pymssql>`_. Download one and double-click to
+launch it and then follow the prompts.
+
 Project Discussion
 ==================
 
