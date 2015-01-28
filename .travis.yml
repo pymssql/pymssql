@@ -6,12 +6,12 @@ python:
 - 3.4
 before_install:
 - sudo apt-get install freetds-dev
-- pip install --use-mirrors pytest SQLAlchemy
-- pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
-- pip install Sphinx sphinx-rtd-theme
+- travis_retry pip install --use-mirrors pytest SQLAlchemy
+- travis_retry pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
+- travis_retry pip install Sphinx sphinx-rtd-theme
 - pip --version
-- pip install --use-wheel Cython
-- "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
+- travis_retry pip install --use-wheel Cython
+- "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then travis_retry pip install unittest2; fi"
 install:
 - python setup.py install
 script:
