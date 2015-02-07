@@ -823,6 +823,7 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.convert_python_value()")
         cdef int *intValue
         cdef double *dblValue
+        cdef float *fltValue
         cdef PY_LONG_LONG *longValue
         cdef char *strValue
         cdef char *tmp
@@ -868,15 +869,18 @@ cdef class MSSQLConnection:
             dbValue[0] = <BYTE *>longValue
             return 0
 
-        if dbtype[0] in (SQLFLT4, SQLFLT8):
+        if dbtype[0] in (SQLFLT4, SQLREAL):
+            fltValue = <float *>PyMem_Malloc(sizeof(float))
+            fltValue[0] = <float>value
+            dbValue[0] = <BYTE *><DBREAL *>fltValue
+            return 0
+
+        if dbtype[0] == SQLFLT8:
+            print 'Using FLT8'
             dblValue = <double *>PyMem_Malloc(sizeof(double))
             dblValue[0] = <double>value
-            if dbtype[0] == SQLFLT4:
-                dbValue[0] = <BYTE *><DBREAL *>dblValue
-                return 0
-            if dbtype[0] == SQLFLT8:
-                dbValue[0] = <BYTE *><DBFLT8 *>dblValue
-                return 0
+            dbValue[0] = <BYTE *><DBFLT8 *>dblValue
+            return 0
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
             if type(value) not in (datetime.date, datetime.datetime):
