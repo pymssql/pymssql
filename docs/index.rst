@@ -7,15 +7,6 @@
 pymssql
 =======
 
-.. image:: https://travis-ci.org/pymssql/pymssql.png?branch=master
-        :target: https://travis-ci.org/pymssql/pymssql
-
-.. image:: http://img.shields.io/pypi/dm/pymssql.svg
-        :target: https://pypi.python.org/pypi/pymssql/
-
-.. image:: http://img.shields.io/pypi/v/pymssql.svg
-        :target: https://pypi.python.org/pypi/pymssql/
-
 A simple database interface for `Python`_ that builds on top of `FreeTDS`_ to
 provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
