@@ -876,7 +876,6 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] == SQLFLT8:
-            print 'Using FLT8'
             dblValue = <double *>PyMem_Malloc(sizeof(double))
             dblValue[0] = <double>value
             dbValue[0] = <BYTE *><DBFLT8 *>dblValue
