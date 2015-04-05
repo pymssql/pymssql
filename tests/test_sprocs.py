@@ -462,7 +462,7 @@ class TestFloatTypeConversion(unittest.TestCase):
             'pymssqlRealTest',
             (0.5,))
 
-        a = cursor.next()
+        a = next(cursor)
         assert abs(a[0] - 0.5) < 0.000001
 
     def testFloat8(self):
@@ -471,7 +471,7 @@ class TestFloatTypeConversion(unittest.TestCase):
             'pymssqlFloatTest',
             (5.44451787074e+39,))
 
-        a = cursor.next()
+        a = next(cursor)
         assert abs(a[0] - 5.44451787074e+39) < 0.000001
 
 class TestErrorInSP(unittest.TestCase):
