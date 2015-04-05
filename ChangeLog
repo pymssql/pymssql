@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version 2.1.2 - To be released
+==============================
+
+Features
+--------
+
+- Floating point values are now accepted as Stored Procedure arguments. Thanks
+  Runzhou Li (Leo) for the report and Bill Adams for the implementation.
+
+Bug fixes
+---------
+
 Version 2.1.1 - 2014-11-25 - Ramiro Morales
 ===========================================
 
