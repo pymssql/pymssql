@@ -13,6 +13,8 @@ Features
 Bug fixes
 ---------
 
+- Fix build fatal error when using Cython >= 0.22 (GH-311)
+
 Version 2.1.1 - 2014-11-25 - Ramiro Morales
 ===========================================
 
