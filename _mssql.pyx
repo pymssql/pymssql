@@ -819,7 +819,7 @@ cdef class MSSQLConnection:
             return (<char *>data)[:length]
 
     cdef int convert_python_value(self, object value, BYTE **dbValue,
-            int *dbtype, int *length) except 1:
+            int *dbtype, int *length) except -1:
         log("_mssql.MSSQLConnection.convert_python_value()")
         cdef int *intValue
         cdef double *dblValue
