@@ -20,7 +20,7 @@ Resources
 
 * `Docs & Project Home`_
 
-  * Quick Start: coming soon :)
+  * :doc:`Quick Start <pymssql_examples>`
   * `FAQ & Troubleshooting`_
 
 * `PYPI Project`_
