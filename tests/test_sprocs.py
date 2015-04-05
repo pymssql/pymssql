@@ -19,6 +19,8 @@ FIXED_TYPES = (
     'SmallInt',
     'TinyInt',
     'UniqueIdentifier',
+    'Real',
+    'Float'
 )
 
 VARIABLE_TYPES = (
@@ -207,6 +209,22 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         eq_(input, proc.parameters['@ouniqueidentifier'])
 
+    def testReal(self):
+        input = 3.14
+        proc = self.mssql.init_procedure('pymssqlTestReal')
+        proc.bind(input, _mssql.SQLREAL, '@ireal')
+        proc.bind(None, _mssql.SQLREAL, '@oreal', output=True)
+        proc.execute()
+        assert abs(input - proc.parameters['@oreal']) < 0.00001
+
+    def testFloat8(self):
+        input = 3.40E38 + 1
+        proc = self.mssql.init_procedure('pymssqlTestFloat')
+        proc.bind(input, _mssql.SQLFLT8, '@ifloat')
+        proc.bind(None, _mssql.SQLFLT8, '@ofloat', output=True)
+        proc.execute()
+        assert abs(input - proc.parameters['@ofloat']) < 0.00001
+
 
 class TestCallProcFancy(unittest.TestCase):
     # "Fancy" because we test some exotic cases like passing None or Unicode
@@ -347,6 +365,7 @@ class TestCallProcFancy(unittest.TestCase):
         eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
 
 
+
 class TestStringTypeConversion(unittest.TestCase):
 
     def setUp(self):
@@ -404,6 +423,56 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.execute()
         eq_(input, proc.parameters['@ovarchar'])
 
+
+class TestFloatTypeConversion(unittest.TestCase):
+    def setUp(self):
+        self.mssql = mssqlconn()
+        self.pymssql = pymssqlconn()
+        cursor = self.pymssql.cursor()
+
+        self.mssql.execute_non_query("""
+            CREATE PROCEDURE [dbo].[pymssqlRealTest]
+                @inparam real
+            AS
+            BEGIN
+                SELECT @inparam AS outparam
+            END
+            """
+        )
+
+        self.mssql.execute_non_query("""
+            CREATE PROCEDURE [dbo].[pymssqlFloatTest]
+                @inparam float
+            AS
+            BEGIN
+                SELECT @inparam AS outparam
+            END
+            """
+        )
+
+    def tearDown(self):
+        cursor = self.pymssql.cursor()
+        self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlRealTest]')
+        self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlFloatTest]')
+        self.pymssql.close()
+
+    def testReal(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'pymssqlRealTest',
+            (0.5,))
+
+        a = cursor.next()
+        assert abs(a[0] - 0.5) < 0.000001
+
+    def testFloat8(self):
+        cursor = self.pymssql.cursor()
+        cursor.callproc(
+            'pymssqlFloatTest',
+            (5.44451787074e+39,))
+
+        a = cursor.next()
+        assert abs(a[0] - 5.44451787074e+39) < 0.000001
 
 class TestErrorInSP(unittest.TestCase):
 
