@@ -462,6 +462,7 @@ class TestFloatTypeConversion(unittest.TestCase):
             'pymssqlRealTest',
             (0.5,))
 
+        # TODO: Use the solution we implement once #134 gets fixed
         a = next(cursor)
         assert abs(a[0] - 0.5) < 0.000001
 
@@ -471,6 +472,7 @@ class TestFloatTypeConversion(unittest.TestCase):
             'pymssqlFloatTest',
             (5.44451787074e+39,))
 
+        # TODO: Use the solution we implement once #134 gets fixed
         a = next(cursor)
         assert abs(a[0] - 5.44451787074e+39) < 0.000001
 
