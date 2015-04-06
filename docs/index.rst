@@ -21,7 +21,7 @@ Resources
 * `Docs & Project Home`_
 
   * :doc:`Quick Start <pymssql_examples>`
-  * `FAQ & Troubleshooting`_
+  * :doc:`FAQ & Troubleshooting <faq>`
 
 * `PYPI Project`_
 * GitHub_
@@ -60,18 +60,12 @@ Survey Results
 * Excel (.xls) -- http://cl.ly/1R0m2B342I0k/download/SurveySummary_04092014.xls
 * PDF -- http://cl.ly/2P3o1N1K2h3p/download/Data_All_140409.pdf
 
-Recent Changes
---------------
-
-<Need to import>
-
 .. _Docs & Project Home: http://pymssql.org
 .. _Python: http://www.python.org/
 .. _FreeTDS: http://www.freetds.org/
 .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
 .. _Microsoft SQL Server: http://www.microsoft.com/sqlserver/
 .. _Cython: http://cython.org
-.. _FAQ & Troubleshooting: http://pymssql.org/faq.html
 .. _PYPI Project: https://pypi.python.org/pypi/pymssql/
 .. _GitHub: https://github.com/pymssql/pymssql
 .. _FreeTDS User Guide:  http://www.freetds.org/userguide/
