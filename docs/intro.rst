@@ -2,6 +2,37 @@
 Introduction
 ============
 
+Getting started
+===============
+
+Generally, you will want to install pymssql with:
+
+.. code-block:: bash
+
+    pip install pymssql
+
+`FreeTDS <http://www.freetds.org/>`_ is required. On some platforms, we provide
+a pre-compiled FreeTDS to make installing easier, but you may want to install
+FreeTDS before doing ``pip install pymssql`` if you run into problems or need
+features or bug fixes in a newer version of FreeTDS. You can `build FreeTDS
+from source <http://www.freetds.org/userguide/build.htm>`_ if you want the
+latest. If you're okay with the latest version that your package manager
+provides, then you can use your package manager of choice to install FreeTDS.
+E.g.:
+
+* Ubuntu/Debian:
+
+  .. code-block:: bash
+
+      sudo apt-get install freetds-dev
+
+* Mac OS X with `Homebrew <http://brew.sh/>`_:
+
+  .. code-block:: bash
+
+      brew install freetds
+
+
 Architecture
 ============
 
