@@ -386,18 +386,18 @@ Exceptions
 .. exception:: NotSupportedError
 
     Raised in case a method or database API was used which is not supported by
-    the database, e.g. requesting a ``.rollback()`` on a connection that does
-    not support transaction or has transactions turned off. A subclass of
-    :exc:`DatabaseError`.
+    the database, e.g. requesting a :meth:`~Connection.rollback()` on a
+    connection that does not support transaction or has transactions turned off.
+    A subclass of :exc:`DatabaseError`.
 
 .. exception:: ColumnsWithoutNamesError
 
     Raised by :meth:`Cursor.execute` when ``as_dict=True`` has been specified
-    when :func:`opening <connect>` the :class:`connection <Connection>` and the
+    to :func:`open <connect>` the :class:`connection <Connection>` and the
     query sent to the server doesn't involve columns names in its results.
     A subclass of :exc:`InterfaceError`.
 
-    note::
+    .. note::
         ``ColumnsWithoutNamesError`` isn't a PEP-249-mandated exception but
         rather a pymssql extension.
 
