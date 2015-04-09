@@ -616,13 +616,13 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :type autocommit: boolean
     """
 
-    _mssql.login_timeout = login_timeout
-
     # set the login timeout
     try:
         login_timeout = int(login_timeout)
     except ValueError:
         login_timeout = 0
+
+    _mssql.login_timeout = login_timeout
 
     # default query timeout
     try:
