@@ -15,6 +15,13 @@ To build pymssql you should have:
   software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
   packages.
 
+.. note::
+    If you need to connect to Azure:
+
+    * Use FreeTDS 0.91 or newer
+    * Make sure FreeTDS is built with SSL support. Instructions on how to do
+      this are out of the scope of this document.
+
 Windows
 -------
 

@@ -98,7 +98,12 @@ Functions
         *conn_properties* wasn't customizable and its value was hard-coded to
         the literal shown above.
 
-    .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+    .. note::
+        If you need to connect to Azure:
+
+        * Use FreeTDS 0.91 or newer
+        * Make sure FreeTDS is built with SSL support
+        * Specify the database name you are connecting to in the *database* parameter
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.

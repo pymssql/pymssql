@@ -65,9 +65,11 @@ Functions
         timeouts have a global effect.
 
     .. note::
-        If you need to connect to Azure make sure you:
-        * Use FreeTDS 0.91 or newer.
-        * Specify the database name you are connecting to in the ``connect()`` call.
+        If you need to connect to Azure:
+
+        * Use FreeTDS 0.91 or newer
+        * Make sure FreeTDS is built with SSL support
+        * Specify the database name you are connecting to in the ``connect()`` call
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
