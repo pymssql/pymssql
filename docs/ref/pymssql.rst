@@ -59,6 +59,11 @@ Functions
                               of iterable of strings. Default value: See
                               :class:`_mssql.connect <_mssql.MSSQLConnection>`
 
+    .. warning::
+        Currently, setting *timeout* or *login_timeout* have a process-wide
+        effect because the FreeTDS db-lib API functions used to implement such
+        timeouts have a global effect.
+
     .. note::
         If you need to connect to Azure make sure you:
         * Use FreeTDS 0.91 or newer.

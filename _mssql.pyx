@@ -487,7 +487,7 @@ cdef class MSSQLConnection:
             if val < 0:
                 raise ValueError("The 'query_timeout' attribute must be >= 0.")
 
-            # currently this will set it application wide :-(
+            # XXX: Currently this will set it application wide :-(
             rtc = dbsettime(val)
             check_and_raise(rtc, self)
 
@@ -613,6 +613,7 @@ cdef class MSSQLConnection:
                 log("_mssql.MSSQLConnection.__init__(): Warning: This version of FreeTDS doesn't support selecting the DB name when setting up the connection. This will keep connections to Azure from working.")
 
         # Set the login timeout
+        # XXX: Currently this will set it application wide :-(
         dbsetlogintime(login_timeout)
 
         cdef bytes server_bytes = server.encode('utf-8')
