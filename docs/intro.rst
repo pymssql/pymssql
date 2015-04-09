@@ -33,8 +33,10 @@ E.g.:
       brew install freetds
 
 
-Experimental: Use pymssql via `Docker <https://www.docker.com/>`_
------------------------------------------------------------------
+Docker
+------
+
+(Experimental)
 
 Another possible way to get started quickly with pymssql is to use a `Docker
 <https://www.docker.com/>`_ image.
