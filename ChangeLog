@@ -10,6 +10,10 @@ Features
 - Floating point values are now accepted as Stored Procedure arguments. Thanks
   Runzhou Li (Leo) for the report and Bill Adams for the implementation.
 
+- Add Dockerfile and a Docker image and instructions on how to use it (GH-258)
+  This could be a convenient way to use pymssql without having to build stuff.
+  See http://pymssql.readthedocs.org/en/latest/intro.html#docker
+
 Bug fixes
 ---------
 
