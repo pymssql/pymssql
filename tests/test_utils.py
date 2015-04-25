@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .helpers import eq_
 
 from _mssql import substitute_params
