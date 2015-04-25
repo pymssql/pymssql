@@ -15,6 +15,13 @@ To build pymssql you should have:
   software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
   packages.
 
+.. note::
+    If you need to connect to Azure:
+
+    * Use FreeTDS 0.91 or newer
+    * Make sure FreeTDS is built with SSL support. Instructions on how to do
+      this are out of the scope of this document.
+
 Windows
 -------
 
@@ -78,7 +85,7 @@ When this is done, the following files should be available (depending on
 for example::
 
   src\dblib\win32\release\db-lib.lib
-  src\dblib\win32\release\tds.lib
+  src\tds\win32\release\tds.lib
 
 Those files should then be copied to::
 
@@ -125,42 +132,41 @@ Testing
 
 You will need to install two additional packages for testing::
 
-  easy_install nose SQLAlchemy
+  easy_install pytest SQLAlchemy
 
 You should build the package with::
 
   python setup.py develop
 
 You need to setup a ``tests.cfg`` file in ``tests/`` with the correct DB
-connection information for your environement::
+connection information for your environment::
 
-  cd tests/
-  cp tests.cfg.tpl tests.cfg
-  vim|emacs|notepad tests.cfg
+  cp tests/tests.cfg.tpl tests/tests.cfg
+  vim|emacs|notepad tests/tests.cfg
 
 To run the tests::
 
-  cd tests/
-  nosetests
+  cd tests # optional
+  py.test
 
 Which will go through and run all the tests with the settings from the ``DEFAULT``
 section of ``tests.cfg``.
 
 To run with a different ``tests.cfg`` section::
 
-  nosetests --pymssql-section=<secname>
+  py.test --pymssql-section=<secname>
 
 example::
 
-  nosetests --pymssql-section=AllTestsWillRun
+  py.test --pymssql-section=AllTestsWillRun
 
 to avoid slow tests::
 
-  nosetests -a '!slow'
+  py.test -m "not slow"
 
 to select specific tests to run::
 
-  nosetests test_types.py
-  nosetests test_types.py test_sprocs.py
-  nosetests test_types.py:TestTypes
-  nosetests test_types.py:TestTypes.test_image
+  py.test tests/test_types.py
+  py.test tests/test_types.py tests/test_sprocs.py
+  py.test tests/test_types.py::TestTypes
+  py.test tests/test_types.py::TestTypes::test_image

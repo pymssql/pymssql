@@ -1,0 +1,6 @@
+.git
+.tox
+*.venv
+SQLAlchemy*
+build
+dist

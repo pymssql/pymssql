@@ -2,7 +2,7 @@ import datetime
 import unittest
 
 import pymssql
-from .helpers import mssqlconn, pymssqlconn, skip_test
+from .helpers import mssqlconn, pymssqlconn, skip_test, mark_slow
 
 try:
     import gevent
@@ -72,6 +72,7 @@ class GreenletTests(unittest.TestCase):
 
         return dt2 - dt1
 
+    @mark_slow
     def test_gevent_socket_pymssql_execute_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)
@@ -85,6 +86,7 @@ class GreenletTests(unittest.TestCase):
             elapsed_time < datetime.timedelta(seconds=20),
             'elapsed_time < 20 seconds')
 
+    @mark_slow
     def test_gevent_socket_pymssql_callproc_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)
@@ -112,6 +114,7 @@ class GreenletTests(unittest.TestCase):
             elapsed_time < datetime.timedelta(seconds=20),
             'elapsed_time < 20 seconds')
 
+    @mark_slow
     def test_gevent_socket_mssql_execute_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)

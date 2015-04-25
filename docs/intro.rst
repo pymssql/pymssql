@@ -2,6 +2,110 @@
 Introduction
 ============
 
+Getting started
+===============
+
+Generally, you will want to install pymssql with:
+
+.. code-block:: bash
+
+    pip install pymssql
+
+`FreeTDS <http://www.freetds.org/>`_ is required. On some platforms, we provide
+a pre-compiled FreeTDS to make installing easier, but you may want to install
+FreeTDS before doing ``pip install pymssql`` if you run into problems or need
+features or bug fixes in a newer version of FreeTDS. You can `build FreeTDS
+from source <http://www.freetds.org/userguide/build.htm>`_ if you want the
+latest. If you're okay with the latest version that your package manager
+provides, then you can use your package manager of choice to install FreeTDS.
+E.g.:
+
+* Ubuntu/Debian:
+
+  .. code-block:: bash
+
+      sudo apt-get install freetds-dev
+
+* Mac OS X with `Homebrew <http://brew.sh/>`_:
+
+  .. code-block:: bash
+
+      brew install freetds
+
+
+Docker
+------
+
+(Experimental)
+
+Another possible way to get started quickly with pymssql is to use a `Docker
+<https://www.docker.com/>`_ image.
+
+See the Docker docs for installation instructions for a number of platforms;
+you can try this link: https://docs.docker.com/installation/#installation
+
+There is a pymssql docker image on the Docker Registry at:
+
+https://registry.hub.docker.com/u/pymssql/pymssql/
+
+It is a Docker image with:
+
+* Ubuntu 14.04 LTS (trusty)
+* Python 2.7.6
+* pymssql 2.1.2.dev
+* FreeTDS 0.91
+* SQLAlchemy 0.9.8
+* Alembic 0.7.4
+* Pandas 0.15.2
+* Numpy 1.9.1
+* IPython 2.3.1
+
+To try it, first download the image (this requires Internet access and could
+take a while):
+
+.. code-block:: bash
+
+    docker pull pymssql/pymssql
+
+Then run a Docker container using the image with:
+
+.. code-block:: bash
+
+    docker run -it --rm pymssql/pymssql
+
+By default, if no command is specified, an `IPython <http://ipython.org>`_
+shell is invoked. You can override the command if you wish -- e.g.:
+
+.. code-block:: bash
+
+    docker run -it --rm pymssql/pymssql bin/bash
+
+Here's how using the Docker container looks in practice:
+
+.. code-block:: bash
+
+    $ docker pull pymssql/pymssql
+    ...
+    $ docker run -it --rm pymssql/pymssql
+    Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 2.1.0 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+
+    In [1]: import pymssql; pymssql.__version__
+    Out[1]: u'2.1.1'
+
+    In [2]: import sqlalchemy; sqlalchemy.__version__
+    Out[2]: '0.9.7'
+
+    In [3]: import pandas; pandas.__version__
+    Out[3]: '0.14.1'
+
+
 Architecture
 ============
 
@@ -19,6 +123,31 @@ Supported related software
 :FreeTDS: 0.82 or newer.
 :Cython: 0.15 or newer.
 :Microsoft SQL Server: 2005 or newer.
+
+Install
+=======
+
+pip
+---
+
+.. code-block:: console
+
+    pip install pymssql
+
+will install pymssql from `PyPI <https://pypi.python.org/pypi/pymssql>`_. This
+PyPI page contains:
+
+- source distribution (``.tar.gz``)
+- eggs (``.egg``) for Windows
+- wheels (``.whl``) for Windows
+- Windows installers (``.exe``) for Windows
+
+Windows installers
+------------------
+
+There are installers for Windows (``.exe`` files) available at `PyPI
+<https://pypi.python.org/pypi/pymssql>`_. Download one and double-click to
+launch it and then follow the prompts.
 
 Project Discussion
 ==================

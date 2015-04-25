@@ -98,7 +98,12 @@ Functions
         *conn_properties* wasn't customizable and its value was hard-coded to
         the literal shown above.
 
-    .. note:: If you need to connect to Azure make sure you use FreeTDS 0.91 or newer.
+    .. note::
+        If you need to connect to Azure:
+
+        * Use FreeTDS 0.91 or newer
+        * Make sure FreeTDS is built with SSL support
+        * Specify the database name you are connecting to in the *database* parameter
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
@@ -320,7 +325,7 @@ Functions
    This method binds a parameter to the stored procedure. *value* and *dbtype*
    are mandatory arguments, the rest is optional.
 
-   :param value: Is the value to store in the parameter
+   :param value: Is the value to store in the parameter.
 
    :param dbtype: Is one of: ``SQLBINARY``, ``SQLBIT``, ``SQLBITN``,
                   ``SQLCHAR``, ``SQLDATETIME``, ``SQLDATETIM4``,
@@ -328,17 +333,17 @@ Functions
                   ``SQLFLTN``, ``SQLIMAGE``, ``SQLINT1``, ``SQLINT2``,
                   ``SQLINT4``, ``SQLINT8``, ``SQLINTN``, ``SQLMONEY``,
                   ``SQLMONEY4``, ``SQLMONEYN``, ``SQLNUMERIC``, ``SQLREAL``,
-                  ``SQLTEXT``, ``SQLVARBINARY``, ``SQLVARCHAR``, ``SQLUUID``
+                  ``SQLTEXT``, ``SQLVARBINARY``, ``SQLVARCHAR``, ``SQLUUID``.
 
-   :param name: Is the name of the parameter
+   :param name: Is the name of the parameter. Needs to be in ``"@name"`` form.
 
-   :param output: Is the direction of the parameter: ``True`` indicates that it
-                   is also an output parameter that returns value after
-                   procedure execution
+   :param output: Is the direction of the parameter. ``True`` indicates that it
+                  is an output parameter i.e. it returns a value after procedure
+                  execution (in SQL DDL they are declared by using the
+                  ``"output"`` suffix, e.g. ``"@aname varchar(10) output"``).
 
-   :param null: TBD
-
-   .. todo:: Document ``null`` ``MSSQLStoredProcedure.bind()`` argument.
+   :param null: Boolean. Signals than NULL must be the value to be bound to the
+                argument of this input parameter.
 
    :param max_length: Is the maximum data length for this parameter to be
                       returned from the stored procedure.

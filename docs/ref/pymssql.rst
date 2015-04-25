@@ -59,10 +59,17 @@ Functions
                               of iterable of strings. Default value: See
                               :class:`_mssql.connect <_mssql.MSSQLConnection>`
 
+    .. warning::
+        Currently, setting *timeout* or *login_timeout* have a process-wide
+        effect because the FreeTDS db-lib API functions used to implement such
+        timeouts have a global effect.
+
     .. note::
-        If you need to connect to Azure make sure you:
-        * Use FreeTDS 0.91 or newer.
-        * Specify the database name you are connecting to in the ``connect()`` call.
+        If you need to connect to Azure:
+
+        * Use FreeTDS 0.91 or newer
+        * Make sure FreeTDS is built with SSL support
+        * Specify the database name you are connecting to in the ``connect()`` call
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
@@ -318,6 +325,80 @@ Cusor object methods
 
    These methods do nothing, as permitted by DB-API specs.
 
-.. todo:: Document all ``pymssql`` PEP 249-mandated exceptions.
+Exceptions
+==========
+
+.. exception:: StandardError
+
+    Root of the exception hierarchy.
+
+.. exception:: Warning
+
+    Raised for important warnings like data truncations while inserting, etc. A
+    subclass of :exc:`StandardError`.
+
+.. exception:: Error
+
+    Base class of all other error exceptions. You can use this to catch all
+    errors with one single except statement. A subclass of :exc:`StandardError`.
+
+.. exception:: InterfaceError
+
+    Raised for errors that are related to the database interface rather than the
+    database itself. A subclass of :exc:`Error`.
+
+.. exception:: DatabaseError
+
+    Raised for errors that are related to the database. A subclass of
+    :exc:`Error`.
+
+.. exception:: DataError
+
+    Raised for errors that are due to problems with the processed data like
+    division by zero, numeric value out of range, etc. A subclass of
+    :exc:`DatabaseError`.
+
+.. exception:: OperationalError
+
+    Raised for errors that are related to the database's operation and not
+    necessarily under the control of the programmer, e.g. an unexpected
+    disconnect occurs, the data source name is not found, a transaction could
+    not be processed, a memory allocation error occurred during processing, etc.
+    A subclass of :exc:`DatabaseError`.
+
+.. exception:: IntegrityError
+
+    Raised when the relational integrity of the database is affected, e.g. a
+    foreign key check fails. A subclass of :exc:`DatabaseError`.
+
+.. exception:: InternalError
+
+    Raised when the database encounters an internal error, e.g. the cursor is
+    not valid anymore, the transaction is out of sync, etc. A subclass of
+    :exc:`DatabaseError`.
+
+.. exception:: ProgrammingError
+
+    Raised for programming errors, e.g. table not found or already exists,
+    syntax error in the SQL statement, wrong number of parameters specified,
+    etc. A subclass of :exc:`DatabaseError`.
+
+.. exception:: NotSupportedError
+
+    Raised in case a method or database API was used which is not supported by
+    the database, e.g. requesting a :meth:`~Connection.rollback()` on a
+    connection that does not support transaction or has transactions turned off.
+    A subclass of :exc:`DatabaseError`.
+
+.. exception:: ColumnsWithoutNamesError
+
+    Raised by :meth:`Cursor.execute` when ``as_dict=True`` has been specified
+    to :func:`open <connect>` the :class:`connection <Connection>` and the
+    query sent to the server doesn't involve columns names in its results.
+    A subclass of :exc:`InterfaceError`.
+
+    .. note::
+        ``ColumnsWithoutNamesError`` isn't a PEP-249-mandated exception but
+        rather a pymssql extension.
 
 .. _SQL Injection attacks: http://en.wikipedia.org/wiki/SQL_injection

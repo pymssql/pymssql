@@ -32,7 +32,7 @@ import platform
 # running python setup.py test (see
 # http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html)
 try:
-    import multiprocessing
+    import multiprocessing  # NOQA
 except ImportError:
     pass
 
@@ -40,12 +40,10 @@ sys.path.append(osp.join(osp.dirname(__file__), '.pyrex'))
 
 try:
     from setuptools import setup, Extension
-    from setuptools.command.develop import develop as STDevelopCmd
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
     from setuptools import setup, Extension
-    from setuptools.command.develop import develop as STDevelopCmd
 
 # Work around Setuptools' broken (Cython-unaware) monkeypatching
 # to support Pyrex. This monkeypatching makes the Cython step get skipped if
@@ -59,10 +57,16 @@ except ImportError:
 else:
     Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
 
+from setuptools.command.test import test as TestCommand
+
+
 ROOT = osp.abspath(osp.dirname(__file__))
 
 def fpath(*parts):
-    """Return fully qualified path for parts, e.g. fpath('a', 'b') -> '<this dir>/a/b'"""
+    """
+    Return fully qualified path for parts, e.g.
+    fpath('a', 'b') -> '<this dir>/a/b'
+    """
     return osp.join(ROOT, *parts)
 
 have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
@@ -81,6 +85,7 @@ else:
     Distribution(dict(setup_requires='Cython>=0.19.1'))
 
     from Cython.Distutils import build_ext as _build_ext
+from distutils.dir_util import remove_tree
 import struct
 
 def extract_version():
@@ -92,6 +97,24 @@ def extract_version():
     version = content.split()[2].replace('"', '')
 
     return version
+
+@contextlib.contextmanager
+def fs_cleanup(files=None, dirs=None):
+    """
+    A context manager to remove ``files`` and ``dirs`` from the
+    source tree. Useful to cleanup anciliary intermediate files.
+    """
+    yield
+    if files:
+        for fname in files:
+            path = fpath(fname)
+            if osp.exists(path):
+                os.remove(path)
+    if dirs:
+        for dname in dirs:
+            path = fpath(dname)
+            if osp.exists(path):
+                remove_tree(path)
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
@@ -132,8 +155,10 @@ SYSTEM = platform.system()
 
 print("setup.py: platform.system() => %r" % SYSTEM)
 print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
-print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
-print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
+if SYSTEM == 'Linux':
+    print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
+if SYSTEM != 'Windows':
+    print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -178,9 +203,10 @@ else:
 
     libraries = ['sybdb']
 
-    with stdchannel_redirected(sys.stderr, os.devnull):
-        if compiler.has_function('clock_gettime', libraries=['rt']):
-            libraries.append('rt')
+    with fs_cleanup(files=['a.out'], dirs=['tmp']):
+        with stdchannel_redirected(sys.stderr, os.devnull):
+            if compiler.has_function('clock_gettime', libraries=['rt']):
+                libraries.append('rt')
 
 usr_local = '/usr/local'
 if osp.exists(usr_local):
@@ -255,7 +281,10 @@ class build_ext(_build_ext):
                 ]
             else:
                 # Assume compiler is Visual Studio
-                freetds_dir = 'vs2008'
+                if sys.version_info >= (3, 3):
+                    freetds_dir = 'vs2010'
+                else:
+                    freetds_dir = 'vs2008'
                 libraries = [
                     'db-lib', 'tds',
                     'ws2_32', 'wsock32', 'kernel32', 'shell32',
@@ -272,6 +301,7 @@ class build_ext(_build_ext):
             for e in self.extensions:
                 e.libraries.extend(libraries)
         _build_ext.build_extensions(self)
+
 
 class clean(_clean):
     """
@@ -337,12 +367,6 @@ class release(Command):
         sdist.ensure_finalized()
         sdist.run()
 
-class DevelopCmd(STDevelopCmd):
-    def run(self):
-        # add in the nose plugin only when we are using the develop command
-        self.distribution.entry_points['nose.plugins'] = ['pymssql_config = tests.nose_plugin:ConfigPlugin']
-        STDevelopCmd.run(self)
-
 def ext_modules():
     if have_c_files:
         source_extension = 'c'
@@ -362,6 +386,26 @@ def ext_modules():
         ),
     ]
 
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = None
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
+
 setup(
     name  = 'pymssql',
     version = extract_version(),
@@ -379,7 +423,7 @@ setup(
         'build_ext': build_ext,
         'clean': clean,
         'release': release,
-        'develop': DevelopCmd
+        'test': PyTest,
     },
     classifiers=[
       "Development Status :: 5 - Production/Stable",
@@ -389,8 +433,8 @@ setup(
       "Programming Language :: Python :: 2.6",
       "Programming Language :: Python :: 2.7",
       "Programming Language :: Python :: 3",
-      "Programming Language :: Python :: 3.2",
       "Programming Language :: Python :: 3.3",
+      "Programming Language :: Python :: 3.4",
       "Programming Language :: Python :: Implementation :: CPython",
       "Topic :: Database",
       "Topic :: Database :: Database Engines/Servers",
@@ -401,12 +445,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_git'],
-    tests_require=['nose', 'unittest2'],
-    test_suite='nose.collector',
+    tests_require=['pytest', 'unittest2'],
     ext_modules = ext_modules(),
-
-    # don't remove this, otherwise the customization above in DevelopCmd
-    # will break.  You can safely add to it though, if needed.
-    entry_points = {}
 
 )

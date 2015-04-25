@@ -487,7 +487,7 @@ cdef class MSSQLConnection:
             if val < 0:
                 raise ValueError("The 'query_timeout' attribute must be >= 0.")
 
-            # currently this will set it application wide :-(
+            # XXX: Currently this will set it application wide :-(
             rtc = dbsettime(val)
             check_and_raise(rtc, self)
 
@@ -613,6 +613,7 @@ cdef class MSSQLConnection:
                 log("_mssql.MSSQLConnection.__init__(): Warning: This version of FreeTDS doesn't support selecting the DB name when setting up the connection. This will keep connections to Azure from working.")
 
         # Set the login timeout
+        # XXX: Currently this will set it application wide :-(
         dbsetlogintime(login_timeout)
 
         cdef bytes server_bytes = server.encode('utf-8')
@@ -819,10 +820,11 @@ cdef class MSSQLConnection:
             return (<char *>data)[:length]
 
     cdef int convert_python_value(self, object value, BYTE **dbValue,
-            int *dbtype, int *length) except 1:
+            int *dbtype, int *length) except -1:
         log("_mssql.MSSQLConnection.convert_python_value()")
         cdef int *intValue
         cdef double *dblValue
+        cdef float *fltValue
         cdef PY_LONG_LONG *longValue
         cdef char *strValue
         cdef char *tmp
@@ -868,15 +870,17 @@ cdef class MSSQLConnection:
             dbValue[0] = <BYTE *>longValue
             return 0
 
-        if dbtype[0] in (SQLFLT4, SQLFLT8):
+        if dbtype[0] in (SQLFLT4, SQLREAL):
+            fltValue = <float *>PyMem_Malloc(sizeof(float))
+            fltValue[0] = <float>value
+            dbValue[0] = <BYTE *><DBREAL *>fltValue
+            return 0
+
+        if dbtype[0] == SQLFLT8:
             dblValue = <double *>PyMem_Malloc(sizeof(double))
             dblValue[0] = <double>value
-            if dbtype[0] == SQLFLT4:
-                dbValue[0] = <BYTE *><DBREAL *>dblValue
-                return 0
-            if dbtype[0] == SQLFLT8:
-                dbValue[0] = <BYTE *><DBFLT8 *>dblValue
-                return 0
+            dbValue[0] = <BYTE *><DBFLT8 *>dblValue
+            return 0
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
             if type(value) not in (datetime.date, datetime.datetime):

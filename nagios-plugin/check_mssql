@@ -60,11 +60,11 @@ try:
     stamp2 = datetime.utcnow()
 
     conn.close()
-except pymssql.Error, errstr:
-    print "CRITICAL: %s" % str(errstr).splitlines()[-1]
+except pymssql.Error as errstr:
+    sys.stdout.write("CRITICAL: %s\n" % str(errstr).splitlines()[-1])
     sys.exit(2)
-except _mssql.error, errstr:
-    print "CRITICAL: %s" % str(errstr).splitlines()[-1]
+except _mssql.error as errstr:
+    sys.stdout.write("CRITICAL: %s\n" % str(errstr).splitlines()[-1])
     sys.exit(2)
 #except:
 #    print "UNKNOWN: plugin error"
@@ -73,5 +73,5 @@ except _mssql.error, errstr:
 dstamp = stamp2 - stamp1
 sec = dstamp.seconds + dstamp.microseconds / 1000000.0
 
-print "OK: %d users, response time %.3f ms|users=%d time=%.6fs" % (nbusers, sec*1000., nbusers, sec)
+sys.stdout.write("OK: %d users, response time %.3f ms|users=%d time=%.6fs\n" % (nbusers, sec*1000., nbusers, sec))
 sys.exit(0)
