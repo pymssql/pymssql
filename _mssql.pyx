@@ -833,7 +833,7 @@ cdef class MSSQLConnection:
             return uuid.UUID(bytes_le=(<char *>data)[:length])
 
         else:
-        return (<char *>data)[:length]
+            return (<char *>data)[:length]
 
     cdef int convert_python_value(self, object value, BYTE **dbValue,
             int *dbtype, int *length) except -1:
