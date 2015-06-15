@@ -44,7 +44,7 @@ CREATE TABLE pymssql (
     decimal_no decimal(38,2),
     decimal_no2 decimal(38,10),
     numeric_no numeric(38,8),
-    stamp_time timestamp,
+    stamp_timestamp timestamp,
     uuid uniqueidentifier
 )
 """
