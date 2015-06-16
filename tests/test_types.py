@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import binascii
+from datetime import time
+from datetime import date
 from datetime import datetime
 import decimal
 from decimal import Decimal as D
@@ -34,6 +36,9 @@ CREATE TABLE pymssql (
     float_no float,
     money_no money,
     stamp_datetime datetime,
+    stamp_date date,
+    stamp_time time,
+    stamp_datetime2 datetime2,
     data_bit bit,
     comment_vch varchar(50),
     comment_nvch nvarchar(50),
@@ -153,6 +158,25 @@ class TestTypes(unittest.TestCase):
     def test_datetime_params_as_dict(self):
         testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
         colval = self.insert_and_select('stamp_datetime', testval, 's', params_as_dict=True)
+        typeeq(testval, colval)
+        eq_(testval, colval)
+
+    def test_date(self):
+        testval = date(2013, 1, 2)
+        colval = self.insert_and_select('stamp_date', testval, 's')
+        typeeq(testval, colval)
+        eq_(testval, colval)
+
+    def test_time(self):
+        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
+        colval = self.insert_and_select('stamp_time', testval, 's')
+        testval_no_date = testval.time()
+        typeeq(testval_no_date, colval)
+        eq_(testval_no_date, colval)
+
+    def test_datetime2(self):
+        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
+        colval = self.insert_and_select('stamp_datetime2', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
 
