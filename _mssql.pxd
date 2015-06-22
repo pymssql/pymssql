@@ -42,7 +42,7 @@ cdef class MSSQLConnection:
     cpdef execute_scalar(self, query, params=?)
     cdef fetch_next_row(self, int, int)
     cdef format_and_run_query(self, query_string, params=?)
-    cdef format_sql_command(self, format, params=?)
+    cpdef format_sql_command(self, format, params=?)
     cdef get_result(self)
     cdef get_row(self, int, int)
 

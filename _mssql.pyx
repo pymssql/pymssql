@@ -1167,7 +1167,7 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
 
-    cdef format_sql_command(self, format, params=None):
+    cpdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
         return _substitute_params(format, params, self.charset)
 
