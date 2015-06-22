@@ -21,6 +21,7 @@
 # MA  02110-1301  USA
 
 import datetime
+import re
 import time
 
 import _mssql
@@ -62,6 +63,12 @@ cdef object integrity_errors = (
     2601,   # violate unique index
     2627,   # violate UNIQUE KEY constraint
 )
+
+INSERT_SYNTAX = re.compile(
+    r"(?P<start>.+values\s*)"
+    r"(?P<middle>"
+    r"\(((?<!\\)'[^\)]*?\)[^\)]*(?<!\\)?'|[^\(\)]|(?:\([^\)]*\)))+\))"
+    r"(?P<end>.*)", re.IGNORECASE)
 
 class DBAPIType:
 
@@ -470,12 +477,28 @@ cdef class Cursor:
 
     def executemany(self, operation, params_seq):
         self.description = None
-        rownumber = 0
-        for params in params_seq:
-            self.execute(operation, params)
-            # support correct rowcount across multiple executes
-            rownumber += self._rownumber
-        self._rownumber = rownumber
+
+        match = re.match(INSERT_SYNTAX, operation)
+
+        # if 'operation' does not match the expected syntax, revert to slow
+        # implementation
+        if match is None:
+            rownumber = 0
+            for params in params_seq:
+                self.execute(operation, params)
+                # support correct rowcount across multiple executes
+                rownumber += self._rownumber
+            self._rownumber = rownumber
+            return
+
+        # combine parameter lists into a single statement to execute fast
+        start = match.group('start')
+        middle = match.group('middle')
+        end = match.group('end')
+        values = ', '.join(self._source._conn.format_sql_command(middle, params)
+                           for params in params_seq)
+        final_command = '%s%s%s' % (start, values, end)
+        self.execute(final_command)
 
     def nextset(self):
         try:
