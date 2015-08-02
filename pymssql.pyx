@@ -103,6 +103,7 @@ cdef dict DBTYPES = {
     'Decimal': _mssql.SQLDECIMAL,
     'datetime': _mssql.SQLDATETIME,
     'date': _mssql.SQLDATETIME,
+    'float': _mssql.SQLFLT8,
     #Dump type for work vith None
     'NoneType': _mssql.SQLVARCHAR,
 }
@@ -119,12 +120,6 @@ cdef int py2db_type(py_type, value):
             return _mssql.SQLINTN
         if py_type == 'long':
             return _mssql.SQLINT8
-
-    if py_type == 'float':
-        if value != 0 and not (-3.40E38 <= value <= -1.18E-38 or 1.18E-38 <= value <= 3.40E38):
-            return _mssql.SQLFLT8
-        else:
-            return _mssql.SQLFLT4
 
     return DBTYPES[py_type]
 
