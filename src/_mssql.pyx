@@ -1737,7 +1737,10 @@ cdef _quote_simple_value(value, charset='utf8'):
         return _quote_simple_value(str(value))
 
     if isinstance(value, unicode):
-        return ("N'" + value.replace("'", "''") + "'").encode(charset)
+        encoded = value.encode(charset)
+        if b'\0' in encoded:
+            return b'0x' + binascii.hexlify(encoded)
+        return (b"N'" + encoded.replace(b"'", b"''") + b"'")
 
     if isinstance(value, bytearray):
         return b'0x' + binascii.hexlify(bytes(value))
