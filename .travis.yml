@@ -3,10 +3,11 @@ python:
 - 2.7
 - 3.3
 - 3.4
+- 3.5
 before_install:
 - sudo apt-get install freetds-dev
-- travis_retry pip install --use-mirrors pytest SQLAlchemy
 - travis_retry pip install --upgrade pip setuptools  # Upgrade pip and setuptools to get ones with `wheel` support
+- travis_retry pip install pytest SQLAlchemy
 - travis_retry pip install Sphinx sphinx-rtd-theme
 - pip --version
 - travis_retry pip install --use-wheel Cython
