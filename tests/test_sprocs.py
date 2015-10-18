@@ -6,6 +6,8 @@ import unittest
 import pymssql
 import _mssql
 
+import pytest
+
 from .helpers import mssqlconn, pymssqlconn, eq_, skip_test
 
 FIXED_TYPES = (
@@ -200,6 +202,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         eq_(input, proc.parameters['@otinyint'])
 
+    @pytest.mark.xfail
     def testUuid(self):
         import uuid
         input = uuid.uuid4()
