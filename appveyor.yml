@@ -1,0 +1,185 @@
+# version format
+version: "{build}"
+
+# Do not build on tags (GitHub only)
+skip_tags: false
+
+shallow_clone: true
+
+environment:
+
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
+    OPENSSL_VER: 1.0.2d
+    FREETDS_VER: 0.95.21
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.9"
+      PYTHON_ARCH: "32"
+      VS_VER: "2008"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python33"
+      PYTHON_VERSION: "3.3.5"
+      PYTHON_ARCH: "32"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python34"
+      PYTHON_VERSION: "3.4.3"
+      PYTHON_ARCH: "32"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.0"
+      PYTHON_ARCH: "32"
+      VS_VER: "2015"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.9"
+      PYTHON_ARCH: "64"
+      VS_VER: "2008"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python33-x64"
+      PYTHON_VERSION: "3.3.5"
+      PYTHON_ARCH: "64"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.3"
+      PYTHON_ARCH: "64"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.0"
+      PYTHON_ARCH: "64"
+      VS_VER: "2015"
+      INSTANCENAME: "SQL2008R2SP2"
+
+
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.9"
+      PYTHON_ARCH: "32"
+      VS_VER: "2008"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python33"
+      PYTHON_VERSION: "3.3.5"
+      PYTHON_ARCH: "32"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python34"
+      PYTHON_VERSION: "3.4.3"
+      PYTHON_ARCH: "32"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.0"
+      PYTHON_ARCH: "32"
+      VS_VER: "2015"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.9"
+      PYTHON_ARCH: "64"
+      VS_VER: "2008"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python33-x64"
+      PYTHON_VERSION: "3.3.5"
+      PYTHON_ARCH: "64"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.3"
+      PYTHON_ARCH: "64"
+      VS_VER: "2010"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.0"
+      PYTHON_ARCH: "64"
+      VS_VER: "2015"
+      INSTANCENAME: "SQL2012SP1"
+
+install:
+  # Install Python (from the official .msi of http://python.org) and pip when
+  # not already installed.
+  - "powershell appveyor\\install.ps1"
+
+  # Prepend current Python ans scripts dirs to the PATH of this build (this cannot be
+  # done from inside the powershell script as it would require to restart
+  # the parent CMD process).
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - "pip install --disable-pip-version-check --user --upgrade pip"
+
+  # Install the build dependencies of the project. If some dependencies contain
+  # compiled extensions and are not provided as pre-built wheel packages,
+  # pip will build them from source using the MSVC compiler matching the
+  # target Python version and architecture
+  - "%CMD_IN_ENV% pip install -r dev-requirements.pip"
+  - cmd: if %PYTHON_VERSION:~0,1% == 3 ( %CMD_IN_ENV% pip install gevent==1.1.b6 ) else ( %CMD_IN_ENV% pip install gevent )
+
+before_build:
+  # OpenSSL
+  - appveyor DownloadFile http://www.npcglib.org/~stathis/downloads/openssl-%OPENSSL_VER%-vs%VS_VER%.7z || (ping -n 10 127.0.0.1 >"nul:" & appveyor DownloadFile http://www.npcglib.org/~stathis/downloads/openssl-%OPENSSL_VER%-vs%VS_VER%.7z)
+  - 7z x openssl-%OPENSSL_VER%-vs%VS_VER%.7z
+  - ren openssl-%OPENSSL_VER%-vs%VS_VER% openssl
+  # FreeTDS
+  - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
+  - appveyor DownloadFile https://github.com/ramiro/freetds/releases/download/v%FREETDS_VER%/vs%VS_VER%_%PYTHON_ARCH%.zip
+  - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%.zip
+
+build_script:
+  - "%CMD_IN_ENV% python setup.py install"
+
+before_test:
+  - copy appveyor\tests.cfg tests\
+  # Add relevant OpenSSL DLLs dir to PATH envvar
+  - ps: |
+      if ($env:PYTHON_ARCH -eq 32) {
+        $env:PATH = $env:APPVEYOR_BUILD_FOLDER + "\openssl\bin;" + $env:PATH
+      } else {
+        $env:PATH = $env:APPVEYOR_BUILD_FOLDER + "\openssl\bin64;" + $env:PATH
+      }
+  # Add relevant FreeTDS DLLs dir to PATH envvar
+  - set PATH=%CD%\freetds\vs%VS_VER%_%PYTHON_ARCH%\dynamic;%PATH%
+  # Start, reconfigure and restart SQL Server
+  - net start MSSQL$%INSTANCENAME%
+  - "powershell appveyor\\sql-server-activate-tcp-fixed-port.ps1"
+
+test_script:
+  - "py.test --junitxml=junit.xml"
+
+after_test:
+  # Preserve tests results JUnit XML file
+  - ps: |
+      $url = "https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)"
+      $file = '.\junit.xml'
+      (New-Object 'System.Net.WebClient').UploadFile($url, (Resolve-Path $file))
+  # If tests are successful, create binary packages for the project.
+  - "%CMD_IN_ENV% python setup.py bdist_wheel"
+  #- "%CMD_IN_ENV% python setup.py bdist_msi"
+  - "%CMD_IN_ENV% python setup.py bdist_wininst"
+
+artifacts:
+  - path: dist\*.whl
+  - path: dist\*.exe
+
+#on_success:
+#  - TODO: upload the content of dist/*.whl to a public wheelhouse
