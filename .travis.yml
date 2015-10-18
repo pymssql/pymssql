@@ -1,6 +1,5 @@
 language: python
 python:
-- 2.6
 - 2.7
 - 3.3
 - 3.4
@@ -11,7 +10,6 @@ before_install:
 - travis_retry pip install Sphinx sphinx-rtd-theme
 - pip --version
 - travis_retry pip install --use-wheel Cython
-- "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then travis_retry pip install unittest2; fi"
 install:
 - python setup.py install
 script:

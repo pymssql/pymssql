@@ -7,7 +7,7 @@ Building
 
 To build pymssql you should have:
 
-* python >= 2.6 including development files. Please research your OS usual
+* python >= 2.7 including development files. Please research your OS usual
   software distribution channels, e.g, ``python-dev`` or ``python-devel``
   packages.
 * Cython >= 0.15

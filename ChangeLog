@@ -4,6 +4,11 @@ Change Log
 Version 2.1.2 - To be released
 ==============================
 
+General
+-------
+
+- Drop support for Python 2.6.
+
 Features
 --------
 

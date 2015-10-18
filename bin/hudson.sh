@@ -2,9 +2,6 @@ cd pymssql
 
 # Check the Python version
 case $PYTHON_VERSION in
-    26)
-        PYTHON=python2.6
-        ;;
     27)
         PYTHON=python2.7
         ;;
