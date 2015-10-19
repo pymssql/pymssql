@@ -29,7 +29,7 @@ Functions
 .. function:: connect(server='.', user='', password='', database='', \
                       timeout=0, login_timeout=60, charset='UTF-8', \
                       as_dict=False, host='', appname=None, port='1433',\
-                      conn_properties)
+                      conn_properties, autocommit=False, tds_version='7.1')
 
     Constructor for creating a connection to the database. Returns a
     :class:`Connection` object.
@@ -58,6 +58,10 @@ Functions
                               establishment. Can be a string or another kind
                               of iterable of strings. Default value: See
                               :class:`_mssql.connect <_mssql.MSSQLConnection>`
+    :keyword autocommit: Whether to use default autocommiting mode or not
+    :type autocommit: boolean
+    :keyword tds_version: TDS protocol version to use.
+    :type tds_version: string
 
     .. warning::
         Currently, setting *timeout* or *login_timeout* have a process-wide
@@ -76,6 +80,12 @@ Functions
 
     .. versionadded:: 2.1.1
         The *conn_properties* argument.
+
+    .. versionadded:: 2.1.1
+        The *autocommit* argument.
+
+    .. versionadded:: 2.1.2
+        The *tds_version* argument.
 
 .. function:: get_dbversion()
 
