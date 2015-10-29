@@ -162,6 +162,8 @@ before_test:
   # Start, reconfigure and restart SQL Server
   - net start MSSQL$%INSTANCENAME%
   - "powershell appveyor\\sql-server-activate-tcp-fixed-port.ps1"
+  - net stop MSSQL$%INSTANCENAME%
+  - net start MSSQL$%INSTANCENAME%
 
 test_script:
   - "py.test --junitxml=junit.xml"

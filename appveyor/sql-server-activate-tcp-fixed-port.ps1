@@ -30,4 +30,4 @@ $Tcp.alter()
 
 # Service needs to be restarted
 # Restart service
-Restart-Service "MSSQL`$$instanceName"
+#Restart-Service "MSSQL`$$instanceName"
