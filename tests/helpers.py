@@ -17,6 +17,8 @@ import _mssql
 import pymssql
 
 
+CONNECTION_ATTEMPTS = 5
+
 class Config(object):
     pass
 
@@ -54,7 +56,17 @@ def get_app_lock():
     global global_mssqlconn
 
     if global_mssqlconn is None:
-        global_mssqlconn = mssqlconn()
+        tries = 0
+        while True:
+            try:
+                global_mssqlconn = mssqlconn()
+            except Exception:
+                tries += 1
+                if tries == CONNECTION_ATTEMPTS:
+                    raise
+                time.sleep(2)
+            else:
+                break
 
     t1 = time.time()
 
