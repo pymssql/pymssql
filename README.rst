@@ -6,7 +6,7 @@ pymssql - DB-API interface to Microsoft SQL Server
         :target: https://travis-ci.org/pymssql/pymssql
 
 .. image:: https://ci.appveyor.com/api/projects/status/hff0donjx2otguus/branch/master?svg=true
-        :targe: https://ci.appveyor.com/project/pymssql/pymssql/branch/master
+        :target: https://ci.appveyor.com/project/pymssql/pymssql/branch/master
 
 .. image:: http://img.shields.io/pypi/dm/pymssql.svg
         :target: https://pypi.python.org/pypi/pymssql/
