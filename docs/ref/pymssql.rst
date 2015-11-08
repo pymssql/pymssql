@@ -31,61 +31,67 @@ Functions
                       as_dict=False, host='', appname=None, port='1433',\
                       conn_properties, autocommit=False, tds_version='7.1')
 
-    Constructor for creating a connection to the database. Returns a
-    :class:`Connection` object.
+   Constructor for creating a connection to the database. Returns a
+   :class:`Connection` object.
 
-    :param server: database host
-    :type server: string
-    :param user: database user to connect as
-    :type user: string
-    :param password: user's password
-    :type password: string
-    :param database: the database to initially connect to
-    :type database: string
-    :param timeout: query timeout in seconds, default 0 (no timeout)
-    :type timeout: int
-    :param login_timeout: timeout for connection and login in seconds, default 60
-    :type login_timeout: int
-    :param charset: character set with which to connect to the database
-    :type charset: string
-    :keyword as_dict: whether rows should be returned as dictionaries instead of tuples
-    :type as_dict: boolean
-    :keyword appname: Set the application name to use for the connection
-    :type appname: string
-    :keyword port: the TCP port to use to connect to the server
-    :type port: string
-    :keyword conn_properties: SQL queries to send to the server upon connection
-                              establishment. Can be a string or another kind
-                              of iterable of strings. Default value: See
-                              :class:`_mssql.connect <_mssql.MSSQLConnection>`
-    :keyword autocommit: Whether to use default autocommiting mode or not
-    :type autocommit: boolean
-    :keyword tds_version: TDS protocol version to use.
-    :type tds_version: string
+   :param str server: database host
+   :param str user: database user to connect as
+   :param str password: user's password
+   :param str database: the database to initially connect to
+   :param int timeout: query timeout in seconds, default 0 (no timeout)
+   :param int login_timeout: timeout for connection and login in seconds, default 60
+   :param str charset: character set with which to connect to the database
+   :keyword conn_properties: SQL queries to send to the server upon connection
+                             establishment. Can be a string or another kind of
+                             iterable of strings.  Default value: See
+                             :class:`_mssql.connect() <_mssql.MSSQLConnection>`
+   :keyword bool as_dict: whether rows should be returned as dictionaries instead of tuples
+   :keyword str appname: Set the application name to use for the connection
+   :keyword str port: the TCP port to use to connect to the server
+   :keyword bool autocommit: Whether to use default autocommiting mode or not
+   :keyword str tds_version: TDS protocol version to use.
 
-    .. warning::
-        Currently, setting *timeout* or *login_timeout* have a process-wide
-        effect because the FreeTDS db-lib API functions used to implement such
-        timeouts have a global effect.
+   .. warning::
+       Currently, setting *timeout* or *login_timeout* has a process-wide
+       effect because the FreeTDS db-lib API functions used to implement such
+       timeouts have a global effect.
 
-    .. note::
-        If you need to connect to Azure:
+   .. note::
+       If you need to connect to Azure:
 
-        * Use FreeTDS 0.91 or newer
-        * Make sure FreeTDS is built with SSL support
-        * Specify the database name you are connecting to in the ``connect()`` call
+       * Use FreeTDS 0.91 or newer
+       * Make sure FreeTDS is built with SSL support
+       * Specify the database name you are connecting to in the ``connect()`` call
 
-    .. versionadded:: 2.1.1
-        The ability to connect to Azure.
+   .. versionadded:: 2.1.1
+       The ability to connect to Azure.
 
-    .. versionadded:: 2.1.1
-        The *conn_properties* argument.
+   .. versionadded:: 2.1.1
+       The *conn_properties* parameter.
 
-    .. versionadded:: 2.1.1
-        The *autocommit* argument.
+   .. versionadded:: 2.1.1
+       The *autocommit* parameter.
 
-    .. versionadded:: 2.1.2
-        The *tds_version* argument.
+   .. versionadded:: 2.1.2
+       The *tds_version* parameter.
+
+   .. warning::
+     The *tds_version* parameter, new in version 2.1.2, has a default value of
+     '7.1'. This is for consistency with the default value of the equally-named
+     parameter of the :class:`_mssql.connect() <_mssql.MSSQLConnection>`
+     function.
+
+     This will change with pymssql 2.2.0 when
+
+     * The default value will be changed to None
+     * The version of the TDS protocol to use by default won't be 7.1 anymore
+     * You won't able to rely on such default value anymore and will need to
+       either
+
+       * Specify its value explicitly or
+       * Configure it using facilities provided by FreeTDS (see `here
+         <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
+         `and here <http://www.freetds.org/userguide/envvar.htm>`_)
 
 .. function:: get_dbversion()
 

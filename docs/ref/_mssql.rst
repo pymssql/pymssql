@@ -91,7 +91,7 @@ Functions
         SET TEXTSIZE 2147483647; -- http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
 
     .. versionadded:: 2.1.1
-        The *conn_properties* argument.
+        The *conn_properties* parameter.
 
     .. versionchanged:: 2.1.1
         Before 2.1.1, the initialization queries now specified by
@@ -107,6 +107,22 @@ Functions
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
+
+    .. warning::
+        The *tds_version* parameter, added in version 2.0.0, has a default value
+        of '7.1'.
+
+        This will change with pymssql 2.2.0 when
+
+        * The default value will be changed to None
+        * The version of the TDS protocol to use by default won't be 7.1 anymore
+        * You won't able to rely on such default value anymore and will need to
+          either
+
+          * Specify its value explicitly or
+          * Configure it using facilities provided by FreeTDS (see `here
+            <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
+            `and here <http://www.freetds.org/userguide/envvar.htm>`_)
 
 ``MSSQLConnection`` object properties
 -------------------------------------
