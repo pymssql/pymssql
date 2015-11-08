@@ -579,7 +579,7 @@ cdef class Cursor:
 
 def connect(server='.', user='', password='', database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
-        host='', appname=None, port='1433', conn_properties=None, autocommit=False):
+        host='', appname=None, port='1433', conn_properties=None, autocommit=False, tds_version='7.1'):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -607,8 +607,10 @@ def connect(server='.', user='', password='', database='', timeout=0,
     :keyword conn_properties: SQL queries to send to the server upon connection
                               establishment. Can be a string or another kind
                               of iterable of strings
-    :keyword autocommit whether to use default autocommiting mode or not
+    :keyword autocommit: Whether to use default autocommiting mode or not
     :type autocommit: boolean
+    :keyword tds_version: TDS protocol version to use.
+    :type tds_version: string
     """
 
     # set the login timeout
@@ -631,7 +633,7 @@ def connect(server='.', user='', password='', database='', timeout=0,
     try:
         conn = _mssql.connect(server=server, user=user, password=password,
                               charset=charset, database=database,
-                              appname=appname, port=port,
+                              appname=appname, port=port, tds_version=tds_version,
                               conn_properties=conn_properties)
 
     except _mssql.MSSQLDatabaseException, e:
