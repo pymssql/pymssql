@@ -556,7 +556,7 @@ cdef class MSSQLConnection:
         if login == NULL:
             raise MSSQLDriverException("dblogin() failed")
 
-        appname = appname or "pymssql"
+        appname = appname or "pymssql=%s" % __full_version__
 
         # For Python 3, we need to convert unicode to byte strings
         cdef bytes user_bytes = user.encode('utf-8')
