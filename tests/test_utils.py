@@ -32,6 +32,17 @@ def test_param_quote():
     eq_(res, b"SELECT * FROM empl WHERE name = N'John''s Doe'")
 
 
+def test_unicode_params():
+    res = substitute_params(
+        u'SELECT * FROM \u0394 WHERE name = %s',
+        u'\u03A8'
+    )
+    eq_(res, b"SELECT * FROM \xce\x94 WHERE name = N'\xce\xa8'")
+
+    res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, u'str'))
+    eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'str'")
+
+
 def test_single_param_with_d():
     res = substitute_params(
         'SELECT * FROM employees WHERE id = %d',
