@@ -1788,8 +1788,8 @@ cdef _quote_data(data, charset='utf8'):
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
-_re_pos_param = re.compile(r'(%([sd]))')
-_re_name_param = re.compile(r'(%\(([^\)]+)\)(?:[sd]))')
+_re_pos_param = re.compile(br'(%([sd]))')
+_re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
 cdef _substitute_params(toformat, params, charset):
     if params is None:
         return toformat
@@ -1814,8 +1814,8 @@ cdef _substitute_params(toformat, params, charset):
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
-        for match in _re_name_param.finditer(toformat.decode(charset)):
-            param_key = match.group(2)
+        for match in _re_name_param.finditer(toformat):
+            param_key = match.group(2).decode(charset)
 
             if not param_key in params:
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
@@ -1842,7 +1842,7 @@ cdef _substitute_params(toformat, params, charset):
     else:
         """ assume position based substitutions """
         offset = 0
-        for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
+        for count, match in enumerate(_re_pos_param.finditer(toformat)):
             # calculate string positions so we can keep track of the offset to
             # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
