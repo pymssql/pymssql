@@ -287,14 +287,17 @@ Cusor object methods
             Cursor.execute(operation, params)
 
     *operation* is a string and *params*, if specified, is a simple value, a
-    tuple, or ``None``.
+    tuple, a dict, or ``None``.
 
     Performs the operation against the database, possibly replacing parameter
     placeholders with provided values. This should be preferred method of
     creating SQL commands, instead of concatenating strings manually, what makes
-    a potential of `SQL Injection attacks`_. This method accepts the same
-    formatting as Python's builtin :ref:`string interpolation operator
-    <python:string-formatting>`.
+    a potential of `SQL Injection attacks`_. This method accepts formatting similar
+    to Python's builtin :ref:`string interpolation operator
+    <python:string-formatting>`. However, since formatting and type conversion is handled
+    internally, only the ``%s`` placeholder is supported.
+
+    Keyed placeholders are supported if you provide a dict for *params*.
 
     If you call ``execute()`` with one argument, the ``%`` sign loses its
     special meaning, so you can use it as usual in your query string, for
