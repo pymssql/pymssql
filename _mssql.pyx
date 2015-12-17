@@ -1716,9 +1716,6 @@ cdef _quote_simple_value(value, charset='utf8'):
         return b'0x' + binascii.hexlify(bytes(value))
 
     if isinstance(value, (str, bytes)):
-        if value[0:2] == b'0x':
-            return value
-
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:

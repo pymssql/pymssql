@@ -36,10 +36,11 @@ class QueryTests(unittest.TestCase):
                 data_binary varbinary(40),
                 decimal_no decimal(38,2),
                 numeric_no numeric(38,8),
-                stamp_time timestamp
+                stamp_time timestamp,
+                bin_data varbinary(16)
             )""")
             cls.tableCreated = True
-            cls.testTableColCount = 15
+            cls.testTableColCount = 16
         except _mssql.MSSQLDatabaseException as e:
             if e.number != 2714:
                 raise
@@ -64,7 +65,8 @@ class QueryTests(unittest.TestCase):
                 comment_text,
                 comment_nvch,
                 decimal_no,
-                numeric_no
+                numeric_no,
+                bin_data
             ) VALUES (
                 %d, %d, %d, getdate(), %d,
                 'comment %d',
@@ -72,8 +74,9 @@ class QueryTests(unittest.TestCase):
                 'hmm',
                 'bhmme',
                 234.99,
-                894123.09
-            );""" % (y, y, y, (y % 2), y, y)
+                894123.09,
+                %#x
+            );""" % (y, y, y, (y % 2), y, y, y)
             self.mssql.execute_non_query(query)
 
     def test01SimpleSelect(self):
@@ -112,3 +115,8 @@ class QueryTests(unittest.TestCase):
 
         rows = tuple(self.mssql)
         self.assertEquals(rows[0][0], 'ret3')
+
+    def test04BinaryTypeSqlInjection(self):
+        self.mssql.execute_query('SELECT * FROM pymssql WHERE bin_data=%s', ('0x OR 1=1;',))
+        rows = tuple(self.mssql)
+        self.assertEqual(len(rows), 0)

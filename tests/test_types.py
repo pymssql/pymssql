@@ -91,6 +91,12 @@ class TestTypes(unittest.TestCase):
         typeeq(u'foobar', colval)
         self.hasheq(u'foobar', colval)
 
+    def test_varchar_hex(self):
+        testval = '0xf00'
+        colval = self.insert_and_select('comment_vch', testval, 's')
+        typeeq(u'0xf00', colval)
+        self.hasheq(u'0xf00', colval)
+
     def test_varchar_unicode(self):
         testval = u'foobär'
         colval = self.insert_and_select('comment_vch', testval, 's')
@@ -102,13 +108,6 @@ class TestTypes(unittest.TestCase):
         colval = self.insert_and_select('comment_nvch', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
-
-    def test_binary_string(self):
-        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
-        testval = '0x'.encode('ascii') + binascii.hexlify(bindata)
-        colval = self.insert_and_select('data_binary', testval, 's')
-        typeeq(bindata, colval)
-        eq_(bindata, colval)
 
     def test_binary_bytearray(self):
         bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
