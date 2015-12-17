@@ -39,6 +39,13 @@ def test_single_param_with_d():
     eq_(res, b'SELECT * FROM employees WHERE id = 13')
 
 
+def test_keyed_param_with_d():
+    res = substitute_params(
+        'SELECT * FROM employees WHERE id = %(emp_id)d',
+        {'emp_id': 13})
+    eq_(res, b'SELECT * FROM employees WHERE id = 13')
+
+
 def test_percent_not_touched_with_no_params():
     sql = "SELECT COUNT(*) FROM employees WHERE name LIKE 'J%'"
     res = substitute_params(sql, None)
