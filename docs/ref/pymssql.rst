@@ -295,7 +295,8 @@ Cusor object methods
     a potential of `SQL Injection attacks`_. This method accepts formatting similar
     to Python's builtin :ref:`string interpolation operator
     <python:string-formatting>`. However, since formatting and type conversion is handled
-    internally, only the ``%s`` placeholder is supported.
+    internally, only the ``%s`` and ``%d`` placeholders are supported. Both placeholders are
+    functionally equivalent.
 
     Keyed placeholders are supported if you provide a dict for *params*.
 
