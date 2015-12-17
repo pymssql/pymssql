@@ -370,6 +370,15 @@ class CursorBase(DBAPIBase):
         eq_(self.t1.count(), 7)
         eq_(cur.rowcount, 2)
 
+    def test_executemany_insert_from_table(self):
+        cur = self.executemany(
+            "INSERT INTO test (name) SELECT t.name FROM test AS t WHERE t.id = %(to_copy)s",
+            [{'to_copy': 1}, {'to_copy': 2}]
+        )
+        self.conn.commit()
+        eq_(self.t1.count(), 7)
+        eq_(cur.rowcount, 2)
+
     def test_executemany_delete(self):
         cur = self.executemany(
             "delete from test where id = %(id)s",
