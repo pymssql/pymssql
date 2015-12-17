@@ -495,8 +495,10 @@ cdef class Cursor:
         start = match.group('start')
         middle = match.group('middle')
         end = match.group('end')
-        values = ', '.join(self._source._conn.format_sql_command(middle, params)
-                           for params in params_seq)
+        values = ', '.join(
+            self._source._conn.format_sql_command(middle, params).decode(self._source._conn.charset)
+            for params in params_seq
+        )
         final_command = '%s%s%s' % (start, values, end)
         self.execute(final_command)
 
