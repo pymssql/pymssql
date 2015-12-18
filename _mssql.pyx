@@ -1808,13 +1808,14 @@ cdef _substitute_params(toformat, params, charset):
     if hasattr(quoted, 'startswith'):
         quoted = (quoted,)
 
-    if isinstance(toformat, unicode):
-        toformat = toformat.encode(charset)
+    # we would like to deal with unicode up till the end of this method
+    if not isinstance(toformat, unicode):
+        toformat = toformat.decode(charset)
 
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
-        for match in _re_name_param.finditer(toformat.decode(charset)):
+        for match in _re_name_param.finditer(toformat):
             param_key = match.group(2)
 
             if not param_key in params:
@@ -1842,7 +1843,7 @@ cdef _substitute_params(toformat, params, charset):
     else:
         """ assume position based substitutions """
         offset = 0
-        for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
+        for count, match in enumerate(_re_pos_param.finditer(toformat)):
             # calculate string positions so we can keep track of the offset to
             # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the
@@ -1865,7 +1866,7 @@ cdef _substitute_params(toformat, params, charset):
             #print(param_val, param_val_len, offset_adjust, match_start, match_end)
             # adjust the offset for the next usage
             offset += offset_adjust
-    return toformat
+    return toformat.encode(charset)
 
 # We'll add these methods to the module to allow for unit testing of the
 # underlying C methods.

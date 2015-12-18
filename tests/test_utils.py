@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .helpers import eq_
 
 from _mssql import substitute_params
@@ -185,3 +186,8 @@ def test_too_many_params():
     except ValueError as exc:
         if 'more placeholders in sql than params available' not in str(exc):
             raise
+
+
+def test_unicode_characters_in_query():
+    res = substitute_params("testing ascii (ąčę) 1=%d 'one'=%s", (1, 'one'))
+    eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'one'")
