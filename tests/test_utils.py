@@ -39,6 +39,8 @@ def test_unicode_params():
     )
     eq_(res, b"SELECT * FROM \xce\x94 WHERE name = N'\xce\xa8'")
 
+
+def test_unicode_params2():
     res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, u'str'))
     eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'str'")
 
