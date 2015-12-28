@@ -497,12 +497,12 @@ cdef class Cursor:
             return
 
         # combine parameter lists into a single statement to execute fast
-        start = match.group('start')
-        middle = match.group('middle')
-        end = match.group('end')
-        values = ', '.join(self._source._conn.format_sql_command(middle, params)
-                           for params in params_seq)
-        final_command = '%s%s%s' % (start, values, end)
+        start = match.group('start').encode(self.conn._conn.charset)
+        middle = match.group('middle').encode(self.conn._conn.charset)
+        end = match.group('end').encode(self.conn._conn.charset)
+        values = b', '.join(self._source._conn.format_sql_command(middle, params)
+                            for params in params_seq)
+        final_command = b'%s%s%s' % (start, values, end)
         self.execute(final_command)
 
     def nextset(self):
