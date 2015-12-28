@@ -6,9 +6,6 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "false" ]; then
 fi
 
 case $TRAVIS_PYTHON_VERSION in
-    2.6)
-        PYMSSQL_TEST_DATABASE=pymssql_dev_py26
-        ;;
     2.7)
         PYMSSQL_TEST_DATABASE=pymssql_dev_py27
         ;;
@@ -17,6 +14,9 @@ case $TRAVIS_PYTHON_VERSION in
         ;;
     3.4)
         PYMSSQL_TEST_DATABASE=pymssql_dev_py34
+        ;;
+    3.5)
+        PYMSSQL_TEST_DATABASE=pymssql_dev_py35
         ;;
     *)
         echo "Unknown version of Python ($TRAVIS_PYTHON_VERSION)"

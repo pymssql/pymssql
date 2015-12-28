@@ -556,7 +556,7 @@ cdef class MSSQLConnection:
         if login == NULL:
             raise MSSQLDriverException("dblogin() failed")
 
-        appname = appname or "pymssql"
+        appname = appname or "pymssql=%s" % __full_version__
 
         # For Python 3, we need to convert unicode to byte strings
         cdef bytes user_bytes = user.encode('utf-8')
@@ -1716,9 +1716,6 @@ cdef _quote_simple_value(value, charset='utf8'):
         return b'0x' + binascii.hexlify(bytes(value))
 
     if isinstance(value, (str, bytes)):
-        if value[0:2] == b'0x':
-            return value
-
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:
@@ -1791,8 +1788,8 @@ cdef _quote_data(data, charset='utf8'):
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
-_re_pos_param = re.compile(r'(%(s|d))')
-_re_name_param = re.compile(r'(%\(([^\)]+)\)s)')
+_re_pos_param = re.compile(br'(%([sd]))')
+_re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
 cdef _substitute_params(toformat, params, charset):
     if params is None:
         return toformat
@@ -1817,8 +1814,8 @@ cdef _substitute_params(toformat, params, charset):
     if isinstance(params, dict):
         """ assume name based substitutions """
         offset = 0
-        for match in _re_name_param.finditer(toformat.decode(charset)):
-            param_key = match.group(2)
+        for match in _re_name_param.finditer(toformat):
+            param_key = match.group(2).decode(charset)
 
             if not param_key in params:
                 raise ValueError('params dictionary did not contain value for placeholder: %s' % param_key)
@@ -1845,7 +1842,7 @@ cdef _substitute_params(toformat, params, charset):
     else:
         """ assume position based substitutions """
         offset = 0
-        for count, match in enumerate(_re_pos_param.finditer(toformat.decode(charset))):
+        for count, match in enumerate(_re_pos_param.finditer(toformat)):
             # calculate string positions so we can keep track of the offset to
             # be used in future substitutions on this string. This is
             # necessary b/c the match start() and end() are based on the

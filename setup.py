@@ -281,21 +281,37 @@ class build_ext(_build_ext):
                 ]
             else:
                 # Assume compiler is Visual Studio
-                if sys.version_info >= (3, 3):
+                if sys.version_info >= (3, 5):
+                    freetds_dir = 'vs2015'
+                elif sys.version_info >= (3, 3):
                     freetds_dir = 'vs2010'
                 else:
                     freetds_dir = 'vs2008'
-                libraries = [
-                    'db-lib', 'tds',
-                    'ws2_32', 'wsock32', 'kernel32', 'shell32',
-                ]
+                # XXX: Decide and implement if we are going to allow linking in
+                # FreeTDS statically
+                if True:
+                    libraries = [
+                        'ct', 'sybdb',
+                        'ws2_32', 'wsock32', 'kernel32', 'shell32',
+                        'libeay32MD', 'ssleay32MD',
+                    ]
+                else:
+                    libraries = [
+                        'db-lib', 'tds',
+                        'ws2_32', 'wsock32', 'kernel32', 'shell32',
+                        'libeay{}MD'.format(BITNESS),
+                        'ssleay{}MD'.format(BITNESS),
+                    ]
 
             FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            suffix = '' if BITNESS == 32 else '64'
+            OPENSSL = fpath('openssl', 'lib{}'.format(suffix))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 e.include_dirs.append(osp.join(FREETDS, 'include'))
-                e.library_dirs.append(osp.join(FREETDS, 'lib'))
+                e.library_dirs.append(osp.join(FREETDS, 'dynamic'))
+                e.library_dirs.append(OPENSSL)
 
         else:
             for e in self.extensions:
@@ -430,11 +446,11 @@ setup(
       "Intended Audience :: Developers",
       "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
       "Programming Language :: Python",
-      "Programming Language :: Python :: 2.6",
       "Programming Language :: Python :: 2.7",
       "Programming Language :: Python :: 3",
       "Programming Language :: Python :: 3.3",
       "Programming Language :: Python :: 3.4",
+      "Programming Language :: Python :: 3.5",
       "Programming Language :: Python :: Implementation :: CPython",
       "Topic :: Database",
       "Topic :: Database :: Database Engines/Servers",

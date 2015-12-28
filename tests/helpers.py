@@ -81,6 +81,8 @@ def get_app_lock():
 
 
 def release_app_lock():
+    if global_mssqlconn is None:
+        return
     t1 = time.time()
     result = global_mssqlconn.execute_scalar("""
     DECLARE @result INTEGER;
