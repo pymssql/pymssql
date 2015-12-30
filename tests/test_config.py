@@ -4,8 +4,6 @@ import shutil
 
 import _mssql
 
-import pytest
-
 from .helpers import tmpdir, skip_test
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
 
@@ -28,11 +26,9 @@ class TestConfig(object):
             # can not be made
             if e.args[0][0] != 20009:
                 raise
-        with open(config_dump_path, 'rb') as fh:
+        with open(config_dump_path, 'rU') as fh:
             return fh.read()
 
-
-    @pytest.mark.xfail
     def test_config_values(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
