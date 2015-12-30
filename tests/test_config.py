@@ -35,38 +35,38 @@ class TestConfig(object):
             user = 'bob',
             database = 'tempdb',
             )
-        assert b'user_name = bob' in config_dump
-        assert b'database = tempdb\n' in config_dump
+        assert 'user_name = bob' in config_dump
+        assert 'database = tempdb\n' in config_dump
         # test default port
-        assert b'port = 1433' in config_dump
+        assert 'port = 1433' in config_dump
         # not sure why 7.1 version is used instead of 8.0 which is the
         # default
-        assert b'major_version = 7' in config_dump
-        assert b'minor_version = 1' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 1' in config_dump
 
     def test_tds_protocol_version_42(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='4.2'
             )
-        assert b'major_version = 4' in config_dump
-        assert b'minor_version = 2' in config_dump
+        assert 'major_version = 4' in config_dump
+        assert 'minor_version = 2' in config_dump
 
     def test_tds_protocol_version_70(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.0'
             )
-        assert b'major_version = 7' in config_dump
-        assert b'minor_version = 0' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 0' in config_dump
 
     def test_tds_protocol_version_71(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.1'
             )
-        assert b'major_version = 7' in config_dump
-        assert b'minor_version = 1' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 1' in config_dump
 
     def test_tds_protocol_version_80(self):
         # follow-up: turns out 8.0 was erroneous.  MS named the new protocol
@@ -79,16 +79,16 @@ class TestConfig(object):
             server='dontnameyourserverthis',
             tds_version='8.0'
             )
-        assert b'major_version = 7' in config_dump
-        assert b'minor_version = 1' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 1' in config_dump
 
     def test_tds_protocol_version_72(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
             tds_version='7.2'
             )
-        assert b'major_version = 7' in config_dump
-        assert b'minor_version = 2' in config_dump
+        assert 'major_version = 7' in config_dump
+        assert 'minor_version = 2' in config_dump
 
     def test_tds_protocol_version_invalid(self):
         try:
@@ -100,4 +100,4 @@ class TestConfig(object):
     def test_tds_nonstandard_port_int(self):
         #it should convert it to a string
         config_dump = self.connect(port=1435)
-        assert b'port = 1435' in config_dump
+        assert 'port = 1435' in config_dump
