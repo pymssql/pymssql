@@ -8,7 +8,7 @@ import _mssql
 
 import pytest
 
-from .helpers import mssqlconn, pymssqlconn, eq_, skip_test
+from .helpers import mssqlconn, pymssqlconn, eq_, skip_test, get_sql_server_version
 
 FIXED_TYPES = (
     'BigInt',
@@ -202,8 +202,9 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         eq_(input, proc.parameters['@otinyint'])
 
-    @pytest.mark.xfail
     def testUuid(self):
+        if get_sql_server_version(self.mssql) <= 2008:
+            pytest.skip("UNIQUEIDENTIFIER as a SP param doesn't work with SQL Server 2008")
         import uuid
         input = uuid.uuid4()
         proc = self.mssql.init_procedure('pymssqlTestUniqueIdentifier')
