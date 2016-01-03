@@ -1615,7 +1615,7 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
     clr_err(conn)
     raise ex
 
-cdef void assert_connected(MSSQLConnection conn):
+cdef void assert_connected(MSSQLConnection conn) except *:
     log("_mssql.assert_connected()")
     if not conn.connected:
         raise MSSQLDriverException("Not connected to any MS SQL server")
