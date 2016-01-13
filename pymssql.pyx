@@ -506,7 +506,9 @@ cdef class Cursor:
             raise OperationalError('Statement not executed or executed statement has no resultset')
 
         try:
-            return self.getrow()
+            row = self.getrow()
+            self._rownumber += 1
+            return row
 
         except StopIteration:
             return None
@@ -528,6 +530,7 @@ cdef class Cursor:
             for i in xrange(size):
                 try:
                     rows.append(self.getrow())
+                    self._rownumber += 1
                 except StopIteration:
                     break
             return rows
