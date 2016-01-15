@@ -183,7 +183,7 @@ cdef class MSSQLDatabaseException(MSSQLException):
 # Module attributes for configuring _mssql
 login_timeout = 60
 
-min_error_severity = 6
+min_error_severity = 2
 
 wait_callback = None
 
@@ -256,7 +256,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             conn.mark_disconnected()
         break
 
-    if severity > mssql_lastmsgseverity[0]:
+    if severity >= mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr

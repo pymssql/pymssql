@@ -72,7 +72,7 @@ class ErrHandleTests(unittest.TestCase):
         dberrstr = "toblerone4"
         oserrstr = "limpet"
 
-        expect = b""
+        expect = b"DB-Lib error message 10, severity 5:\ntoblerone4\nOperating System error during limpet (4444)\n"
 
         values = _mssql.test_err_handler(
             connection, severity, dberr, oserr, dberrstr, oserrstr)
