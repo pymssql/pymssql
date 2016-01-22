@@ -1,5 +1,6 @@
 import decimal
 import datetime
+import os
 import sys
 import unittest
 
@@ -203,8 +204,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         eq_(input, proc.parameters['@otinyint'])
 
     def testUuid(self):
-        if get_sql_server_version(self.mssql) <= 2008:
-            pytest.skip("UNIQUEIDENTIFIER as a SP param doesn't work with SQL Server 2008")
+        if os.environ.get('FREETDS_VERSION') != '0.91':
+            pytest.xfail("UNIQUEIDENTIFIER as a SP param doesn't work with FreeTDS >= 0.95")
         import uuid
         input = uuid.uuid4()
         proc = self.mssql.init_procedure('pymssqlTestUniqueIdentifier')
