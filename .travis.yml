@@ -15,6 +15,7 @@ before_install:
 - pip --version
 - travis_retry pip install --use-wheel Cython
 install:
+- if [[ $FREETDS_VERSION == '0.95' ]]; then export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1; fi
 - python setup.py install
 script:
 - . bin/travis_env.sh
@@ -30,4 +31,7 @@ env:
   - secure: bjCYROweKNsg7iZG4hyte7EkulP7ubENHQvOvZ6a4ojtj4AtorcP2G5ltq6wfVFbFCnsVc04ePujZx4PgDGxHnexTZkVhhwI66O/N482mytdCytje2flhXgQe8A9yw9FBYITm/BNjmTvTq9+ZKQYomLgxeYaJk5DcB5LFSB2Qns=
   - secure: P62aB5u8xOCZP5qX3lHZuQJNMrkMJCqwboRhtsxJz0m5LY77KO26xIb4DygnUJplx9wlWveZZ5u6bfzrDVkMECZ6jd195xWIwrbDokg8zGCVjcOEOCOGLdCUXChoD8wqYMuVMlefJxeR+w8gFPFbCyJjGeq1sKxsowUxH5HueNE=
   - secure: bMxRxhLnzxHyouQeQE6Ap8e6m70j5J2WKxcjRITKXEPN6UFWL+h+/EJbGKTG33g7ETKiCez8zyAtXQy8oGeHVbjCuvUhSIolI+wm/H7Rlo7FeoBH/wtbLutOsWyfYLqThc4MQZB/GDN/szzlN+H7SI4ciXSpaE5qWMXQIHrvYzg=
+  matrix:
+  - FREETDS_VERSION=0.91
+  - FREETDS_VERSION=0.95
 sudo: false
