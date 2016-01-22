@@ -1,5 +1,6 @@
 /* FreeTDS - Library of routines accessing Sybase and Microsoft databases
  * Copyright (C) 1998-1999  Brian Bruns
+ * Copyright (C) 2011  Frediano Ziglio
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,7 +23,7 @@
 
 #include "./sybfront.h"
 
-static const char rcsid_sqlfront_h[] = "$Id: sqlfront.h,v 1.6.2.3 2011/07/14 12:17:55 freddy77 Exp $";
+static const char rcsid_sqlfront_h[] = "$Id: sqlfront.h,v 1.10 2011-07-13 11:06:31 freddy77 Exp $";
 static const void *const no_unused_sqlfront_h_warn[] = { rcsid_sqlfront_h, no_unused_sqlfront_h_warn };
 
 typedef DBPROCESS * PDBPROCESS;
