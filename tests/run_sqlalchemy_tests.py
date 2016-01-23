@@ -40,17 +40,20 @@ def run_sqlalchemy_tests():
 
 def get_dburi():
     config = ConfigParser.SafeConfigParser()
-    config.read('tests/tests.cfg')
+
+    config.read(os.path.join(os.path.dirname(__file__), 'tests.cfg'))
 
     username = config.get('DEFAULT', 'username')
     password = config.get('DEFAULT', 'password')
     server = config.get('DEFAULT', 'server')
+    port = config.get('DEFAULT', 'port')
     database = config.get('DEFAULT', 'database')
 
-    return 'mssql+pymssql://%(username)s:%(password)s@%(server)s/%(database)s' % dict(
+    return 'mssql+pymssql://%(username)s:%(password)s@%(server)s:%(port)s/%(database)s' % dict(
         username=username,
         password=password,
         server=server,
+        port=port,
         database=database)
 
 
