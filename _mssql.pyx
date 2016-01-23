@@ -1255,7 +1255,12 @@ cdef class MSSQLConnection:
             column_types = list()
 
             for col in xrange(1, self.num_columns + 1):
-                column_name = dbcolname(self.dbproc, col).decode(self._charset)
+                col_name = dbcolname(self.dbproc, col)
+                if not col_name:
+                    self.num_columns -= 1
+                    return None
+
+                column_name = col_name.decode(self._charset)
                 column_names.append(column_name)
                 coltype = dbcoltype(self.dbproc, col)
                 column_types.append(get_api_coltype(coltype))
