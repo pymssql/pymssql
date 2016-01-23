@@ -75,6 +75,27 @@ the following links for resolutions:
 
 - http://www.freetds.org/userguide/osissues.htm
 - http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
+- http://lists.ibiblio.org/pipermail/freetds/2010q4/026342.html
+
+In src/replacements/getopt.c, you may need to move the section::
+
+  #include "tds_sysdep_private.h"
+
+  #if defined(LIBC_SCCS) && !defined(lint)
+  # if 0
+    static char sccsid[] = "@(#)getopt.c	8.3 (Berkeley) 4/27/95";
+  # else
+    __RCSID("$NetBSD: getopt.c,v 1.27 2005/11/29 03:12:00 christos Exp $");
+  # endif
+  #else
+   TDS_RCSID(var, "$Id: getopt.c,v 1.4 2011/05/16 08:16:13 freddy77 Exp $");
+  #endif /* LIBC_SCCS and not lint */
+
+to below the lines::
+
+  #if !defined(_WIN32)
+  # include <unistd.h>
+  #endif
 
 When this is done, the following files should be available (depending on
 ``CONFIGURATION`` and ``PLATFORM`` used above)::

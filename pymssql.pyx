@@ -507,8 +507,8 @@ cdef class Cursor:
 
         try:
             return self.getrow()
-
         except StopIteration:
+            self._rownumber = self._source._conn.rows_affected
             return None
         except _mssql.MSSQLDatabaseException, e:
             raise OperationalError, e.args[0]
@@ -529,6 +529,7 @@ cdef class Cursor:
                 try:
                     rows.append(self.getrow())
                 except StopIteration:
+                    self._rownumber = self._source._conn.rows_affected
                     break
             return rows
         except _mssql.MSSQLDatabaseException, e:
