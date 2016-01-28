@@ -1,28 +1,76 @@
 Change Log
 ==========
 
-Version 2.1.2 - To be released
-==============================
+Version 2.1.2 - To be released - Ramiro Morales
+===============================================
 
 General
 -------
 
 - Drop support for Python 2.6.
 
+- Add support for Python 3.5.
+
+- Update shipped Linux FreeTDS static libs to 0.95
+
 Features
 --------
 
-- Floating point values are now accepted as Stored Procedure arguments. Thanks
-  Runzhou Li (Leo) for the report and Bill Adams for the implementation.
+- Add ability to set TDS protocol version from pymssql when connecting to SQL
+  Server. For the remaining pymssql 2.1.x releases its default value will be 7.1
+  (GH-323)
 
-- Add Dockerfile and a Docker image and instructions on how to use it (GH-258)
+- Add Dockerfile and a Docker image and instructions on how to use it (GH-258).
   This could be a convenient way to use pymssql without having to build stuff.
   See http://pymssql.readthedocs.org/en/latest/intro.html#docker
+  Thanks Marc Abramowitz.
+
+- Floating point values are now accepted as Stored Procedure arguments
+  (GH-287). Thanks Runzhou Li (Leo) for the report and Bill Adams for the
+  implementation.
+
+- Send pymssql version in the appname TDS protocol login record field when the
+  application doesn't provide one (GH-354)
 
 Bug fixes
 ---------
 
+- Fix a couple of very common causes of segmentation faults in presence of
+  network partition betweek pymssql-based app and SQL server (GH-271)
+  Thanks Marc Abramowitz.
+
+- Fix failures and inconsistencies in query parameter interpolation when
+  UTF-8-encoded literals are present (GH-185). Thanks Bill Adams. Also, GH-291.
+
+- Fix ``login_timeout`` parameter of ``pymssql.connect()`` (GH-318)
+
+- Fixed some cases of ``cursor.rowcont`` having a -1 value after iterating
+  over the value returned by pymssql cursor ``fetchmany()`` and ``fetchone()``
+  methods (GH-141)
+
+- Remove automatic treatment of string literals passed in queries that start
+  with ``'0x'`` as hexadecimal values (GH-286)
+
 - Fix build fatal error when using Cython >= 0.22 (GH-311)
+
+Documentation
+-------------
+
+- Add installation instructions. Thanks Marc Abramowitz.
+
+- Document DB-API-mandated exceptions.
+
+- Enhance ``_mssql.MSSQLStoredProcedure.bind()`` docs.
+
+- Enhance description of Azure connections requirements.
+
+Internals
+---------
+
+- Add Appveyor hosted CI setup for running tests on Windows (GH-347)
+
+- Travis CI: Use newer, faster, container-based infrastructure. Also, test
+  against more than one FreeTDS version.
 
 Version 2.1.1 - 2014-11-25 - Ramiro Morales
 ===========================================
