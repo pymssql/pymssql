@@ -14,7 +14,7 @@ environment:
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
     OPENSSL_VER: 1.0.2e
-    FREETDS_VER: 0.95.73
+    FREETDS_VER: 0.95.79
 
   matrix:
     - PYTHON: "C:\\Python27"
