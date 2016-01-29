@@ -22,6 +22,7 @@ script:
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
 - py.test -v
 - cd docs && test -z "$(make SPHINXOPTS='-q' html 2>&1 | egrep -w 'SEVERE:|ERROR:')"
+- cd ..
 branches:
   except:
     - 1.0
