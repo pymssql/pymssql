@@ -16,6 +16,12 @@ environment:
     OPENSSL_VER: 1.0.2e
     FREETDS_VER: 0.95.79
 
+  PYPI_USERNAME:
+    secure: NNN9CjI55JgpCgiS2Gg6/g==
+
+  PYPI_PASSWORD:
+    secure: twq900sa0YG9Vx6V7vdo4g==
+
   matrix:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.9"
@@ -181,5 +187,11 @@ artifacts:
   - path: dist\*.whl
   - path: dist\*.exe
 
-#on_success:
-#  - TODO: upload the content of dist/*.whl to a public wheelhouse
+on_success:
+  ps: |
+    If ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
+      If ($env:INSTANCENAME -eq "SQL2012SP1") {
+        pip install twine --upgrade
+        twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD --config-file appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+      }
+    }
