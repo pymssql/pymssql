@@ -1,10 +1,13 @@
 import unittest
 
-import sqlalchemy as sa
+from .helpers import config, eq_, skip_test
+
+try:
+    import sqlalchemy as sa
+except ImportError:
+    skip_test('SQLAlchemy is not available')
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
-from .helpers import config, eq_
 
 engine = sa.create_engine(
         'mssql+pymssql://%s:%s@%s:%s/%s' % (
