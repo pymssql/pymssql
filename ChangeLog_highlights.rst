@@ -27,8 +27,8 @@ Bug fixes
 ---------
 
 - Fix a couple of very common causes of segmentation faults in presence of
-  network partition betweek pymssql-based app and SQL server (GH-271)
-  Thanks Marc Abramowitz.
+  network a partition between a pymssql-based app and SQL Server (GH-147,
+  GH-271) Thanks Marc Abramowitz. See also GH-373.
 
 - Fix failures and inconsistencies in query parameter interpolation when
   UTF-8-encoded literals are present (GH-185). Thanks Bill Adams. Also, GH-291.
@@ -51,6 +51,9 @@ Internals
 
 - Travis CI: Use newer, faster, container-based infrastructure. Also, test
   against more than one FreeTDS version.
+
+- Make it possible to build official release files (sdist, wheels) on Travis &
+  AppVeyor.
 
 Version 2.1.1 - 2014-11-25 - Ramiro Morales
 ===========================================
