@@ -1,5 +1,5 @@
 /* FreeTDS - Library of routines accessing Sybase and Microsoft databases
- * Copyright (C) 1998-1999  Brian Bruns
+ * Copyright (C) 1998-2011  Brian Bruns
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -20,18 +20,15 @@
 #ifndef _tds_sysdep_public_h_
 #define _tds_sysdep_public_h_
 
-/* $Id: tds_sysdep_public.h.in,v 1.14 2010/09/01 08:39:38 freddy77 Exp $ */
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+/* $Id: tds_sysdep_public.h.in,v 1.15 2011-08-08 07:27:57 freddy77 Exp $ */
 
 /*
 ** This is where platform-specific changes need to be made.
 */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 #include <winsock2.h>
+#include <ws2tcpip.h>
+#include <wspiapi.h>
 #include <windows.h>
 #define tds_sysdep_int16_type short	/* 16-bit int */
 #define tds_sysdep_int32_type int	/* 32-bit int */
@@ -70,14 +67,10 @@ extern "C"
 #endif				/* !tds_sysdep_intptr_type */
 
 #if !defined(MSDBLIB) && !defined(SYBDBLIB)
-#define SYBDBLIB 1
+#define MSDBLIB 1
 #endif
 #if defined(MSDBLIB) && defined(SYBDBLIB)
 #error MSDBLIB and SYBDBLIB cannot both be defined
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif				/* _tds_sysdep_public_h_ */
