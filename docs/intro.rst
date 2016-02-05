@@ -109,12 +109,19 @@ Here's how using the Docker container looks in practice:
 Architecture
 ============
 
+.. image:: images/pymssql-stack.png
+
 The pymssql package consists of two modules:
 
 * :mod:`pymssql` -- use it if you care about DB-API compliance, or if you are
   accustomed to DB-API syntax,
 * :mod:`_mssql` -- use it if you care about performance and ease of use
   (``_mssql`` module is easier to use than ``pymssql``).
+
+And, as of version 2.1.x it uses the services of the ``db-lib`` component of
+FreeTDS. See the `relevant FreeTDS documentation`_ for additional details.
+
+.. _relevant FreeTDS documentation: http://www.freetds.org/which_api.html
 
 Supported related software
 ==========================
