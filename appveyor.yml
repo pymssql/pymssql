@@ -14,7 +14,7 @@ environment:
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
     OPENSSL_VER: 1.0.2e
-    FREETDS_VER: 0.95.79
+    FREETDS_VER: 0.95.81
 
   PYPI_USERNAME:
     secure: XQcffvGArla859PHnyIUzg==
@@ -26,48 +26,56 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.9"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2008"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.5"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2010"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2010"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2015"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.9"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2008"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python33-x64"
       PYTHON_VERSION: "3.3.5"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2010"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2010"
       INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2015"
       INSTANCENAME: "SQL2008R2SP2"
 
@@ -75,48 +83,56 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.9"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2008"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.5"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2010"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2010"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
+      ARCH: x86
       VS_VER: "2015"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.9"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2008"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python33-x64"
       PYTHON_VERSION: "3.3.5"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2010"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2010"
       INSTANCENAME: "SQL2012SP1"
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "64"
+      ARCH: x86_64
       VS_VER: "2015"
       INSTANCENAME: "SQL2012SP1"
 
@@ -125,7 +141,7 @@ install:
   # not already installed.
   - "powershell appveyor\\install.ps1"
 
-  # Prepend current Python ans scripts dirs to the PATH of this build (this cannot be
+  # Prepend current Python and scripts dirs to the PATH of this build (this cannot be
   # done from inside the powershell script as it would require to restart
   # the parent CMD process).
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
@@ -148,8 +164,9 @@ before_build:
   - ren openssl-%OPENSSL_VER%-vs%VS_VER% openssl
   # FreeTDS
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
-  - appveyor DownloadFile https://github.com/ramiro/freetds/releases/download/v%FREETDS_VER%/vs%VS_VER%_%PYTHON_ARCH%.zip
-  - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%.zip
+  - appveyor DownloadFile https://github.com/ramiro/freetds/releases/download/v%FREETDS_VER%/freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER%.zip
+  - 7z x -ofreetds freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER%.zip
+  - ren freetds\freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER% freetds\vs%VS_VER%_%PYTHON_ARCH%
 
 build_script:
   - "%CMD_IN_ENV% python setup.py install"
