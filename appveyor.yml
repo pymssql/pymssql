@@ -197,16 +197,13 @@ after_test:
       (New-Object 'System.Net.WebClient').UploadFile($url, (Resolve-Path $file))
   # If tests are successful, create binary packages for the project.
   - "%CMD_IN_ENV% python setup.py bdist_wheel"
-  #- "%CMD_IN_ENV% python setup.py bdist_msi"
-  - "%CMD_IN_ENV% python setup.py bdist_wininst"
 
 artifacts:
   - path: dist\*.whl
-  - path: dist\*.exe
 
 on_success:
   ps: |
-    If ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
+    if ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
       If ($env:INSTANCENAME -eq "SQL2012SP1") {
         pip install twine --upgrade
         twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD --config-file appveyor\pypirc -r pypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
