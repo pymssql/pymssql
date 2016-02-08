@@ -145,16 +145,7 @@ will install pymssql from `PyPI <https://pypi.python.org/pypi/pymssql>`_. This
 PyPI page contains:
 
 - source distribution (``.tar.gz``)
-- eggs (``.egg``) for Windows
 - wheels (``.whl``) for Windows
-- Windows installers (``.exe``) for Windows
-
-Windows installers
-------------------
-
-There are installers for Windows (``.exe`` files) available at `PyPI
-<https://pypi.python.org/pypi/pymssql>`_. Download one and double-click to
-launch it and then follow the prompts.
 
 Project Discussion
 ==================
