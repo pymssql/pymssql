@@ -166,7 +166,7 @@ before_build:
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
   - appveyor DownloadFile https://github.com/ramiro/freetds/releases/download/v%FREETDS_VER%/freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER%.zip
   - 7z x -ofreetds freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER%.zip
-  - ren freetds\freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER% freetds\vs%VS_VER%_%PYTHON_ARCH%
+  - mv freetds/freetds-v%FREETDS_VER%-win-%ARCH%-vs%VS_VER% freetds/vs%VS_VER%_%PYTHON_ARCH%
 
 build_script:
   - "%CMD_IN_ENV% python setup.py install"
@@ -181,7 +181,7 @@ before_test:
         $env:PATH = $env:APPVEYOR_BUILD_FOLDER + "\openssl\bin64;" + $env:PATH
       }
   # Add relevant FreeTDS DLLs dir to PATH envvar
-  - set PATH=%CD%\freetds\vs%VS_VER%_%PYTHON_ARCH%\dynamic;%PATH%
+  - set PATH=%CD%\freetds\vs%VS_VER%_%PYTHON_ARCH%\lib;%PATH%
   # Start, reconfigure and restart SQL Server
   - net start MSSQL$%INSTANCENAME%
   - "powershell appveyor\\sql-server-activate-tcp-fixed-port.ps1"

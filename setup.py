@@ -309,7 +309,7 @@ class build_ext(_build_ext):
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 e.include_dirs.append(osp.join(FREETDS, 'include'))
-                e.library_dirs.append(osp.join(FREETDS, 'dynamic'))
+                e.library_dirs.append(osp.join(FREETDS, 'lib'))
                 e.library_dirs.append(OPENSSL)
 
         else:
