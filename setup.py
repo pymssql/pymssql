@@ -428,7 +428,7 @@ setup(
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
-    maintainer = 'pymssql Google Group',
+    maintainer = 'pymssql development team',
     maintainer_email = 'pymssql@googlegroups.com',
     license = 'LGPL',
     platforms = 'any',
