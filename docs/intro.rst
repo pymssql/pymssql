@@ -32,7 +32,6 @@ E.g.:
 
       brew install freetds
 
-
 Docker
 ------
 
@@ -133,6 +132,8 @@ Supported related software
 
 Install
 =======
+
+Remember to install :doc:`/freetds` first.
 
 pip
 ---
