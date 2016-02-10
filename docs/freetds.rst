@@ -42,7 +42,7 @@ libraries for FreeTDS in some usual system-wide locations):
 
       ./configure --enable-msdblib --enable-sspi \
         --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=7.1 \
-        --disable-apps --disable-server --disable-pool --disable-odbc
+        --disable-apps --disable-server --disable-pool --disable-odbc \
         --with-openssl=no --with-gnutls=no
       make
 
@@ -50,7 +50,7 @@ libraries for FreeTDS in some usual system-wide locations):
 
     Version of FreeTDS Linux static libraries bundled with pymssql is
     `0.95.81`_ obtained from branch `Branch-0_95`_ of the official Git
-    repository. Until version 2.1.1 the version of FreeTDS bundled was 0.91.
+    repository. Up to 2.1.1 the version of FreeTDS bundled was 0.91.
 
 .. _0.95.81: https://github.com/FreeTDS/freetds/tree/110179b9c83fe9af88d4c29658dca05e5295ecbb
 .. _Branch-0_95: https://github.com/FreeTDS/freetds/tree/Branch-0_95
@@ -69,11 +69,13 @@ Windows
 
    * Use binaries we maintain at https://github.com/ramiro/freetds/releases
 
-     Choose the .zip file appropriate
-     for your architecture (``x86`` v. ``x86_64``) and your Python version
-     (``vs2008`` for Python 2.7, ``vs2010`` for Python 3.3 and 3.4, ``vs2015``
-     for Python 3.5). Download and uncompress it taking note of the path to the
-     directory which contains the DLL files.
+     Those are built with SSL support via OpenSSL (see below) and iconv (via
+     `win-iconv <https://github.com/win-iconv/win-iconv>`_ statically linked).
+
+     Choose the .zip file appropriate for your architecture (``x86`` vs.
+     ``x86_64``) and your Python version (``vs2008`` for Python 2.7, ``vs2010``
+     for Python 3.3 and 3.4, ``vs2015`` for Python 3.5). Download and uncompress
+     it taking note of the path to the directory which contains the DLL files.
    * Or you can `build it yourself <http://www.freetds.org/userguide/build.htm>`_.
 
 #. If you chose the FreeTDS binaries linked above then you'll need to install
