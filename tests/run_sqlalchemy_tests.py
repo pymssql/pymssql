@@ -6,7 +6,7 @@ import sys
 import tarfile
 import urllib
 
-SQLALCHEMY_VERSION     = "0.8.0b2"
+SQLALCHEMY_VERSION     = "1.0.11"
 SQLALCHEMY_DIR         = "SQLAlchemy-%s" % SQLALCHEMY_VERSION
 SQLALCHEMY_TAR_GZ      = "%s.tar.gz" % SQLALCHEMY_DIR
 SQLALCHEMY_TAR_GZ_URL  = "http://pypi.python.org/packages/source/S/SQLAlchemy/%s" % SQLALCHEMY_TAR_GZ
@@ -31,7 +31,7 @@ def run_sqlalchemy_tests():
     if dburi:
         sys.argv.append('--dburi=%s' % dburi)
 
-    os.chdir('SQLAlchemy-0.8.0b2')
+    os.chdir('SQLAlchemy-%s' % SQLALCHEMY_VERSION)
     sys.path.append('.')
     sys.stdout.write('Running SQLAlchemy tests...\n\n')
     sys.stdout.flush()
