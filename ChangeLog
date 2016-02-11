@@ -4,6 +4,19 @@ Change Log
 Version 2.1.2 - 2016-02-10 - Ramiro Morales
 ===============================================
 
+.. attention:: Windows users: You need to download and install additional DLLs
+
+    pymssql version 2.1.2 includes a change in the official Windows binaries:
+    FreeTDS isn't statically linked as it happened up to release 2.1.1, as that
+    FreeTDS copy lacked SSL support.
+
+    Please see http://pymssql.org/en/latest/freetds.html#windows for futher
+    details.
+
+    We are trying to find a balance between security and convenience and will
+    be evaluating the situation for future releases. Your feedback is greatly
+    welcome.
+
 General
 -------
 
