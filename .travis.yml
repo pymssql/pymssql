@@ -18,7 +18,7 @@ install:
 - if [[ $FREETDS_VERSION == '0.95' ]]; then export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1; fi
 - python setup.py develop
 script:
-- . bin/travis_env.sh
+- . dev/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
 - py.test -v
 - cd docs && test -z "$(make SPHINXOPTS='-q' html 2>&1 | egrep -w 'SEVERE:|ERROR:')"
