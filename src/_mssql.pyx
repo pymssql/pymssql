@@ -515,7 +515,7 @@ cdef class MSSQLConnection:
             if version == 10:
                 return 7.2
             elif version == 9:
-                return 8.0  # Actually 7.1, return 8.0 to keep backward compatibility
+                return 7.1
             elif version == 8:
                 return 7.0
             elif version == 6:

@@ -169,7 +169,11 @@ Functions
 .. attribute:: MSSQLConnection.tds_version
 
    The TDS version used by this connection. Can be one of ``4.2``, ``5.0``
-   ``7.0``, ``8.0`` and ``7.2``.
+   ``7.0``, ``7.1`` and ``7.2``.
+
+   .. versionchanged:: 2.2.0
+       For correctness and consistency the value used to indicate TDS 7.1
+       changed from ``8.0`` to ``7.1`` on pymssql 2.2.0.
 
    .. warning::
       For historical and backward compatibility reasons, the value used to

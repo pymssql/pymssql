@@ -1,6 +1,20 @@
 Recent Changes
 ==============
 
+Version 2.2.0 - To be released
+==============================
+
+Features
+--------
+
+TBA
+
+Bug fixes
+---------
+
+- Fix ``tds_version``  ``_mssql`` connection property value for TDS version.
+  7.1 is actually 7.1 and not 8.0.
+
 Version 2.1.2 - 2016-02-10 - Ramiro Morales
 ===============================================
 
