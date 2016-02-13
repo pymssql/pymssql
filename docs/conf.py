@@ -21,7 +21,7 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 
 def extract_version():
-    with open(os.path.join(os.pardir, 'pymssql_version.h')) as f:
+    with open(os.path.join(os.pardir, 'src', 'pymssql_version.h')) as f:
         content = f.read()
 
     # Parse file content that looks like this:
