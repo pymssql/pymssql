@@ -11,3 +11,5 @@ dist
 *.egg
 *.egg-info
 docs/_build
+SQLAlchemy-*/
+SQLAlchemy-*.tar.gz
