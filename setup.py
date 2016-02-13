@@ -88,7 +88,7 @@ from distutils.dir_util import remove_tree
 import struct
 
 def extract_version():
-    with open(osp.join(ROOT, 'pymssql_version.h')) as f:
+    with open(osp.join(ROOT, 'src', 'pymssql_version.h')) as f:
         content = f.read()
 
     # Parse file content that looks like this:
@@ -389,12 +389,12 @@ def ext_modules():
         source_extension = 'pyx'
 
     return [
-        Extension('_mssql', ['_mssql.%s' % source_extension],
+        Extension('_mssql', [osp.join('src', '_mssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
             library_dirs = library_dirs
         ),
-        Extension('pymssql', ['pymssql.%s' % source_extension],
+        Extension('pymssql', [osp.join('src', 'pymssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
             library_dirs = library_dirs
