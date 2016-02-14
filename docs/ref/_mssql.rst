@@ -175,11 +175,6 @@ Functions
        For correctness and consistency the value used to indicate TDS 7.1
        changed from ``8.0`` to ``7.1`` on pymssql 2.2.0.
 
-   .. warning::
-      For historical and backward compatibility reasons, the value used to
-      represent TDS 7.1 is ``8.0``. This will change with pymssql 2.2.0 when it
-      will be fixed to be ``7.1`` for correctness and consistency.
-
 ``MSSQLConnection`` object methods
 ----------------------------------
 
