@@ -4,6 +4,11 @@ Recent Changes
 Version 2.2.0 - To be released
 ==============================
 
+General
+-------
+
+- Drop support for versions of FreeTDS older than 0.91.
+
 Features
 --------
 

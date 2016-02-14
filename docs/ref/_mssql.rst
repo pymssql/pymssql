@@ -101,7 +101,7 @@ Functions
     .. note::
         If you need to connect to Azure:
 
-        * Use FreeTDS 0.91 or newer
+        * Use FreeTDS 0.91 or newer (this is already a requirement of pymssql)
         * Use TDS 7.1 or newer
         * Make sure FreeTDS is built with SSL support
         * Specify the database name you are connecting to in the *database* parameter
