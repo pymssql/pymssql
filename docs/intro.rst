@@ -126,7 +126,7 @@ Supported related software
 ==========================
 
 :Python: Python 2.x: 2.7 or newer. Python 3.x: 3.3 or newer.
-:FreeTDS: 0.82 or newer.
+:FreeTDS: 0.91 or newer.
 :Cython: 0.15 or newer.
 :Microsoft SQL Server: 2005 or newer.
 
