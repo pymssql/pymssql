@@ -1,10 +1,9 @@
 # version format
 version: "{build}"
 
-# Do not build on tags (GitHub only)
 skip_tags: false
 
-shallow_clone: true
+clone_depth: 20
 
 environment:
 
