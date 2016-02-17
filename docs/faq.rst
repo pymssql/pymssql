@@ -264,22 +264,17 @@ and ``TIME`` columns as simple strings. For example::
 
 Yep, so the problem here is that ``DATETIME`` has been supported by `FreeTDS
 <http://www.freetds.org/>`_ for a long time, but ``DATE`` and ``TIME`` are
-newer types in SQL Server and Microsoft never added support for them to db-lib
-and FreeTDS never added support for them either.
+newer types in SQL Server, Microsoft never added support for them to db-lib
+and FreeTDS added support for them in version 0.95.
 
-There was some discussion of adding it to FreeTDS, but I think that stalled.
-See this thread:
+If you need support for these data types (i.e. they get returned from the
+database as their native corresponding Python data types instead of as strings)
+as well as for the ``DATETIME2`` one, then make sure the following conditions
+are met:
 
-http://lists.ibiblio.org/pipermail/freetds/2013q2/thread.html#28348
-
-So we would need to get FreeTDS to support it and then the user would have to
-make sure to use a very recent FreeTDS (unless pymssql links in said version of
-FreeTDS).
-
-Links:
-
-* https://github.com/pymssql/pymssql/issues/156
-* `Discussion of adding support for DATE and TIME to FreeTDS <http://lists.ibiblio.org/pipermail/freetds/2013q2/thread.html#28348>`_
+* You are connecting to SQL Server 2008 or newer.
+* You are using FreeTDS 0.95 or newer.
+* You are using TDS protocol version 7.3 or newer.
 
 Shared object "libsybdb.so.3" not found
 =======================================
