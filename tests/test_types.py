@@ -11,7 +11,9 @@ import sys
 import unittest
 import uuid
 
-from .helpers import skip_test
+from .helpers import get_sql_server_version
+
+import pytest
 
 
 def get_bytes_buffer():
@@ -162,12 +164,20 @@ class TestTypes(unittest.TestCase):
         eq_(testval, colval)
 
     def test_date(self):
+        if get_sql_server_version(self.conn) < 2008:
+            pytest.skip("DATE field type isn't supported by SQL Server versions prior to 2008.")
+        if self.conn.tds_version < 7.3:
+            pytest.skip("DATE field type isn't supported by TDS protocol older than 7.3.")
         testval = date(2013, 1, 2)
         colval = self.insert_and_select('stamp_date', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
 
     def test_time(self):
+        if get_sql_server_version(self.conn) < 2008:
+            pytest.skip("TIME field type is supported by SQL Server versions prior to 2008.")
+        if self.conn.tds_version < 7.3:
+            pytest.skip("TIME field type isn't supported by TDS protocol older than 7.3.")
         testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
         colval = self.insert_and_select('stamp_time', testval, 's')
         testval_no_date = testval.time()
@@ -175,6 +185,10 @@ class TestTypes(unittest.TestCase):
         eq_(testval_no_date, colval)
 
     def test_datetime2(self):
+        if get_sql_server_version(self.conn) < 2008:
+            pytest.skip("DATETIME2 field type isn't supported by SQL Server versions prior to 2008.")
+        if self.conn.tds_version < 7.3:
+            pytest.skip("DATETIME2 field type isn't supported by TDS protocol older than 7.3.")
         testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
         colval = self.insert_and_select('stamp_datetime2', testval, 's')
         typeeq(testval, colval)
