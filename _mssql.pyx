@@ -512,7 +512,9 @@ cdef class MSSQLConnection:
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
-            if version == 10:
+            if version == 11:
+                return 7.3
+            elif version == 10:
                 return 7.2
             elif version == 9:
                 return 8.0  # Actually 7.1, return 8.0 to keep backward compatibility
