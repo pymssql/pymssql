@@ -8,6 +8,8 @@ General
 -------
 
 - Drop support for versions of FreeTDS older than 0.91.
+- Add support for reporting TDS version 7.3 is i use via the ``tds_version``
+  property of a ``_mssql``-level connection.
 
 Features
 --------
