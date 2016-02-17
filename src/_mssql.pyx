@@ -536,7 +536,7 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', conn_properties=None):
+            charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -570,7 +570,8 @@ cdef class MSSQLConnection:
         DBSETLUSER(login, user_cstr)
         DBSETLPWD(login, password_cstr)
         DBSETLAPP(login, appname_cstr)
-        DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
+        if tds_version is not None:
+            DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
         # add the port to the server string if it doesn't have one already and
         # if we are not using an instance

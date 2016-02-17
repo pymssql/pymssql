@@ -71,7 +71,7 @@ Functions
 
     :param str port: the TCP port to use to connect to the server
 
-    :param str tds_version: TDS protocol version to ask for. Default value: '7.1'
+    :param str tds_version: TDS protocol version to ask for. Default value: ``None``
 
     :param conn_properties: SQL queries to send to the server upon connection
                             establishment. Can be a string or another kind
@@ -110,21 +110,29 @@ Functions
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
 
+    .. versionchanged:: 2.2.0
+        The default value of the *tds_version* parameter was changed to ``None``.
+        Between versions 2.0.0 and  2.1.2 its default value was ``'7.1'``.
+
     .. warning::
-        The *tds_version* parameter, added in version 2.0.0, has a default value
-        of '7.1'.
+      The *tds_version* parameter has a default value of ``None``. This means two
+      things:
 
-        This will change with pymssql 2.2.0 when
+      #. You can't rely anymore in the old ``'7.1'`` default value and
+      #. Now you'll need to either
 
-        * The default value will be changed to None
-        * The version of the TDS protocol to use by default won't be 7.1 anymore
-        * You won't able to rely on such default value anymore and will need to
-          either
+        * Specify its value explicitly by passing a value for this parameter or
+        * Configure it using facilities provided by FreeTDS (see `here
+          <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
+          and `here <http://www.freetds.org/userguide/envvar.htm>`_)
 
-          * Specify its value explicitly or
-          * Configure it using facilities provided by FreeTDS (see `here
-            <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
-            `and here <http://www.freetds.org/userguide/envvar.htm>`_)
+      This might look cumbersome but at the same time means you can now fully
+      configure the characteristics of a connection to SQL Server when using
+      pymssql/_mssql without using a stanza for the server in the
+      ``freetds.conf`` file or even with no ``freetds.conf`` at all. Starting
+      with pymssql version 2.0.0 and up to version 2.1.2 it was already possible
+      to set the TDS protocol version to ask for when connecting to the server
+      but version 7.1 was used if not specified.
 
 ``MSSQLConnection`` object properties
 -------------------------------------
