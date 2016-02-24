@@ -12,7 +12,15 @@ General
 Features
 --------
 
-TBA
+- Support for new in SQL Server 2008 ``DATE``, ``TIME`` and ``DATETIME2`` data
+  types (GH-156). The following conditions need to be additionally met so
+  values of these column types can be returned from the database as their
+  native corresponding Python data types instead of as strings:
+
+  * Underlying FreeTDS must be 0.95 or newer.
+  * TDS protocol version in use must be 7.3 or newer.
+
+  Thanks Ed Avis for the implementation. (GH-331)
 
 Bug fixes
 ---------

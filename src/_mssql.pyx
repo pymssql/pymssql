@@ -132,6 +132,10 @@ SQLVARBINARY = SYBVARBINARY
 SQLVARCHAR = SYBVARCHAR
 SQLUUID = 36
 
+SQLDATE = 40
+SQLTIME = 41
+SQLDATETIME2 = 42
+
 #######################
 ## Exception classes ##
 #######################
@@ -800,12 +804,24 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype == SQLDATETIM4:
+        elif dbtype in (SQLDATETIM4, SQLDATETIME2):
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
                 <BYTE *>&dt, -1)
             dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif dbtype == SQLDATE:
+            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
+                <BYTE *>&dt, -1)
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            return datetime.date(di.year, di.month, di.day)
+
+        elif dbtype == SQLTIME:
+            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
+                <BYTE *>&dt, -1)
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            return datetime.time(di.hour, di.minute, di.second, di.millisecond * 1000)
 
         elif dbtype == SQLDATETIME:
             dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
