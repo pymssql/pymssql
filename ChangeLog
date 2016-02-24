@@ -7,8 +7,21 @@ Version 2.2.0 - To be released
 General
 -------
 
+- Stop using 7.1 as default value for the TDS protocol version used in connections.
+
+  This is a backward incompatible change and affects connections using both
+  `pymssql` and `_mssql`.
+
+  Now you need to specify a TDS protocol version explicitly by using any of
+  the supported mechanisms (in descending order of precedence):
+
+  * Using the ``tds_version`` paramenter of ``pymssql.connect()`` and
+    ``_mssql.connect()``
+  * A ``TDSVER`` enviromnent variable (see FreeTDS documentation)
+  * A ``freetds.conf`` file (see FreeTDS documentation)
+
 - Drop support for versions of FreeTDS older than 0.91.
-- Add support for reporting TDS version 7.3 is i use via the ``tds_version``
+- Add support for reporting TDS version 7.3 is in use via the ``tds_version``
   property of a ``_mssql``-level connection.
 
 Features
