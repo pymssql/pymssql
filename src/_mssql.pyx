@@ -253,7 +253,9 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
         if DBDEAD(dbproc):
             log("+++ err_handler: dbproc is dead; killing conn...\n")
-            conn.mark_disconnected()
+            # Mark connection disconnected. Disconnected connections are
+            # "collected" at next interaction via cancel() method.
+            conn._connected = 0
         break
 
     if severity > mssql_lastmsgseverity[0]:
@@ -754,20 +756,14 @@ cdef class MSSQLConnection:
             connection_object_list.remove(self)
         except ValueError:
             pass
+        # Mark connection disconnected. Disconnected connections are
+        # "collected" at next interaction via cancel() method.
         self._connected = 0
         self.dbproc = NULL
         PyMem_Free(self.last_msg_proc)
         PyMem_Free(self.last_msg_srv)
         PyMem_Free(self.last_msg_str)
         PyMem_Free(self._charset)
-
-    def mark_disconnected(self):
-        """
-        Mark connection disconnected.
-        Disconnected connections are "collected" at next interaction via "cancel" function.
-        """
-        log("_mssql.MSSQLConnection.mark_disconnected()")
-        self._connected = 0
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
