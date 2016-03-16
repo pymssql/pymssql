@@ -750,8 +750,10 @@ cdef class MSSQLConnection:
         Free resources used by this object.
         """
         log("_mssql.MSSQLConnection.real_close()")
-        if self in connection_object_list:
+        try:
             connection_object_list.remove(self)
+        except ValueError:
+            pass
         self._connected = 0
         self.dbproc = NULL
         PyMem_Free(self.last_msg_proc)
