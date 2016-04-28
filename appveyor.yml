@@ -12,8 +12,8 @@ environment:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
-    OPENSSL_VER: 1.0.2e
-    FREETDS_VER: 0.95.81
+    OPENSSL_VER: 1.0.2g
+    FREETDS_VER: 0.95.95
 
   PYPI_USERNAME:
     secure: XQcffvGArla859PHnyIUzg==
