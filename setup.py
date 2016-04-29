@@ -58,6 +58,8 @@ else:
 
 from setuptools.command.test import test as TestCommand
 
+LINK_FREETDS_STATICALLY = True
+LINK_OPENSSL = False
 
 ROOT = osp.abspath(osp.dirname(__file__))
 
@@ -286,21 +288,24 @@ class build_ext(_build_ext):
                     freetds_dir = 'vs2010'
                 else:
                     freetds_dir = 'vs2008'
-                # XXX: Decide and implement if we are going to allow linking in
-                # FreeTDS statically
-                if True:
+                if LINK_FREETDS_STATICALLY:
+                    libraries = [
+                        'db-lib', 'tds', 'replacements',
+                        'iconv',
+                        'ws2_32', 'wsock32', 'kernel32', 'shell32',
+                    ]
+                    if LINK_OPENSSL:
+                        libraries.extend([
+                            'libeay{}MD'.format(BITNESS),
+                            'ssleay{}MD'.format(BITNESS)
+                        ])
+                else:
                     libraries = [
                         'ct', 'sybdb',
                         'ws2_32', 'wsock32', 'kernel32', 'shell32',
-                        'libeay32MD', 'ssleay32MD',
                     ]
-                else:
-                    libraries = [
-                        'db-lib', 'tds',
-                        'ws2_32', 'wsock32', 'kernel32', 'shell32',
-                        'libeay{}MD'.format(BITNESS),
-                        'ssleay{}MD'.format(BITNESS),
-                    ]
+                    if LINK_OPENSSL:
+                        libraries.extend(['libeay32MD', 'ssleay32MD'])
 
             FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
             suffix = '' if BITNESS == 32 else '64'
@@ -309,8 +314,16 @@ class build_ext(_build_ext):
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 e.include_dirs.append(osp.join(FREETDS, 'include'))
-                e.library_dirs.append(osp.join(FREETDS, 'lib'))
-                e.library_dirs.append(OPENSSL)
+                if LINK_OPENSSL:
+                    freetds_lib_dir = 'lib'
+                else:
+                    freetds_lib_dir = 'lib-nossl'
+                if LINK_FREETDS_STATICALLY:
+                    e.library_dirs.append(osp.join(FREETDS, freetds_lib_dir, 'static'))
+                else:
+                    e.library_dirs.append(osp.join(FREETDS, freetds_lib_dir))
+                if LINK_OPENSSL:
+                    e.library_dirs.append(OPENSSL)
 
         else:
             for e in self.extensions:
