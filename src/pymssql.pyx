@@ -578,7 +578,7 @@ cdef class Cursor:
         """
         pass
 
-def connect(server='.', user='', password='', database='', timeout=0,
+def connect(server='.', user=None, password=None, database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
         host='', appname=None, port='1433', conn_properties=None, autocommit=False, tds_version=None):
     """
@@ -587,9 +587,9 @@ def connect(server='.', user='', password='', database='', timeout=0,
 
     :param server: database host
     :type server: string
-    :param user: database user to connect as
+    :param user: database user to connect as. Default value: None.
     :type user: string
-    :param password: user's password
+    :param password: user's password. Default value: None.
     :type password: string
     :param database: the database to initially connect to
     :type database: string
