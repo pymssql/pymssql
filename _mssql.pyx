@@ -958,8 +958,10 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
-            if type(value) is not str:
-                raise TypeError('value can only be str')
+            if PY_MAJOR_VERSION == 3 and type(value) not in (bytes, bytearray):
+                raise TypeError('value can only be bytes or bytearray')
+            elif PY_MAJOR_VERSION == 2 and type(value) not in (str, bytearray):
+                raise TypeError('value can only be str or bytearray')
 
             binValue = <BYTE *>PyMem_Malloc(len(value))
             memcpy(binValue, <char *>value, len(value))
