@@ -75,7 +75,9 @@ Windows
      Choose the .zip file appropriate for your architecture (``x86`` vs.
      ``x86_64``) and your Python version (``vs2008`` for Python 2.7, ``vs2010``
      for Python 3.3 and 3.4, ``vs2015`` for Python 3.5). Download and uncompress
-     it taking note of the path to the directory which contains the DLL files.
+     it. You will need to add the appropriate ``lib`` or ``lib-nossl`` directory
+     to your ``%PATH%`` environment variable or copy the DLLs to a directory
+     already in ``%PATH%``.
    * Or you can `build it yourself <http://www.freetds.org/userguide/build.htm>`_.
 
 #. If you chose the FreeTDS binaries linked above then you'll need to install
@@ -84,8 +86,9 @@ Windows
 
    Choose the right .7z file for your Python version (``vs2008`` for Python 2.7,
    ``vs2010`` for Python 3.3 and 3.4, ``vs2015`` for Python 3.5). Download and
-   uncompress it taking note of the path to the directory which contains the DLL
-   files.
+   uncompress it. You must add the appropriate ``bin`` or ``bin64`` directory to your
+   ``%PATH%`` environment variable or copy the relevant DLLs to a directory already
+   in ``%PATH%``.
 
    This is needed because the FreeTDS DLLs are compiled with the feature to use
    SSL-wrapped connections to SQL Server (and Azure for which it's a mandatory
