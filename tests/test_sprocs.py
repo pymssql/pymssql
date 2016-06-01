@@ -29,6 +29,7 @@ FIXED_TYPES = (
 VARIABLE_TYPES = (
     ('Char', 4),
     ('VarChar', 4),
+    ('VarBinary', 4),
     ('Text', None)  # Leave this one in the last position in case it fails (see https://code.google.com/p/pymssql/issues/detail?id=113#c2)
 )
 
@@ -427,6 +428,29 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(None, _mssql.SQLVARCHAR, '@ovarchar', output=True)
         proc.execute()
         eq_(input, proc.parameters['@ovarchar'])
+
+    def testVarBinary(self):
+        def check_conversion(input, output_type):
+            proc = self.mssql.init_procedure('pymssqlTestVarBinary')
+            proc.bind(input, _mssql.SQLVARBINARY, '@ivarbinary')
+            proc.bind(None, _mssql.SQLVARBINARY, '@ovarbinary', output=True)
+            proc.execute()
+            eq_(input, proc.parameters['@ovarbinary'])
+            eq_(output_type, type(proc.parameters['@ovarbinary']))
+
+        if sys.version_info[0] == 3:
+            check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), bytes)
+            check_conversion(bytearray(b'\xDE\xAD\xBE\xEF'), bytes)
+            with pytest.raises(TypeError) as exc_info:
+                check_conversion('FOO', bytes)
+                assert 'value can only be bytes or bytearray' == str(exc_info.value)
+        else:
+            check_conversion(b'\xDE\xAD\xBE\xEF', str)
+            check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), str)
+            check_conversion(bytearray(b'\xDE\xAD\xBE\xEF'), str)
+            with pytest.raises(TypeError) as exc_info:
+                check_conversion(unicode('Foo'), str)
+                assert 'value can only be str or bytearray' == str(exc_info.value)
 
 
 class TestFloatTypeConversion(unittest.TestCase):
