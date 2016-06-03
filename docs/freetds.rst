@@ -40,11 +40,16 @@ libraries for FreeTDS in some usual system-wide locations):
 
   .. code-block:: bash
 
-      ./configure --enable-msdblib --enable-sspi \
+      ./configure --enable-msdblib \
         --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=7.1 \
         --disable-apps --disable-server --disable-pool --disable-odbc \
         --with-openssl=no --with-gnutls=no
       make
+
+  .. versionchanged:: 2.1.3
+
+    Version of FreeTDS Linux static libraries bundled with pymssql is
+    `0.95.95`_.
 
   .. versionchanged:: 2.1.2
 
@@ -52,6 +57,7 @@ libraries for FreeTDS in some usual system-wide locations):
     `0.95.81`_ obtained from branch `Branch-0_95`_ of the official Git
     repository. Up to 2.1.1 the version of FreeTDS bundled was 0.91.
 
+.. _0.95.95: https://github.com/FreeTDS/freetds/tree/c9d284c767e569c9ae58ca0e2ad9dcd7c2cc9e55
 .. _0.95.81: https://github.com/FreeTDS/freetds/tree/110179b9c83fe9af88d4c29658dca05e5295ecbb
 .. _Branch-0_95: https://github.com/FreeTDS/freetds/tree/Branch-0_95
 

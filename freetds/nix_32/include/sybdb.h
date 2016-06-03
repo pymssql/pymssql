@@ -64,7 +64,8 @@ static const void *const no_unused_sybdb_h_warn[] = { rcsid_sybdb_h, no_unused_s
 #define INT_TIMEOUT	3
 
 #define DBMAXNUMLEN 33
-#define DBMAXNAME   30
+/* https://msdn.microsoft.com/en-us/library/ms176061.aspx */
+#define DBMAXNAME   128
 
 /**
  * DBVERSION_xxx are used with dbsetversion()
