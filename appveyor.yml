@@ -18,10 +18,10 @@ environment:
     FREETDS_VER: 0.95.95
 
   PYPI_USERNAME:
-    secure: NNN9CjI55JgpCgiS2Gg6/g==
+    secure: qpuOLmkiIXoW9OCDo5iQiA==
 
   PYPI_PASSWORD:
-    secure: twq900sa0YG9Vx6V7vdo4g==
+    secure: Mdg3gtGfttA1qVM5ZF/MnA==
 
   matrix:
     - PYTHON: "C:\\Python27"
