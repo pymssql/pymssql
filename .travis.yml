@@ -39,8 +39,10 @@ deploy:
   provider: pypi
   on:
     tags: true
+    branch: 2.1.3-rel-testing
   password:
-    secure: FnoI/4WfZUrpFYnrjuybA7boBF++E8mfNsXQlOZHEaF/hnfZfcAo97cSzAlkJnBppHDJ2XYZsk5xKmqEAnvQaRFXi/TVH1GPTPnffKGg2eCfkyTXBg9icvCx0YCLG1Rcinv7GiKWdzBTC2THWVXBSOIbao570tOBMtPZRgmrroE=
+    secure: BjXHmBDhVSJiiwePyLha3+ZuEzH4OVn2PrKzxqaXw4EohQoUfTALzTgYYjfowD65s2uioYkswAjFEctBcQ8Db0qtl4cy+IDKG50Q9o95k9gPPTXXXtaMMLm9aFGqlc6Ks8T0iYsR8nC0fLBQAnuoLWfaP0w7LtzK4tjfSuuxYx4=
   user:
-    secure: cXPF6Z3AsVdVbvnYcBUMAKme352y1j1E67U78WdN0mON7wZYYfz1wmcuwhjbWRUe0IzflTvOnAjwtkcMIO3espYACOhvX+zWxsqbq0vvAYZOVeoEaqoJVULWpUZNMappp/YLpjNMaVNQJScmRuUfl0HOB4jActF0AMiDd70tI7c=
+    secure: iZTbCXCjzQYrAINmxEjpcp96Q2AO7NesY/RthiaIOCJNjTWiJBHZ4WhyLGLBsdixMmIxaxAoJ+ZyPjIMaQ9KQXVlj8XTiVBfcAJThRHSQyrGqEt60n7RCWjXOfBUJl7A/KszFeBVzfglIetSYUTjCjJdtc6ZaJlXm+AIVuYnq4w=
+  server: https://testpypi.python.org/pypi
 sudo: false

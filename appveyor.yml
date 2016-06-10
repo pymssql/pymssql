@@ -18,10 +18,10 @@ environment:
     FREETDS_VER: 0.95.95
 
   PYPI_USERNAME:
-    secure: XQcffvGArla859PHnyIUzg==
+    secure: NNN9CjI55JgpCgiS2Gg6/g==
 
   PYPI_PASSWORD:
-    secure: Y7MrC6olgmbDxcsUpIP2zUCfYkbko6LGtDmgVDwqkT8=
+    secure: twq900sa0YG9Vx6V7vdo4g==
 
   matrix:
     - PYTHON: "C:\\Python27"
@@ -207,6 +207,6 @@ on_success:
     if ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
       If ($env:INSTANCENAME -eq "SQL2012SP1") {
         pip install twine --upgrade
-        twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD --config-file appveyor\pypirc -r pypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+        twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD --config-file appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
       }
     }
