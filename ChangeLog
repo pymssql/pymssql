@@ -7,18 +7,24 @@ Version 2.1.3 - To be released
 General
 -------
 
-- Add support for reporting TDS version 7.3 is in use via the ``tds_version``
-  property of a ``_mssql``-level connection.
+- Windows official binaries: Rollback changes to Windows binaries we had
+  implemented in pymssql 2.1.2; go back to using:
+
+  * A statically linked version of FreeTDS (v0.95.95)
+  * No OpenSSL support
+
+- Update bundled Linux static version of FreeTDS to v0.95.95.
 
 Features
 --------
 
-TBA
+- We now publish Linux PEP 513 manylinux wheels on PyPI.
 
 Bug fixes
 ---------
 
-TBA
+- Add support for reporting TDS version 7.3 is in use via the ``tds_version``
+  property of a ``_mssql``-level connection.
 
 Version 2.1.2 - 2016-02-10 - Ramiro Morales
 ===========================================

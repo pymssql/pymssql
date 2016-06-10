@@ -1,6 +1,16 @@
 Recent Changes
 ==============
 
+Version 2.1.3 - To be released
+==============================
+
+- We now publish Linux PEP 513 manylinux wheels on PyPI.
+- Windows official binaries: Rollback changes to Windows binaries we had
+  implemented in pymssql 2.1.2; go back to using:
+
+  * A statically linked version of FreeTDS (v0.95.95)
+  * No OpenSSL support
+
 Version 2.1.2 - 2016-02-10 - Ramiro Morales
 ===============================================
 
