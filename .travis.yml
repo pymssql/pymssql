@@ -39,6 +39,7 @@ deploy:
   provider: pypi
   on:
     tags: true
+    branch: stable-2.1.x
   password:
     secure: FnoI/4WfZUrpFYnrjuybA7boBF++E8mfNsXQlOZHEaF/hnfZfcAo97cSzAlkJnBppHDJ2XYZsk5xKmqEAnvQaRFXi/TVH1GPTPnffKGg2eCfkyTXBg9icvCx0YCLG1Rcinv7GiKWdzBTC2THWVXBSOIbao570tOBMtPZRgmrroE=
   user:
