@@ -539,7 +539,7 @@ cdef class MSSQLConnection:
         self.column_names = None
         self.column_types = None
 
-    def __init__(self, server="localhost", user="sa", password="",
+    def __init__(self, server="localhost", user=None, password=None,
             charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
@@ -564,15 +564,23 @@ cdef class MSSQLConnection:
         appname = appname or "pymssql=%s" % __full_version__
 
         # For Python 3, we need to convert unicode to byte strings
-        cdef bytes user_bytes = user.encode('utf-8')
-        cdef char *user_cstr = user_bytes
-        cdef bytes password_bytes = password.encode('utf-8')
-        cdef char *password_cstr = password_bytes
+        cdef bytes user_bytes
+        cdef char *user_cstr = NULL
+        if user is not None:
+            user_bytes = user.encode('utf-8')
+            user_cstr = user_bytes
+        cdef bytes password_bytes
+        cdef char *password_cstr = NULL
+        if password is not None:
+            password_bytes = password.encode('utf-8')
+            password_cstr = password_bytes
         cdef bytes appname_bytes = appname.encode('utf-8')
         cdef char *appname_cstr = appname_bytes
 
-        DBSETLUSER(login, user_cstr)
-        DBSETLPWD(login, password_cstr)
+        if user is not None:
+            DBSETLUSER(login, user_cstr)
+        if password is not None:
+            DBSETLPWD(login, password_cstr)
         DBSETLAPP(login, appname_cstr)
         if tds_version is not None:
             DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
