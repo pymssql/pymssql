@@ -43,4 +43,5 @@ deploy:
     secure: FnoI/4WfZUrpFYnrjuybA7boBF++E8mfNsXQlOZHEaF/hnfZfcAo97cSzAlkJnBppHDJ2XYZsk5xKmqEAnvQaRFXi/TVH1GPTPnffKGg2eCfkyTXBg9icvCx0YCLG1Rcinv7GiKWdzBTC2THWVXBSOIbao570tOBMtPZRgmrroE=
   user:
     secure: cXPF6Z3AsVdVbvnYcBUMAKme352y1j1E67U78WdN0mON7wZYYfz1wmcuwhjbWRUe0IzflTvOnAjwtkcMIO3espYACOhvX+zWxsqbq0vvAYZOVeoEaqoJVULWpUZNMappp/YLpjNMaVNQJScmRuUfl0HOB4jActF0AMiDd70tI7c=
+  server: https://upload.pypi.io/legacy/
 sudo: false
