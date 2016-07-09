@@ -28,33 +28,46 @@ def get_bytes_buffer():
 
 from .helpers import drop_table, mssqlconn, clear_table, config, eq_, pymssqlconn
 
+
 def typeeq(v1, v2):
     eq_(type(v1), type(v2))
 
-tblsql = """
-CREATE TABLE pymssql (
-    pk_id int IDENTITY (1, 1) NOT NULL,
-    real_no real,
-    float_no float,
-    money_no money,
-    stamp_datetime datetime,
-    stamp_date date,
-    stamp_time time,
-    stamp_datetime2 datetime2,
-    data_bit bit,
-    comment_vch varchar(50),
-    comment_nvch nvarchar(50),
-    comment_text text,
-    comment_ntext ntext,
-    data_image image,
-    data_binary varbinary(40),
-    decimal_no decimal(38,2),
-    decimal_no2 decimal(38,10),
-    numeric_no numeric(38,8),
-    stamp_timestamp timestamp,
-    uuid uniqueidentifier
-)
-"""
+create_test_table_sql = [
+    'CREATE TABLE pymssql ('
+    '    pk_id int IDENTITY (1, 1) NOT NULL,',
+    '    real_no real,',
+    '    float_no float,',
+    '    money_no money,',
+    '    stamp_datetime datetime,',
+    '    data_bit bit,',
+    '    comment_vch varchar(50),',
+    '    comment_nvch nvarchar(50),',
+    '    comment_text text,',
+    '    comment_ntext ntext,',
+    '    data_image image,',
+    '    data_binary varbinary(40),',
+    '    decimal_no decimal(38,2),',
+    '    decimal_no2 decimal(38,10),',
+    '    numeric_no numeric(38,8),',
+    '    stamp_timestamp timestamp,',
+    '    uuid uniqueidentifier',
+    ')',
+]
+
+
+def build_create_table_query(conn):
+    if get_sql_server_version(conn) < 2008:
+        create_sql = '\n'.join(create_test_table_sql)
+    else:
+        create_sql = '\n'.join(
+            create_test_table_sql[:-1] + [
+                ','
+                'stamp_date date,',
+                'stamp_time time,',
+                'stamp_datetime2 datetime2'] +
+            create_test_table_sql[-1:])
+    return create_sql
+
 
 class TestTypes(unittest.TestCase):
     tname = 'pymssql'
@@ -63,7 +76,8 @@ class TestTypes(unittest.TestCase):
     def setup_class(cls):
         cls.conn = mssqlconn()
         drop_table(cls.conn, cls.tname)
-        cls.conn.execute_non_query(tblsql)
+        ddl_str = build_create_table_query(cls.conn)
+        cls.conn.execute_non_query(ddl_str)
 
     def setUp(self):
         clear_table(self.conn, self.tname)
@@ -273,8 +287,9 @@ class TestTypesPymssql(unittest.TestCase):
     def setup_class(cls):
         cls.conn = pymssqlconn()
         drop_table(cls.conn._conn, cls.tname)
+        ddl_str = build_create_table_query(cls.conn._conn)
         with cls.conn.cursor() as c:
-            c.execute(tblsql)
+            c.execute(ddl_str)
 
     def setUp(self):
         clear_table(self.conn._conn, self.tname)
