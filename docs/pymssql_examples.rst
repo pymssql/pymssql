@@ -44,6 +44,24 @@ Basic features (strict DB-API compliance)
 
     conn.close()
 
+Connecting using Windows Authentication
+=======================================
+
+When connecting using Windows Authentication, this is how to combine the
+database's hostname and instance name, and the Active Directory/Windows Domain
+name and the username. This example uses
+`raw strings <https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals>`_
+(``r'...'``) for the strings that contain a backslash.
+
+::
+
+    conn = pymssql.connect(
+        host=r'dbhostname\myinstance',
+        user=r'companydomain\username',
+        password=PASSWORD,
+        database='DatabaseOfInterest'
+    )
+
 Iterating through results
 =========================
 
