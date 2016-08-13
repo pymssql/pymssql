@@ -1,6 +1,19 @@
 Recent Changes
 ==============
 
+Version 2.1.4 - To be released
+==============================
+
+General
+-------
+
+TBA
+
+Bug fixes
+---------
+
+TBA
+
 Version 2.1.3 - 2016-06-22 - Ramiro Morales
 ===========================================
 
