@@ -110,6 +110,12 @@ Functions
          <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
          `and here <http://www.freetds.org/userguide/envvar.htm>`_)
 
+   .. warning::
+     FreeTDS added support for TDS protocol version 7.3 in version 0.95. You
+     need to be careful of not asking for TDS 7.3 if you know the undelying
+     FreeTDS used by pymssql is older as it won't raise any error nor keep you
+     from passing such an invalid value.
+
 .. function:: get_dbversion()
 
     TBD
