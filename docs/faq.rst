@@ -5,7 +5,17 @@ Frequently asked questions
 Cannot connect to SQL Server
 ============================
 
-If your script can't connect to a *SQL Server* instance, try the following:
+If your Python program/script can't connect to a *SQL Server* instance, try the
+following:
+
+* By default *SQL Server* 2005 and newer don't accept remote connections, you
+  have to use *SQL Server Surface Area Configuration* and/or *SQL Server
+  Configuration Manager* to enable specific protocols and network adapters;
+  don't forget to restart *SQL Server* after making these changes,
+
+* If *SQL Server* is on a remote machine, check whether connections are not
+  blocked by any intermediate firewall device, firewall software, antivirus
+  software, or other security facility,
 
 * Check that you can connect with another tool.
 
@@ -118,24 +128,10 @@ If your script can't connect to a *SQL Server* instance, try the following:
                                     OpenSSL: no
                                      GnuTLS: no
 
-* By default *SQL Server* 2005 and newer don't accept remote connections, you
-  have to use *SQL Server Surface Area Configuration* and/or *SQL Server
-  Configuration Manager* to enable specific protocols and network adapters;
-  don't forget to restart *SQL Server* after making these changes,
-
-* If *SQL Server* is on a remote machine, check whether connections are not
-  blocked by any intermediate firewall device, firewall software, antivirus
-  software, or other security facility,
-
 * If you use pymssql on Linux/Unix with FreeTDS, check that FreeTDS's
   configuration is ok and that it can be found by pymssql. The easiest way is to
   test connection using ``tsql`` utility which can be found in FreeTDS package.
   See :doc:`FreeTDS Configuration </freetds>` for more info,
-
-* If you use pymssql on Windows and the server is on local machine, you can try
-  the following command from the command prompt::
-
-     REG ADD HKLM\Software\Microsoft\MSSQLServer\Client /v SharedMemoryOn /t REG_DWORD /d 1 /f
 
 Returned dates are not correct
 ==============================
