@@ -21,8 +21,7 @@ General
   * A ``freetds.conf`` file (see FreeTDS documentation)
 
 - Drop support for versions of FreeTDS older than 0.91.
-- Add support for reporting TDS version 7.3 is in use via the ``tds_version``
-  property of a ``_mssql``-level connection.
+- Accept 7.3 as TDS protocol version when establishing a connection.
 
 Features
 --------
