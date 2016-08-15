@@ -28,4 +28,6 @@ ADD . /opt/src/pymssql/
 
 RUN pip install /opt/src/pymssql
 
+VOLUME ["/scripts"]
+
 CMD ["ipython"]
