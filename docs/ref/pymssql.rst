@@ -9,7 +9,23 @@ Complete documentation of ``pymssql`` module classes, methods and properties.
 Module-level symbols
 ====================
 
-Constants, required by the DB-API 2.0 (:pep:`249`) specification.
+.. data:: __version__
+
+   pymssql version as an Unicode constant. E.g. ``u"2.1.1"``, ``u"2.2.0"``
+
+.. data:: VERSION
+
+   pymssql version in tuple form which is more easily handled (parse, compare)
+   programmatically. E.g. ``(2, 1, 1)``, ``(2, 2, 0)``
+
+   .. versionadded:: 2.2.0
+
+.. data:: __full_version__
+
+   pymssql version as an Unicode constant but including any (:pep:`440`)
+   suffixes.  E.g. ``u"2.1.0.dev2"``, ``u"2.2.0.dev"``
+
+Constants, required by the DB-API 2.0 specification:
 
 .. data:: apilevel
 
