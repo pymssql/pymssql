@@ -90,7 +90,7 @@ from distutils.dir_util import remove_tree
 import struct
 
 def extract_version():
-    with open(osp.join(ROOT, 'src', 'pymssql_version.h')) as f:
+    with open(osp.join(ROOT, 'src', 'version.h')) as f:
         content = f.read()
 
     # Parse file content that looks like this:

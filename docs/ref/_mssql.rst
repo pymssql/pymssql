@@ -9,7 +9,21 @@ Complete documentation of ``_mssql`` module classes, methods and properties.
 Module-level symbols
 ====================
 
-Variables whose values you can change to alter behavior on a global basis.
+.. data:: __version__
+
+   See :data:`pymssql.__version__`.
+
+.. data:: VERSION
+
+   See :data:`pymssql.VERSION`.
+
+   .. versionadded:: 2.2.0
+
+.. data:: __full_version__
+
+   See :data:`pymssql.__full_version__`.
+
+Variables whose values you can change to alter behavior on a global basis:
 
 .. data:: login_timeout
 
@@ -183,7 +197,8 @@ Functions
 .. attribute:: MSSQLConnection.tds_version
 
    The TDS version used by this connection. Can be one of ``4.2``, ``5.0``
-   ``7.0``, ``7.1``, ``7.2`` and ``7.3``.
+   ``7.0``, ``7.1``, ``7.2``, ``7.3`` or ``None`` if no TDS version could be
+   detected.
 
    .. versionchanged:: 2.2.0
        For correctness and consistency the value used to indicate TDS 7.1
@@ -191,6 +206,15 @@ Functions
 
    .. versionchanged:: 2.1.3
       ``7.3`` was added as a possible value.
+
+.. attribute:: MSSQLConnection.tds_version_tuple
+
+   .. versionadded:: 2.2.0
+
+   The TDS version used by this connection in tuple form which is more easily
+   handled (parse, compare) programmatically. Can be one of ``(4, 2)``,
+   ``(5, 0)``, ``(7, 0)``, ``(7, 1)``, ``(7, 2)``, ``(7, 3)`` or ``None`` if no
+   TDS version could be detected.
 
 ``MSSQLConnection`` object methods
 ----------------------------------
