@@ -140,11 +140,16 @@ Functions
 
 .. function:: get_dbversion()
 
-    TBD
+    Wrapper around DB-Library's ``dbversion()`` function which returns the
+    version of FreeTDS (actually the version of DB-Lib) in string form. E.g.
+    ``"freetds v0.95"``.
+
+    Unfortunately 1) The value returned doesn't indicate minor revisions (e.g.
+    ``v0.95.50``), 2) Its data type makes it harder to compare versions or
+    handle it programmatically in other ways and 3) It hasn't been consistently
+    updated through the FreeTDS release history.
 
     A pymssql extension to the DB-API 2.0.
-
-.. todo:: Document ``pymssql`` connection ``get_dbversion()``.
 
 .. function:: set_max_connections(number)
 
