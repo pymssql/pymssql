@@ -99,13 +99,7 @@ Functions
         the literal shown above.
 
     .. note::
-        If you need to connect to Azure:
-
-        * Use FreeTDS 0.91 or newer
-        * Use TDS 7.1 or newer
-        * Make sure FreeTDS is built with SSL support
-        * Specify the database name you are connecting to in the *database* parameter
-        * Specify the username in *username@servername* form
+        If you need to connect to Azure read the relevant :doc:`topic </azure>`.
 
     .. versionadded:: 2.1.1
         The ability to connect to Azure.
