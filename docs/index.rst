@@ -89,6 +89,7 @@ Documentation
    faq
    building_and_developing
    freetds_and_dates
+   azure
    docker
    changelog
    todo
