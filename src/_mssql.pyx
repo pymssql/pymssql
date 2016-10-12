@@ -1817,7 +1817,7 @@ cdef _quote_simple_value(value, charset='utf8'):
             value.microsecond / 1000)
 
     if isinstance(value, datetime.date):
-        return "{d '%04d-%02d-%02d'} " % (
+        return "'%04d-%02d-%02d'" % (
         value.year, value.month, value.day)
 
     return None

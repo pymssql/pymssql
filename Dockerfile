@@ -20,6 +20,8 @@ RUN pip install ipython
 RUN pip install SQLAlchemy
 RUN pip install pandas
 RUN pip install Alembic
+RUN pip install pytest
+RUN pip install gevent
 
 # Add source directory to Docker image
 # Note that it's beneficial to put this as far down in the Dockerfile as
