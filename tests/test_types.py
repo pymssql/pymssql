@@ -187,6 +187,16 @@ class TestTypes(unittest.TestCase):
         typeeq(testval, colval)
         eq_(testval, colval)
 
+    def test_ancient_date(self):
+        if get_sql_server_version(self.conn) < 2008:
+            pytest.skip("DATE field type isn't supported by SQL Server versions prior to 2008.")
+        if self.conn.tds_version < 7.3:
+            pytest.skip("DATE field type isn't supported by TDS protocol older than 7.3.")
+        testval = date(13, 1, 2)
+        colval = self.insert_and_select('stamp_date', testval, 's')
+        typeeq(testval, colval)
+        eq_(testval, colval)
+
     def test_time(self):
         if get_sql_server_version(self.conn) < 2008:
             pytest.skip("TIME field type isn't supported by SQL Server versions prior to 2008.")
