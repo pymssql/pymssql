@@ -1811,7 +1811,7 @@ cdef _quote_simple_value(value, charset='utf8'):
             return '0x' + value.encode('hex')
 
     if isinstance(value, datetime.datetime):
-        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
+        return "'%04d-%02d-%02d %02d:%02d:%02d.%03d'" % (
             value.year, value.month, value.day,
             value.hour, value.minute, value.second,
             value.microsecond / 1000)
