@@ -317,6 +317,17 @@ It may happen when one of the following is true:
 ``"Login incorrect"`` following this error is spurious, real ``"Login
 incorrect"`` messages has code=18456 and severity=14.
 
+Unable to use long username and password
+========================================
+
+The username and password, you use, should have a max lenght of 30 characters even if it works
+with ``tsql``. ``pymssql`` uses the db-lib API which is higher level than the FreeTDS API (used by ``tsql``)
+and explains the difference.
+
+Behaviours have been fully described previously in 2 Github's issues:
+* `unable to handle long username<https://github.com/pymssql/pymssql/issues/246>`
+* `login password limited to 30 characters<https://github.com/pymssql/pymssql/issues/288>`
+
 More troubleshooting
 ====================
 
