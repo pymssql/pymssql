@@ -81,7 +81,7 @@ You can:
 
      Choose the .zip file appropriate for your architecture (``x86`` vs.
      ``x86_64``) and your Python version (``vs2008`` for Python 2.7, ``vs2010``
-     for Python 3.3 and 3.4, ``vs2015`` for Python 3.5).
+     for Python 3.3 and 3.4, ``vs2015`` for Python 3.5 and 3.6).
 
      Those builds include iconv support (via
      `win-iconv <https://github.com/win-iconv/win-iconv>`_ statically linked).
@@ -93,7 +93,7 @@ You can:
      To install OpenSSL you'll need the distribution that can be downloaded from
      http://www.npcglib.org/~stathis/blog/precompiled-openssl/. Choose the right
      .7z file for your Python version (``vs2008`` for Python 2.7, ``vs2010`` for
-     Python 3.3 and 3.4, ``vs2015`` for Python 3.5).
+     Python 3.3 and 3.4, ``vs2015`` for Python 3.5 and 3.6).
 
    * Or you can `build it yourself <http://www.freetds.org/userguide/build.htm>`_.
 
