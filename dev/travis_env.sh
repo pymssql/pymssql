@@ -18,6 +18,9 @@ case $TRAVIS_PYTHON_VERSION in
     3.5)
         PYMSSQL_TEST_DATABASE=pymssql_dev_py35
         ;;
+    3.6)
+        PYMSSQL_TEST_DATABASE=pymssql_dev_py35
+        ;;
     *)
         echo "Unknown version of Python ($TRAVIS_PYTHON_VERSION)"
         ;;
