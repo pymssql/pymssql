@@ -1,14 +1,12 @@
 import datetime
+import pytest
 import unittest
 
 import pymssql
-from .helpers import mssqlconn, pymssqlconn, skip_test, mark_slow
+from .helpers import mssqlconn, pymssqlconn, mark_slow
 
-try:
-    import gevent
-    import gevent.socket
-except ImportError:
-    skip_test('gevent is not available')
+gevent = pytest.importorskip("gevent")
+import gevent.socket
 
 
 class GreenletTests(unittest.TestCase):
