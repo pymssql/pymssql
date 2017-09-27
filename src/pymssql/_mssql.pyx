@@ -690,7 +690,7 @@ cdef class MSSQLConnection:
         # Put the DB name in the login LOGINREC because it helps with connections to Azure
         if database:
             if FREETDS_SUPPORTS_DBSETLDBNAME:
-                dbname_bytes = database.encode('ascii')
+                dbname_bytes = database.encode('utf-8')
                 dbname_cstr = dbname_bytes
                 DBSETLDBNAME(login, dbname_cstr)
             else:
@@ -1465,7 +1465,7 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.select_db()")
 
         # For Python 3, we need to convert unicode to byte strings
-        cdef bytes dbname_bytes = dbname.encode('ascii')
+        cdef bytes dbname_bytes = dbname.encode('utf-8')
         cdef char *dbname_cstr = dbname_bytes
 
         with nogil:
