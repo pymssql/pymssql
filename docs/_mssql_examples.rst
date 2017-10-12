@@ -126,12 +126,12 @@ by the stack with informative messages sent by the server. Set it on a per
               "line = %d, msgtext = '%s'" % (msgstate, severity, procname,
                                              line, msgtext))
 
-    conn = _mssql.connect(server='SQL01', user='user', password='password')
+    cnx = _mssql.connect(server='SQL01', user='user', password='password')
     try:
-        conn.set_msghandler(my_msg_handler)  # Install our custom handler
+        cnx.set_msghandler(my_msg_handler)  # Install our custom handler
         cnx.execute_non_query("USE mydatabase")  # It gets called at this point
     finally:
-        conn.close()
+        cnx.close()
 
 Something similar to this would be printed to the standard output::
 
