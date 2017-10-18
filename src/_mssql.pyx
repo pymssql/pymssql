@@ -647,7 +647,7 @@ cdef class MSSQLConnection:
         # Put the DB name in the login LOGINREC because it helps with connections to Azure
         if database:
             if FREETDS_SUPPORTS_DBSETLDBNAME:
-                dbname_bytes = database.encode('ascii')
+                dbname_bytes = database.encode()
                 dbname_cstr = dbname_bytes
                 DBSETLDBNAME(login, dbname_cstr)
             else:
