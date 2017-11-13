@@ -68,6 +68,9 @@ cdef extern from "version.h":
 
 cdef extern from "cpp_helpers.h":
     cdef bint FREETDS_SUPPORTS_DBSETLDBNAME
+    
+cdef extern from "pypy_helpers.h":
+    pass
 
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
@@ -143,45 +146,42 @@ SQLDATETIME2 = 42
 #######################
 ## Exception classes ##
 #######################
-cdef extern from "pyerrors.h":
-    ctypedef class __builtin__.Exception [object PyBaseExceptionObject]:
-        pass
-
-cdef class MSSQLException(Exception):
+class MSSQLException(Exception):
     """
     Base exception class for the MSSQL driver.
     """
 
-cdef class MSSQLDriverException(MSSQLException):
+class MSSQLDriverException(MSSQLException):
     """
     Inherits from the base class and raised when an error is caused within
     the driver itself.
     """
 
-cdef class MSSQLDatabaseException(MSSQLException):
+class MSSQLDatabaseException(MSSQLException):
     """
     Raised when an error occurs within the database.
     """
+    
+    def __init__(self, *args):
+        super(MSSQLException, self).__init__(*args)
+        self.number = 0
+        self.severity = 0
+        self.state = 0
+        self.line = 0
+        self.text = ""
+        self.srvname = ""
+        self.procname = ""
 
-    cdef readonly int number
-    cdef readonly int severity
-    cdef readonly int state
-    cdef readonly int line
-    cdef readonly char *text
-    cdef readonly char *srvname
-    cdef readonly char *procname
-
-    property message:
-
-        def __get__(self):
-            if self.procname:
-                return 'SQL Server message %d, severity %d, state %d, ' \
-                    'procedure %s, line %d:\n%s' % (self.number,
-                    self.severity, self.state, self.procname,
-                    self.line, self.text)
-            else:
-                return 'SQL Server message %d, severity %d, state %d, ' \
-                    'line %d:\n%s' % (self.number, self.severity,
+    @property
+    def message(self):
+        if self.procname:
+            return 'SQL Server message %d, severity %d, state %d, ' \
+                'procedure %s, line %d:\n%s' % (self.number,
+                self.severity, self.state, self.procname,
+                self.line, self.text)
+        else:
+            return 'SQL Server message %d, severity %d, state %d, ' \
+                'line %d:\n%s' % (self.number, self.severity,
                     self.state, self.line, self.text)
 
 # Module attributes for configuring _mssql
@@ -1668,13 +1668,13 @@ cdef int maybe_raise_MSSQLDatabaseException(MSSQLConnection conn) except 1:
         error_msg = b"Unknown error"
 
     ex = MSSQLDatabaseException((get_last_msg_no(conn), error_msg))
-    (<MSSQLDatabaseException>ex).text = error_msg
-    (<MSSQLDatabaseException>ex).srvname = get_last_msg_srv(conn)
-    (<MSSQLDatabaseException>ex).procname = get_last_msg_proc(conn)
-    (<MSSQLDatabaseException>ex).number = get_last_msg_no(conn)
-    (<MSSQLDatabaseException>ex).severity = get_last_msg_severity(conn)
-    (<MSSQLDatabaseException>ex).state = get_last_msg_state(conn)
-    (<MSSQLDatabaseException>ex).line = get_last_msg_line(conn)
+    ex.text = error_msg
+    ex.srvname = get_last_msg_srv(conn)
+    ex.procname = get_last_msg_proc(conn)
+    ex.number = get_last_msg_no(conn)
+    ex.severity = get_last_msg_severity(conn)
+    ex.state = get_last_msg_state(conn)
+    ex.line = get_last_msg_line(conn)
     db_cancel(conn)
     clr_err(conn)
     raise ex
