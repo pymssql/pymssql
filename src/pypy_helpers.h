@@ -6,3 +6,4 @@
 #ifndef PyByteArray_Check
 #define PyByteArray_Check(self) (0)
 #endif
+
