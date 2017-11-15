@@ -246,6 +246,18 @@ if sys.platform == 'darwin':
             osp.join(macports, 'freetds/lib')
         )
 
+    brew = "/usr/local/opt/freetds"
+    if osp.exists(brew):
+        add_dir_if_exists(
+            include_dirs,
+            osp.join(macports, 'include'),
+        )
+        add_dir_if_exists(
+            library_dirs,
+            osp.join(macports, 'lib'),
+        )
+
+
 if sys.platform != 'win32':
     # Windows uses a different piece of code to detect these
     print('setup.py: include_dirs = %r' % include_dirs)
