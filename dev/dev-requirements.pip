@@ -1,5 +1,5 @@
 Cython
 setuptools_git
-pytest
+pytest==3.2.5
 SQLAlchemy
 wheel
