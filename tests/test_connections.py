@@ -95,7 +95,7 @@ class TestCons(unittest.TestCase):
         for i in range(5):
             try:
                 _mssql.connect(
-                    server='www.google.com',
+                    server='github.com',
                     port=80,
                     user='joe',
                     password='secret',
