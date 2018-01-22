@@ -19,7 +19,6 @@ environment:
     FREETDS_BRANCH: "master"
     FREETDS_JOB: "Environment%%3A%%20PLAT%%3DWin%PYTHON_ARCH%%%2C%%20WIDTH%%3D%PYTHON_ARCH%%%2C%%20VS_VERSION%%3D%VS_VER%%%2C%%20TDSVER%%3D%TDS_VER%"
     FREETDS_URL: "%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?job=%FREETDS_JOB%"
-    INSTANCENAME: "SQL2008R2SP2"
 
   PYPI_USERNAME:
     secure: XQcffvGArla859PHnyIUzg==
@@ -35,6 +34,7 @@ environment:
       ARCH: x86
       VS_VER: "2008"
       TDS_VER: "7.0"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.7"
@@ -42,6 +42,7 @@ environment:
       ARCH: x86
       VS_VER: "2010"
       TDS_VER: "7.1"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.7"
@@ -49,6 +50,7 @@ environment:
       ARCH: x86
       VS_VER: "2010"
       TDS_VER: "7.1"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.4"
@@ -56,6 +58,7 @@ environment:
       ARCH: x86
       VS_VER: "2015"
       TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6.4"
@@ -63,6 +66,7 @@ environment:
       ARCH: x86
       VS_VER: "2015"
       TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.14"
@@ -70,6 +74,7 @@ environment:
       ARCH: x86_64
       VS_VER: "2010"
       TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python33-x64"
       PYTHON_VERSION: "3.3.7"
@@ -77,6 +82,7 @@ environment:
       ARCH: x86_64
       VS_VER: "2010"
       TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.7"
@@ -84,6 +90,7 @@ environment:
       ARCH: x86_64
       VS_VER: "2010"
       TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.4"
@@ -91,6 +98,7 @@ environment:
       ARCH: x86_64
       VS_VER: "2015"
       TDS_VER: "7.3"
+      INSTANCENAME: "SQL2008R2SP2"
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.4"
@@ -98,6 +106,87 @@ environment:
       ARCH: x86_64
       VS_VER: "2015"
       TDS_VER: "7.3"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.14"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2008"
+      TDS_VER: "7.0"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python33"
+      PYTHON_VERSION: "3.3.7"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2010"
+      TDS_VER: "7.1"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python34"
+      PYTHON_VERSION: "3.4.7"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2010"
+      TDS_VER: "7.1"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.4"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2015"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.4"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2015"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.14"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2010"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python33-x64"
+      PYTHON_VERSION: "3.3.7"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2010"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.7"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2010"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.4"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2015"
+      TDS_VER: "7.3"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.4"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2015"
+      TDS_VER: "7.3"
+      INSTANCENAME: "SQL2012SP1"
 
 install:
   # If there is a newer build queued for the same PR, cancel this one.
