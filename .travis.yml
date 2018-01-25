@@ -24,7 +24,7 @@ script:
 - . dev/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
 - export TDSVER=7.1
-#- py.test -v
+- py.test -v
 - cd docs && test -z "$(make SPHINXOPTS='-q' html 2>&1 | egrep -w 'SEVERE:|ERROR:')"
 - cd ..
 branches:
