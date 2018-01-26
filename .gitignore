@@ -13,3 +13,4 @@ dist
 docs/_build
 SQLAlchemy-*/
 SQLAlchemy-*.tar.gz
+freetds/
