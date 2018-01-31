@@ -322,6 +322,13 @@ It may happen when one of the following is true:
 ``"Login incorrect"`` following this error is spurious, real ``"Login
 incorrect"`` messages has code=18456 and severity=14.
 
+Unable to use long username and password
+========================================
+
+This is a solved FreeTDS problem but you need to be using FreeTDS 0.95 or newer,
+if you are stuck with 0.91 then keep in mind this limitation, even when you can
+get usernames, passwords longer than 30 to work on tsql.
+
 More troubleshooting
 ====================
 
