@@ -56,7 +56,7 @@ Ensure-Dir "$install_prefix\include"
 Ensure-Dir "$install_prefix\lib"
 
 
-$url = "https://github.com/win-iconv/win-iconv/archive/v$win_iconv_version.zip"
+$url = "https://codeload.github.com/win-iconv/win-iconv/zip/v$win_iconv_version"
 $win_iconv_zip = "$build_dir\win-iconv-$win_iconv_version.zip"
 
 Cached-Download $url $win_iconv_zip
