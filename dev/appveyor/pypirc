@@ -11,4 +11,4 @@ repository: https://pypi.python.org/pypi
 repository: https://upload.pypi.io/legacy/
 
 [testpypi]
-repository: https://testpypi.python.org/legacy
+repository: https://test.pypi.org/legacy/
