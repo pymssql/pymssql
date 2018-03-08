@@ -49,4 +49,5 @@ deploy:
   user:
     secure: iZTbCXCjzQYrAINmxEjpcp96Q2AO7NesY/RthiaIOCJNjTWiJBHZ4WhyLGLBsdixMmIxaxAoJ+ZyPjIMaQ9KQXVlj8XTiVBfcAJThRHSQyrGqEt60n7RCWjXOfBUJl7A/KszFeBVzfglIetSYUTjCjJdtc6ZaJlXm+AIVuYnq4w=
   server: https://test.pypi.org/legacy/
+  distributions: "bdist_wheel"
 sudo: false
