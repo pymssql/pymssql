@@ -68,13 +68,6 @@ environment:
       TDS_VER: "7.2"
       INSTANCENAME: "SQL2008R2SP2"
 
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.1"
-      PYTHON_ARCH: "32"
-      ARCH: x86
-      VS_VER: "2015"
-      INSTANCENAME: "SQL2008R2SP2"
-
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.14"
       PYTHON_ARCH: "64"
@@ -155,13 +148,6 @@ environment:
       TDS_VER: "7.2"
       INSTANCENAME: "SQL2012SP1"
 
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.1"
-      PYTHON_ARCH: "32"
-      ARCH: x86
-      VS_VER: "2015"
-      INSTANCENAME: "SQL2012SP1"
-
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.14"
       PYTHON_ARCH: "64"
@@ -200,13 +186,6 @@ environment:
       ARCH: x86_64
       VS_VER: "2015"
       TDS_VER: "7.3"
-      INSTANCENAME: "SQL2012SP1"
-
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.1"
-      PYTHON_ARCH: "64"
-      ARCH: x86_64
-      VS_VER: "2015"
       INSTANCENAME: "SQL2012SP1"
 
 install:
