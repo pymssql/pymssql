@@ -7,12 +7,26 @@ Version 2.1.4 - To be released
 General
 -------
 
-TBA
+- Drop support for versions of FreeTDS older than 0.91.
+
+Features
+--------
+
+- Support for new in SQL Server 2008 ``DATE``, ``TIME`` and ``DATETIME2`` data
+  types (GH-156). The following conditions need to be additionally met so
+  values of these column types can be returned from the database as their
+  native corresponding Python data types instead of as strings:
+
+  * Underlying FreeTDS must be 0.95 or newer.
+  * TDS protocol version in use must be 7.3 or newer.
+
+  Thanks Ed Avis for the implementation. (GH-331)
 
 Bug fixes
 ---------
 
-TBA
+- Fix ``tds_version``  ``_mssql`` connection property value for TDS version.
+  7.1 is actually 7.1 and not 8.0.
 
 Version 2.1.3 - 2016-06-22 - Ramiro Morales
 ===========================================
@@ -25,7 +39,7 @@ Version 2.1.3 - 2016-06-22 - Ramiro Morales
   * No SSL support
 
 Version 2.1.2 - 2016-02-10 - Ramiro Morales
-===============================================
+===========================================
 
 .. attention:: Windows users: You need to download and install additional DLLs
 

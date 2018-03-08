@@ -66,7 +66,7 @@ from cpython.long cimport PY_LONG_LONG
 from cpython.ref cimport Py_INCREF
 from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
 
-cdef extern from "pymssql_version.h":
+cdef extern from "version.h":
     const char *PYMSSQL_VERSION
 
 cdef extern from "cpp_helpers.h":
@@ -97,7 +97,8 @@ cdef int MIN_INT = -2147483648
 
 # Store the module version
 __full_version__ = PYMSSQL_VERSION.decode('ascii')
-__version__ = '.'.join(__full_version__.split('.')[:3]) # drop '.dev' from 'X.Y.Z.dev'
+__version__ = '.'.join(__full_version__.split('.')[:3])
+VERSION = tuple(int(c) for c in __full_version__.split('.')[:3])
 
 #############################
 ## DB-API type definitions ##
@@ -137,6 +138,10 @@ SQLTEXT = SYBTEXT
 SQLVARBINARY = SYBVARBINARY
 SQLVARCHAR = SYBVARCHAR
 SQLUUID = 36
+
+SQLDATE = 40
+SQLTIME = 41
+SQLDATETIME2 = 42
 
 #######################
 ## Exception classes ##
@@ -519,13 +524,36 @@ cdef class MSSQLConnection:
             elif version == 10:
                 return 7.2
             elif version == 9:
-                return 8.0  # Actually 7.1, return 8.0 to keep backward compatibility
+                return 7.1
             elif version == 8:
                 return 7.0
             elif version == 6:
                 return 5.0
             elif version == 4:
                 return 4.2
+            return None
+
+    property tds_version_tuple:
+        """
+        Reports what TDS version the connection is using in tuple form which is
+        more easily handled (parse, compare) programmatically. If no TDS
+        version can be detected the value is None.
+        """
+        def __get__(self):
+            cdef int version = dbtds(self.dbproc)
+            if version == 11:
+                return (7, 3)
+            elif version == 10:
+                return (7, 2)
+            elif version == 9:
+                return (7, 1)
+            elif version == 8:
+                return (7, 0)
+            elif version == 6:
+                return (5, 0)
+            elif version == 4:
+                return (4, 2)
+            return None
 
     def __cinit__(self):
         log("_mssql.MSSQLConnection.__cinit__()")
@@ -541,8 +569,8 @@ cdef class MSSQLConnection:
         self.column_names = None
         self.column_types = None
 
-    def __init__(self, server="localhost", user="sa", password="",
-            charset='UTF-8', database='', appname=None, port='1433', tds_version='7.1', conn_properties=None):
+    def __init__(self, server="localhost", user=None, password=None,
+            charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -566,17 +594,26 @@ cdef class MSSQLConnection:
         appname = appname or "pymssql=%s" % __full_version__
 
         # For Python 3, we need to convert unicode to byte strings
-        cdef bytes user_bytes = user.encode('utf-8')
-        cdef char *user_cstr = user_bytes
-        cdef bytes password_bytes = password.encode('utf-8')
-        cdef char *password_cstr = password_bytes
+        cdef bytes user_bytes
+        cdef char *user_cstr = NULL
+        if user is not None:
+            user_bytes = user.encode('utf-8')
+            user_cstr = user_bytes
+        cdef bytes password_bytes
+        cdef char *password_cstr = NULL
+        if password is not None:
+            password_bytes = password.encode('utf-8')
+            password_cstr = password_bytes
         cdef bytes appname_bytes = appname.encode('utf-8')
         cdef char *appname_cstr = appname_bytes
 
-        DBSETLUSER(login, user_cstr)
-        DBSETLPWD(login, password_cstr)
+        if user is not None:
+            DBSETLUSER(login, user_cstr)
+        if password is not None:
+            DBSETLPWD(login, password_cstr)
         DBSETLAPP(login, appname_cstr)
-        DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
+        if tds_version is not None:
+            DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
         # add the port to the server string if it doesn't have one already and
         # if we are not using an instance
@@ -806,12 +843,24 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype == SQLDATETIM4:
+        elif dbtype in (SQLDATETIM4, SQLDATETIME2):
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
                 <BYTE *>&dt, -1)
             dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif dbtype == SQLDATE:
+            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
+                <BYTE *>&dt, -1)
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            return datetime.date(di.year, di.month, di.day)
+
+        elif dbtype == SQLTIME:
+            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
+                <BYTE *>&dt, -1)
+            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            return datetime.time(di.hour, di.minute, di.second, di.millisecond * 1000)
 
         elif dbtype == SQLDATETIME:
             dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
@@ -1705,6 +1754,8 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
         return DBVERSION_72
     if verstr == u'7.3':
         return DBVERSION_73
+    if verstr == u'8.0':
+        return DBVERSION_71
     raise MSSQLException('unrecognized tds version: %s' % verstr)
 
 #######################

@@ -10,6 +10,36 @@ General
 - Allow linkage against FreeTDS (by dropping usage of deprecated
   ``DBVERSION_80`` symbol.) (GH-432)
 
+- Stop using 7.1 as default value for the TDS protocol version used in connections.
+
+  This is a backward incompatible change and affects connections using both
+  `pymssql` and `_mssql`.
+
+  Now you need to specify a TDS protocol version explicitly by using any of
+  the supported mechanisms (in descending order of precedence):
+
+  * Using the ``tds_version`` paramenter of ``pymssql.connect()`` and
+    ``_mssql.connect()``
+  * A ``TDSVER`` enviromnent variable (see FreeTDS documentation)
+  * A ``freetds.conf`` file (see FreeTDS documentation)
+
+- Drop support for versions of FreeTDS older than 0.91.
+
+- Accept 7.3 as TDS protocol version when establishing a connection.
+
+Features
+--------
+
+- Support for new in SQL Server 2008 ``DATE``, ``TIME`` and ``DATETIME2`` data
+  types (GH-156). The following conditions need to be additionally met so
+  values of these column types can be returned from the database as their
+  native corresponding Python data types instead of as strings:
+
+  * Underlying FreeTDS must be 0.95 or newer.
+  * TDS protocol version in use must be 7.3 or newer.
+
+  Thanks Ed Avis for the implementation. (GH-331)
+
 Bug fixes
 ---------
 
@@ -19,6 +49,8 @@ Bug fixes
 - Fixed and expanded Python data types that can be used to pass ``VARBINARY``,
   ``BINARY`` and ``IMAGE`` SQL Server Stored Procedures input parameters.
   (GH-425). Thanks Bill Adams for the fix.
+- Fix ``tds_version``  ``_mssql`` connection property value for TDS version.
+  7.1 is actually 7.1 and not 8.0.
 
 Version 2.1.3 - 2016-06-22 - Ramiro Morales
 ===========================================

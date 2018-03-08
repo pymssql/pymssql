@@ -9,7 +9,23 @@ Complete documentation of ``pymssql`` module classes, methods and properties.
 Module-level symbols
 ====================
 
-Constants, required by the DB-API 2.0 (:pep:`249`) specification.
+.. data:: __version__
+
+   pymssql version as an Unicode constant. E.g. ``u"2.1.1"``, ``u"2.2.0"``
+
+.. data:: VERSION
+
+   pymssql version in tuple form which is more easily handled (parse, compare)
+   programmatically. E.g. ``(2, 1, 1)``, ``(2, 2, 0)``
+
+   .. versionadded:: 2.2.0
+
+.. data:: __full_version__
+
+   pymssql version as an Unicode constant but including any (:pep:`440`)
+   suffixes.  E.g. ``u"2.1.0.dev2"``, ``u"2.2.0.dev"``
+
+Constants, required by the DB-API 2.0 specification:
 
 .. data:: apilevel
 
@@ -29,7 +45,7 @@ Functions
 .. function:: connect(server='.', user='', password='', database='', \
                       timeout=0, login_timeout=60, charset='UTF-8', \
                       as_dict=False, host='', appname=None, port='1433',\
-                      conn_properties, autocommit=False, tds_version='7.1')
+                      conn_properties, autocommit=False, tds_version=None)
 
    Constructor for creating a connection to the database. Returns a
    :class:`Connection` object.
@@ -71,23 +87,35 @@ Functions
    .. versionadded:: 2.1.2
        The *tds_version* parameter.
 
+   .. versionchanged:: 2.2.0
+       The default value of the *tds_version* parameter was changed to ``None``.
+       In version 2.1.2 its default value was ``'7.1'``.
+
    .. warning::
-     The *tds_version* parameter, new in version 2.1.2, has a default value of
-     '7.1'. This is for consistency with the default value of the equally-named
-     parameter of the :class:`_mssql.connect() <_mssql.MSSQLConnection>`
-     function.
+     The *tds_version* parameter has a default value of ``None``. This means two
+     things:
 
-     This will change with pymssql 2.2.0 when
+     #. You can't rely anymore in the old ``'7.1'`` default value and
+     #. Now you'll need to either
 
-     * The default value will be changed to None
-     * The version of the TDS protocol to use by default won't be 7.1 anymore
-     * You won't able to rely on such default value anymore and will need to
-       either
-
-       * Specify its value explicitly or
+       * Specify its value explicitly by passing a value for this parameter or
        * Configure it using facilities provided by FreeTDS (see `here
          <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
-         `and here <http://www.freetds.org/userguide/envvar.htm>`_)
+         and `here <http://www.freetds.org/userguide/envvar.htm>`_)
+
+     This might look cumbersome but at the same time means you can now fully
+     configure the characteristics of a connection to SQL Server from Python
+     code when using pymssql without using a stanza for the server in the
+     ``freetds.conf`` file or even with no ``freetds.conf`` at all. Up to
+     version 2.1.1 it simply wasn't possible to control the TDS protocol
+     version, and in version 2.1.2 it was possible to set it but version 7.1 was
+     used if not specified.
+
+   .. warning::
+     FreeTDS added sopport for TDS protocol version 7.3 in version 0.95. You
+     need to be careful of not asking for TDS 7.3 if you know the undelying
+     FreeTDS used by pymssql is version 0.91 as it won't raise any error nor
+     keep you from passing such an invalid value.
 
    .. warning::
      FreeTDS added support for TDS protocol version 7.3 in version 0.95. You

@@ -34,6 +34,7 @@ class TestConfig(object):
             server='dontnameyourserverthis',
             user = 'bob',
             database = 'tempdb',
+            tds_version='7.1'
             )
         assert 'user_name = bob' in config_dump
         assert 'database = tempdb\n' in config_dump
