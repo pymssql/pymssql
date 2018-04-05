@@ -136,6 +136,24 @@ class TestTypes(unittest.TestCase):
         typeeq(bindata, colval)
         eq_(bindata, colval)
 
+    def test_nullbyte_varchar(self):
+        testval = 'foo\0bar'.encode('ascii')
+        colval = self.insert_and_select('comment_vch', testval, 's')
+        typeeq(u'foo\0bar', colval)
+        eq_(u'foo\0bar', colval)
+
+    def test_nullbyte_varchar_unicode(self):
+        testval = u'foo\0bar'
+        colval = self.insert_and_select('comment_vch', testval, 's')
+        typeeq(testval, colval)
+        eq_(testval, colval)
+
+    def test_nullbyte_binary_bytearray(self):
+        bindata = 'foo\0bar'.encode('ascii')
+        colval = self.insert_and_select('data_binary', bytearray(bindata), 's')
+        typeeq(bindata, colval)
+        eq_(bindata, colval)
+
     def test_image(self):
         buf = get_bytes_buffer()
         longstr = 'a'*4000
