@@ -36,11 +36,17 @@ platform you will need these additional tools installed:
 * `Cmake <https://cmake.org/download/>`_
 * `7Zip <https://www.7-zip.org/download.html>`_
 
-For the C++ tooling the easiest path is installing Visual Studio. When
-installing make sure you select the C++ libraries and components. Also make sure that
+For C++ and the Developer Command Prompt the easiest path is installing Visual Studio.
+When installing make sure you select the C++ libraries and components. Also make sure that
 Visual Studio installs nmake with the C++ library installs.
 
 * https://visualstudio.microsoft.com/vs/community/
+
+.. note::
+    One thing to be aware of is what version of Python you are using relative to which
+    C++ compilers you have installed. When building on Windows you should make sure you
+    have the appropriate compiler, pip and setuptools installed. For more information
+    see https://wiki.python.org/moin/WindowsCompilers
 
 
 Required Libraries
