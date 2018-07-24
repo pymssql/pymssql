@@ -26,6 +26,7 @@ To build pymssql you should have:
 Windows
 -------
 
+
 Required Tools
 ______________
 In addition to the requirements above when developing ``pymssql`` on the Windows
@@ -96,6 +97,25 @@ an upcoming build step.
 
 If you prefer to build FreeTDS on your own please refer to the FreeTDS `config <http://www.freetds.org/>`_ and
 `os issues <http://www.freetds.org/userguide/osissues.htm>`_ build pages.
+
+
+Required Environment Variables
+______________________________
+
+You will need to set the following environment variables in
+Visual Studio Developer Command Prompt before installing iconv.
+
+* set PYTHON_VERSION=<Python Version>
+* set PYTHON_ARCH=<Python Architecture>
+* set VS_VER=<MSVC Compiler Version>
+
+Example:
+
+    .. code-block::
+
+        set PYTHON_VERSION=3.6.6
+        set PYTHON_ARCH=64
+        set VS_VER=2015
 
 
 Installing iconv
