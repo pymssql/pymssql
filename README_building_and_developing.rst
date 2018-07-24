@@ -43,10 +43,10 @@ Visual Studio installs nmake with the C++ library installs.
 * https://visualstudio.microsoft.com/vs/community/
 
 .. note::
-    One thing to be aware of is what version of Python you are using relative to which
+    One thing to be aware of is which version of Python you are using relative to which
     C++ compilers you have installed. When building on Windows you should make sure you
-    have the appropriate compiler, pip and setuptools installed. For more information
-    see https://wiki.python.org/moin/WindowsCompilers
+    have the required compiler, pip and setuptools versions installed. For more 
+    information see https://wiki.python.org/moin/WindowsCompilers
 
 
 Required Libraries
