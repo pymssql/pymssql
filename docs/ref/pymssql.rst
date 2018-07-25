@@ -42,30 +42,48 @@ Constants, required by the DB-API 2.0 specification:
 Functions
 =========
 
-.. function:: connect(server='.', user='', password='', database='', \
+.. function:: connect(server='.', user=None, password=None, database='', \
                       timeout=0, login_timeout=60, charset='UTF-8', \
                       as_dict=False, host='', appname=None, port='1433',\
-                      conn_properties, autocommit=False, tds_version=None)
+                      conn_properties=None, autocommit=False, tds_version=None)
 
    Constructor for creating a connection to the database. Returns a
-   :class:`Connection` object.
+   :class:`Connection` object. Note that in most cases you will want to
+   use keyword arguments, instead of positional arguments.
 
    :param str server: database host
    :param str user: database user to connect as
    :param str password: user's password
-   :param str database: the database to initially connect to
-   :param int timeout: query timeout in seconds, default 0 (no timeout)
-   :param int login_timeout: timeout for connection and login in seconds, default 60
+   :param str database: The database to initialize the connection with. By
+                        default *SQL Server* selects the database which is set as
+                        default for specific user
+   :param int timeout: query timeout in seconds, default ``0`` (no timeout)
+   :param int login_timeout: timeout for connection and login in seconds, default ``60``
    :param str charset: character set with which to connect to the database
+   :param bool as_dict: Whether rows should be returned as dictionaries instead
+                        of tuples. You can access columns by 0-based index or
+                        by name. Please see :doc:`examples </pymssql_examples>`
+   :param str host: Database host and instance you want to connect to. Valid
+                    examples are:
+
+                     * ``r'.\SQLEXPRESS'`` -- SQLEXPRESS instance on local machine (Windows only)
+                     * ``r'(local)\SQLEXPRESS'`` -- same as above (Windows only)
+                     * ``'SQLHOST'`` -- default instance at default port (Windows only)
+                     * ``'SQLHOST'`` -- specific instance at specific port set up in freetds.conf (Linux/\*nix only)
+                     * ``'SQLHOST,1433'`` -- specified TCP port at specified host
+                     * ``'SQLHOST:1433'`` -- the same as above
+                     * ``'SQLHOST,5000'`` -- if you have set up an instance to listen on port 5000
+                     * ``'SQLHOST:5000'`` -- the same as above
+
+                     ``'.'`` (the local host) is assumed if host is not provided.
+   :keyword str appname: Set the application name to use for the connection
+   :keyword str port: the TCP port to use to connect to the server
    :keyword conn_properties: SQL queries to send to the server upon connection
                              establishment. Can be a string or another kind of
                              iterable of strings.  Default value: See
                              :class:`_mssql.connect() <_mssql.MSSQLConnection>`
-   :keyword bool as_dict: whether rows should be returned as dictionaries instead of tuples
-   :keyword str appname: Set the application name to use for the connection
-   :keyword str port: the TCP port to use to connect to the server
    :keyword bool autocommit: Whether to use default autocommiting mode or not
-   :keyword str tds_version: TDS protocol version to use.
+   :keyword str tds_version: TDS protocol version to use
 
    .. warning::
        Currently, setting *timeout* or *login_timeout* has a process-wide
@@ -181,42 +199,8 @@ Functions
                       login_timeout, charset, as_dict)
 
     This class represents an MS SQL database connection. You can create an
-    instance of this class by calling constructor :func:`pymssql.connect()`. It
-    accepts the following arguments. Note that in most cases you will want to
-    use keyword arguments, instead of positional arguments.
+    instance of this class by calling constructor :func:`pymssql.connect()`.
 
-    :param str user: Database user to connect as
-
-    :param str password: User's password
-
-    :param str host: Database host and instance you want to connect to. Valid
-                     examples are:
-
-                     * ``r'.\SQLEXPRESS'`` -- SQLEXPRESS instance on local machine (Windows only)
-                     * ``r'(local)\SQLEXPRESS'`` -- same as above (Windows only)
-                     * ``'SQLHOST'`` -- default instance at default port (Windows only)
-                     * ``'SQLHOST'`` -- specific instance at specific port set up in freetds.conf (Linux/\*nix only)
-                     * ``'SQLHOST,1433'`` -- specified TCP port at specified host
-                     * ``'SQLHOST:1433'`` -- the same as above
-                     * ``'SQLHOST,5000'`` -- if you have set up an instance to listen on port 5000
-                     * ``'SQLHOST:5000'`` -- the same as above
-
-                     ``'.'`` (the local host) is assumed if host is not provided.
-
-    :param str database: The database you want initially to connect to, by
-                         default *SQL Server* selects the database which is set as
-                         default for specific user
-
-    :param int timeout: Query timeout in seconds, default is 0 (wait indefinitely)
-
-    :param int login_timeout: Timeout for connection and login in seconds,
-                              default 60
-
-    :param str charset: Character set with which to connect to the database
-
-    :param bool as_dict: Whether rows should be returned as dictionaries instead
-                         of tuples. You can access columns by 0-based index or
-                         by name. Please see :doc:`examples </pymssql_examples>`
 
 Connection object properties
 ----------------------------
