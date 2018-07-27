@@ -1,0 +1,59 @@
+version: 2
+
+jobs:
+    build:
+        docker:
+            - image: level12/python-test-multi
+              environment:
+                TDSVER=7.1
+
+            - image: microsoft/mssql-server-linux
+              environment:
+                ACCEPT_EULA=Y
+                SA_PASSWORD=$MSSQL_PWD
+                MSSQL_PID=Developer
+
+        steps:
+            - checkout
+
+            - run:
+                name: folder listing for debugging
+                command: ls -al
+
+            - run:
+                name: apt requirements
+                command: |
+                    apt update
+                    apt install -y gcc-multilib libc6-dev-i386 freetds-dev
+
+            - run:
+                name: upgrade pip
+                command: pip install --upgrade pip
+
+            - run:
+                name: install global dependencies
+                command: pip install tox wheel pytest Cython SQLAlchemy
+
+            - run:
+                name: version checks
+                command: |
+                  python --version
+                  pip --version
+                  tox --version
+                  wheel --version
+                  pytest --version
+                  Cython --version
+                  SQLAlchemy --version
+
+            - run:
+                name: freetds dependency and build
+                command: if [[ $FREETDS_VERSION == '1.00' ]]; then dev/build_freetds_linux.sh; export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1; fi
+
+            - run:
+                name: test configuration file
+                command: |
+                    cp dev/appveyor/tests.cfg tests/tests.cfg
+
+            - run:
+                name: run tox
+                command: tox
