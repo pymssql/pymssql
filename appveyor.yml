@@ -175,12 +175,9 @@ install:
   # done from inside the powershell script as it would require to restart
   # the parent CMD process).
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - echo %PYTHON%
-  - echo %PATH%
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - "pip --version"
   - "python -m pip install --upgrade pip"
 
   # Install the build dependencies of the project. If some dependencies contain
@@ -195,6 +192,7 @@ before_build:
   - "powershell dev\\appveyor\\install-win-iconv.ps1"
   # FreeTDS
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
+  - echo %FREETDS_URL%
   - appveyor DownloadFile %FREETDS_URL%
   - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip
   - mv freetds/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH% freetds/vs%VS_VER%_%PYTHON_ARCH%
