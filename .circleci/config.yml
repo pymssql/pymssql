@@ -38,12 +38,7 @@ jobs:
                 name: version checks
                 command: |
                   python --version
-                  pip --version
-                  tox --version
-                  wheel --version
-                  pytest --version
-                  Cython --version
-                  SQLAlchemy --version
+                  pip list
 
             - run:
                 name: freetds dependency and build
