@@ -7,14 +7,18 @@ Building
 
 To build pymssql you should have:
 
-* python >= 2.7 including development files. Please research your OS usual
+* Python >= 2.7 including development files. Please research your OS usual
   software distribution channels, e.g, ``python-dev`` or ``python-devel``
   packages.
-* Cython >= 0.15
+* Cython >= 0.19.1
 * FreeTDS >= 0.91 including development files. Please research your OS usual
   software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
   packages.
+* Microsoft SQL Server
 
+.. note::
+    If developing on Windows you will want to make sure you install debug symbols.
+    For more information see https://docs.python.org/3/using/windows.html#installation-steps
 .. note::
     If you need to connect to Azure make sure FreeTDS is built with SSL support.
     Instructions on how to do this are out of the scope of this document.
@@ -22,90 +26,169 @@ To build pymssql you should have:
 Windows
 -------
 
-MinGW
-^^^^^
 
-Add to the above requirements:
+Required Tools
+______________
+In addition to the requirements above when developing ``pymssql`` on the Windows
+platform you will need these additional tools installed:
 
-* MinGW
+* Visual Studio C++ Compiler Tools
+* Developer Command Prompt for Visual Studio
+* `Cmake <https://cmake.org/download/>`_
+* `7Zip <https://www.7-zip.org/download.html>`_
 
-then you can run::
+For C++ and the Developer Command Prompt the easiest path is installing Visual Studio.
+When installing make sure you select the C++ libraries and components. Also make sure that
+Visual Studio installs nmake with the C++ library installs.
 
-  python setup.py build -c mingw32
+* https://visualstudio.microsoft.com/vs/community/
 
-which will build pymssql in the normal python fashion.
+.. note::
+    One thing to be aware of is which version of Python you are using relative to which
+    C++ compilers you have installed. When building on Windows you should make sure you
+    have the required compiler, pip and setuptools versions installed. For more 
+    information see https://wiki.python.org/moin/WindowsCompilers
 
-MS Visual C++
-^^^^^^^^^^^^^
 
-Environment Setup:
-~~~~~~~~~~~~~~~~~~
+Required Libraries
+__________________
 
-The commands below should be ran inside a Visual Studio command prompt or a
-command prompt window where the ``vcsvars*.bat`` file has been previously run so
-it can set the needed environment vars.
+Developing ``pymssql`` on Windows also requires the following libraries:
 
-Building FreeTDS:
-~~~~~~~~~~~~~~~~~
+* `FreeTDS <http://www.freetds.org/>`_
+* `iconv <https://www.gnu.org/software/libiconv/>`_
 
-Build FreeTDS from the current_ or stable_ tarball.
+For development you will want ``freetds`` to be available in your project path.
+You can find prebuilt artifacts at the `FreeTDS Appveyor project <https://ci.appveyor.com/project/FreeTDS/freetds?branch=master>`_
 
-.. _current: http://ibiblio.org/pub/Linux/ALPHA/freetds/current/
-.. _stable: http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/
+To download select the job name that matches your environment (platform, version and tds
+version) and then click the artifacts tag. You can download the zip file with or without
+ssl depending on your needs.
 
-Use ``nmake`` (included with VS C++) to build FreeTDS.  To do that,
 
-Define in the environment or on the command line:
+.. note::
+    Remove the existing ``freetds0.95`` directory in the ``pymssql`` project directory
 
-1. ``CONFIGURATION`` = ``debug``/``release``
-2. ``PLATFORM`` = ``win32``/``x64``
+Extract the .zip artifact into your project path into a directory named ``freetds``
 
-These will determine what is built and where outputs are placed.
+    ``C:\\%USERPATH%\\pymssql\\freetds``
 
-Example invocations::
+You will also need to remove the branch tag from the artifact directory (for instance
+``master`` from ``vs2015_64-master``) or update the ``INCLUDE`` and ``LIB`` environment
+variables so that the compiler and linker are able to find the path to
+``%PROJECTROOT%\\freetds\\<artifact folder>\\include`` and
+``%PROJECTROOT%\\freetds\\<artifact folder>\\lib``
+in the build step.
 
-  nmake.exe -f Nmakefile -nologo PLATFORM=win32 CONFIGURATION=debug
-  nmake.exe -f Nmakefile -nologo build-win32d
 
-Fixing build errors:  I ran into a couple build errors when using VS 2008, see
-the following links for resolutions:
+.. note::
+    If you decide to add the directories to ``INCLUDE`` and ``LIB`` the below provide example
+    commands
 
-- http://www.freetds.org/userguide/osissues.htm
-- http://lists.ibiblio.org/pipermail/freetds/2010q4/026343.html
+    .. code-block::
 
-When this is done, the following files should be available (depending on
-``CONFIGURATION`` and ``PLATFORM`` used above)::
+        set INCLUDE=%INCLUDE%;%USERPROJECTS%\\pymssql\\freetds\\vs2015_64-master\\include
 
-  src\dblib\<PLATFORM>\<CONFIGURATION>\db-lib.lib
-  src\tds\<PLATFORM>\<CONFIGURATION>\tds.lib
+        set LIB=%LIB%;%USERPROJECTS%\\pymssql\\freetds\\vs2015_64-master\\lib
 
-for example::
+In addition to ``freetds`` you will want ``iconv`` available on your project path. For iconv
+on Windows we recommend https://github.com/win-iconv/win-iconv.git. We will retrieve this in
+an upcoming build step.
 
-  src\dblib\win32\release\db-lib.lib
-  src\tds\win32\release\tds.lib
+If you prefer to build FreeTDS on your own please refer to the FreeTDS `config <http://www.freetds.org/>`_ and
+`os issues <http://www.freetds.org/userguide/osissues.htm>`_ build pages.
 
-Those files should then be copied to::
 
-  <pymssql root>\freetds\vs2008_<bitness>\lib\
+Required Environment Variables
+______________________________
 
-for example::
+You will need to set the following environment variables in
+Visual Studio Developer Command Prompt before installing iconv.
 
-  <pymssql root>\freetds\vs2008_32\lib\
-  <pymssql root>\freetds\vs2008_64\lib\
+* set PYTHON_VERSION=<Python Version>
+* set PYTHON_ARCH=<Python Architecture>
+* set VS_VER=<MSVC Compiler Version>
 
-The location obviously depends on whether you are performing a 32 or 64 bit
-build.
+Example:
+
+    .. code-block::
+
+        set PYTHON_VERSION=3.6.6
+        set PYTHON_ARCH=64
+        set VS_VER=2015
+
+
+Installing iconv
+________________
+
+``pymssql`` expects ``iconv`` header and lib objects and to be available in the ``build\\include``
+and ``build\\bin`` directories
+
+From the root of your project (pymssql directory) run:
+
+.. code-block::
+
+    powershell dev\appveyor\install-win-iconv.ps1
+
+This is a powershell script that will download `win-iconv <https://github.com/win-iconv/win-iconv/>`_
+from the previously mentioned GitHub repository, build and move the artifacts to the
+directory that ``pymssql`` will use with ``Cython``.
 
 .. note::
 
-  This process is currently only tested with Visual Studio 2008 targeting a
-  32-bit build. If you run into problems, please post to the mailing list.
+    If you receive the following TLS error that is probably due to a mismatch between powershells
+    TLS version and GitHub.
 
-Then you can simply run::
+    .. code-block::
 
-  python setup.py build
+        Exception calling "DownloadFile" with "2" argument(s): "The request was aborted: Could not create SSL/TLS secure channel."
 
-or other ``setup.py`` commands as needed.
+    You can add this line to ``%PROJECTROOT%\\dev\\appveyor\\install-win-iconv.ps1``
+
+    .. code-block:: PowerShell
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+    On line 3 and the powershell script should run with TLS1.2. See issue `547 <https://github.com/pymssql/pymssql/issues/547>`_
+    for more information
+
+
+Required Python Packages
+________________________
+For Python you will need the following packages installed into your virtual environment:
+
+* Cython
+* pytest == 3.2.5
+* SQLAlchemy
+* wheel
+
+
+Running the build
+_________________
+
+With the above libraries, pacakges and potential environment variables in place we are ready to
+build.
+
+At the root of the project with your virtual environment activated run
+
+.. code-block::
+
+    python setup.py build
+
+If there are no errors you are then ready to run
+
+.. code-block::
+
+    python setup.py install
+
+or continue on to the `Testing`_ documentation which advises using
+
+.. code-block::
+
+    python setup.py develop.
+
+To report any issues with building on Windows please use the `mailing list <https://groups.google.com/forum/#!forum/pymssql>`_
+
 
 Unix
 ----
