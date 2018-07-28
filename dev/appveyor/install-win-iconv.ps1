@@ -1,5 +1,7 @@
 $ErrorActionPreference = "Stop"
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 Function MSVC-Env-Invoke([string] $command)
 {
     $command = "$env:COMSPEC /E:ON /V:ON /C $PSScriptRoot\run_with_env.cmd " + $command
