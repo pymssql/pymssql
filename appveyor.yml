@@ -18,7 +18,8 @@ environment:
     FREETDS_BASE_URL: "https://ci.appveyor.com/api/projects/FreeTDS/freetds/artifacts"
     FREETDS_BRANCH: "master"
     FREETDS_JOB: "Environment%%3A%%20PLAT%%3DWin%PYTHON_ARCH%%%2C%%20WIDTH%%3D%PYTHON_ARCH%%%2C%%20VS_VERSION%%3D%VS_VER%%%2C%%20TDSVER%%3D%TDS_VER%"
-    FREETDS_URL: "%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?branch=master/&job=%FREETDS_JOB%"
+    FREETDS_BRANCH_URL: "branch=master&"
+    FREETDS_URL: "%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?%FREETDS_BRANCH_URL%job=%FREETDS_JOB%"
 
     PYPI_USERNAME:
       secure: NNN9CjI55JgpCgiS2Gg6/g==
