@@ -224,7 +224,6 @@ before_build:
   - "powershell dev\\appveyor\\install-win-iconv.ps1"
   # FreeTDS
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
-  - echo %FREETDS_URL%
   - appveyor DownloadFile %FREETDS_URL%
   - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip
   - mv freetds/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH% freetds/vs%VS_VER%_%PYTHON_ARCH%
