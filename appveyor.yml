@@ -227,7 +227,7 @@ before_build:
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
   - echo %FREETDS_URL%
   # switching to powershell due to appveyor artifacts url not allowing %26 instead of &
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - powershell (New-Object Net.WebClient).DownloadFile(%FREETDS_URL%, 'vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip')
   # - appveyor DownloadFile %FREETDS_URL%
   - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip
