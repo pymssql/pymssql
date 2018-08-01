@@ -13,12 +13,13 @@ environment:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
+    APPVEYOR_RDP_PASSWORD: "escapetr0ubl3"
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\dev\\appveyor\\run_with_env.cmd"
     FREETDS_VER: 1.00.78
     FREETDS_BASE_URL: "https://ci.appveyor.com/api/projects/FreeTDS/freetds/artifacts"
     FREETDS_BRANCH: "master"
     FREETDS_JOB: "Environment%%3A%%20PLAT%%3DWin%PYTHON_ARCH%%%2C%%20WIDTH%%3D%PYTHON_ARCH%%%2C%%20VS_VERSION%%3D%VS_VER%%%2C%%20TDSVER%%3D%TDS_VER%"
-    FREETDS_URL: %FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?branch=%FREETDS_BRANCH%"&"job=%FREETDS_JOB%
+    FREETDS_URL: '%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?branch=%FREETDS_BRANCH%/"&/"job=%FREETDS_JOB%'
 
     PYPI_USERNAME:
       secure: NNN9CjI55JgpCgiS2Gg6/g==
@@ -226,6 +227,7 @@ before_build:
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
   - echo %FREETDS_URL%
   # switching to powershell due to appveyor artifacts url not allowing %26 instead of &
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - powershell (New-Object Net.WebClient).DownloadFile(%FREETDS_URL%, 'vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip')
   # - appveyor DownloadFile %FREETDS_URL%
   - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip
