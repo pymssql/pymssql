@@ -13,12 +13,13 @@ environment:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
+    APPVEYOR_RDP_PASSWORD: "k7H0kTHbum1C"
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\dev\\appveyor\\run_with_env.cmd"
     FREETDS_VER: 1.00.78
     FREETDS_BASE_URL: "https://ci.appveyor.com/api/projects/FreeTDS/freetds/artifacts"
     FREETDS_BRANCH: "master"
     FREETDS_JOB: "Environment%%3A%%20PLAT%%3DWin%PYTHON_ARCH%%%2C%%20WIDTH%%3D%PYTHON_ARCH%%%2C%%20VS_VERSION%%3D%VS_VER%%%2C%%20TDSVER%%3D%TDS_VER%"
-    FREETDS_URL: "%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?job=%FREETDS_JOB%"
+    FREETDS_URL: '"%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?branch=%FREETDS_BRANCH%&job=%FREETDS_JOB%"'
 
     PYPI_USERNAME:
       secure: NNN9CjI55JgpCgiS2Gg6/g==
@@ -178,7 +179,7 @@ install:
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - "pip install --disable-pip-version-check --user --upgrade pip"
+  - "python -m pip install --upgrade pip"
 
   # Install the build dependencies of the project. If some dependencies contain
   # compiled extensions and are not provided as pre-built wheel packages,
@@ -192,7 +193,7 @@ before_build:
   - "powershell dev\\appveyor\\install-win-iconv.ps1"
   # FreeTDS
   - "rmdir /s /q freetds\\vs%VS_VER%_%PYTHON_ARCH% || cmd /c \"exit /b 0\""
-  - appveyor DownloadFile %FREETDS_URL%
+  - curl -L -o vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip %FREETDS_URL%
   - 7z x -ofreetds vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip
   - mv freetds/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH% freetds/vs%VS_VER%_%PYTHON_ARCH%
 
