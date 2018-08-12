@@ -30,33 +30,51 @@
 #
 # Pull in Windows artifacts from appveyor https://ci.appveyor.com/project/level12/pymssql if publishing
 #
+# Run python setup.py sdist in your base environment to build the tar.gz distribution. Do this before running
+# build_wheels.sh in docker due to permissions.
+#
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
 # Install freetds. Yum info shows this as version 0.91. Need to look into getting version 1.0 on centos for bundling
 yum install -y freetds-devel
 
+# Make wheelhouse directory if it doesn't exist yet
+mkdir /io/wheelhouse
+
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
     "${PYBIN}/pip" install --upgrade pip setuptools
     "${PYBIN}/pip" install pytest SQLAlchemy Sphinx sphinx-rtd-theme Cython wheel
-    "${PYBIN}/pip" wheel /io/ -w /io/dist/
+    "${PYBIN}/pip" wheel /io/ -w /io/wheelhouse/
 done
-
-# We could make a source distribution by running setup.py sdist, but the current setup.py pathing throws an error
-# since the commands above use /io as the mount. Could use -w or WORKDIR to support building this in the container
-# eventually.
-# /opt/python/cp36-cp36m/bin/python setup.py sdist
 
 # Verify the wheels and move from *-linux_* to -manylinux_*
-for whl in /io/dist/*.whl; do
-   auditwheel repair "$whl" -w /io/dist/
+for whl in /io/wheelhouse/*.whl; do
+   auditwheel repair "$whl" -w /io/wheelhouse/
 done
+
+# Remove non manylinux wheels
+find /io/wheelhouse/ -type f ! -name '*manylinux*' -delete
+
+# Move wheels to dist for install and upload
+mv /io/wheelhouse/* /io/dist/
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f /io/dist
 done
 
+# We could make a source distribution by running setup.py sdist, but the current setup.py pathing throws an error
+# since the commands above use /io as the mount. Could try using -w or WORKDIR to support building this in the container
+# eventually.
+# /opt/python/cp36-cp36m/bin/python setup.py sdist
+
+# Remove wheel directory for next container build (i686 vs x86_x64)
+rm -rf /io/wheelhouse/
+
 # Upload the wheels to test.pypi.org
-# twine upload --repository-url https://test.pypi.org/legacy/ dist/*manylinux*
+# twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+# Test installing from test.pypi.org
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pymssql
