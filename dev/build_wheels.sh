@@ -77,4 +77,4 @@ rm -rf /io/wheelhouse/
 # twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Test installing from test.pypi.org
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pymssql
+# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --pre pymssql
