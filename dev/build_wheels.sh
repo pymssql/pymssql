@@ -36,10 +36,30 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
-# Install freetds. Yum info shows this as version 0.91. Need to look into getting version 1.0 on centos for bundling
-yum install -y freetds-devel
+# Remove freetds package distributed with the repo if present.
+rm -rf /io/freetds0.95
 
-# Make wheelhouse directory if it doesn't exist yet
+# Install freetds and use in build. Yum channel shows version 0.91. Retrieving latest stable release for builds.
+export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1
+
+rm -rf /io/freetds
+mkdir /io/freetds
+curl -sS ftp://ftp.freetds.org/pub/freetds/stable/freetds-patched.tar.gz > freetds.tar.gz
+tar -zxvf freetds.tar.gz -C /io/freetds --strip-components=1
+
+export CFLAGS="-fPIC"  # for the 64 bits version
+
+pushd /io/freetds
+./configure --enable-msdblib \
+  --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=7.1 \
+  --disable-apps --disable-server --disable-pool --disable-odbc \
+  --with-openssl=no --with-gnutls=no
+
+make install
+popd
+
+
+#Make wheelhouse directory if it doesn't exist yet
 mkdir /io/wheelhouse
 
 # Install Python dependencies and compile wheels
@@ -57,24 +77,34 @@ done
 # Remove non manylinux wheels
 find /io/wheelhouse/ -type f ! -name '*manylinux*' -delete
 
+# Create .tar.gz dist if it doesn't exists.
+if [ ! -f /io/dist/*tar.gz* ]; then
+    mkdir /io/dist
+    pushd /io/
+    /opt/python/cp36-cp36m/bin/python setup.py sdist
+    popd
+else
+    echo "sdist already exists"
+fi
+
 # Move wheels to dist for install and upload
 mv /io/wheelhouse/* /io/dist/
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f /io/dist
+    "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
 done
 
-# We could make a source distribution by running setup.py sdist, but the current setup.py pathing throws an error
-# since the commands above use /io as the mount. Could try using -w or WORKDIR to support building this in the container
-# eventually.
-# /opt/python/cp36-cp36m/bin/python setup.py sdist
+# Remove wheel and egg directory for next container build (i686 vs x86_x64)
+rm -rf /io/wheelhouse/ /io/.eggs/ /io/pymssql.egg-info/
 
-# Remove wheel directory for next container build (i686 vs x86_x64)
-rm -rf /io/wheelhouse/
+# Cleanup FreeTDS directories
+rm -rf /io/freetds/ # /io/misc/ /io/include/ /io/doc/ /io/samples/ /io/vms/ /io/wins32/
 
 # Upload the wheels to test.pypi.org
 # twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Test installing from test.pypi.org
 # pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --pre pymssql
+
