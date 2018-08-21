@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  sqlserver:
+   image: microsoft/mssql-server-linux
+   environment:
+     - ACCEPT_EULA=Y
+     - SA_PASSWORD=YourStrong!Passw0rd
+   ports:
+    - 1433:1433
+   logging:
+     driver: "none"
+   networks:
+     vpcbr:
+       ipv4_address: 10.5.0.5
+
+  pymssql:
+    image: quay.io/pypa/manylinux1_x86_64
+    depends_on:
+      - sqlserver
+    volumes:
+      - .:/io
+    command:
+      ./io/dev/build_wheels.sh
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
