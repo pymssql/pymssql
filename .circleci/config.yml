@@ -1,12 +1,10 @@
 version: 2
 jobs:
     build:
-        docker:
-            - image: docker/compose:1.22.0
+        machine: true
 
         steps:
             - checkout
-            - setup_remote_docker
 
             - run:
                 name: folder listing for debugging
