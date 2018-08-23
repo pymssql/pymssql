@@ -36,7 +36,7 @@ services:
       tail -f /dev/null
     networks:
       vpcbr:
-        ipv4_address: 10.5.0.6
+        ipv4_address: 10.5.0.7
 
 networks:
   vpcbr:
