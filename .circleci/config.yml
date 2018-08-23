@@ -36,6 +36,16 @@ jobs:
                   docker exec project_pymssql_x86_x64_1 ./io/dev/test_manylinux_wheels.sh
 
             - run:
+                name: Build i686 wheels
+                command: |
+                  docker exec project_pymssql_i686_1 ./io/dev/build_manylinux_wheels.sh
+
+            - run:
+                name: Test i686 wheels
+                command: |
+                  docker exec project_pymssql_i686_1 ./io/dev/test_manylinux_wheels.sh
+
+            - run:
                 name: Show results for test output validation
                 command: |
                   ls -al ./results

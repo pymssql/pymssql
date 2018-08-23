@@ -26,6 +26,18 @@ services:
       vpcbr:
         ipv4_address: 10.5.0.6
 
+  pymssql_i686:
+    image: quay.io/pypa/manylinux1_i686
+    depends_on:
+    - sqlserver
+    volumes:
+    - .:/io
+    command:
+      tail -f /dev/null
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+
 networks:
   vpcbr:
     driver: bridge
