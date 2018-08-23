@@ -28,9 +28,16 @@ jobs:
             - run:
                 name: Show dists
                 command: |
-                  ls dists/
+                  ls -al ./dist/
 
             - run:
                 name: Stop containers
                 command: |
                   docker-compose down
+
+            - store_test_results:
+                path: ./results
+
+            - store_artifacts:
+                path: ./dist
+
