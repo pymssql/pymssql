@@ -18,10 +18,19 @@ jobs:
             - run:
                 name: Start containers
                 command: |
-                  docker-compose up -d
+                  docker-compose up --abort-on-container-exit
+
+            - run:
+                name: Show directory after build and test
+                command: |
+                  ls -al
 
             - run:
                 name: Show dists
                 command: |
                   ls dists/
 
+            - run:
+                name: Stop containers
+                command: |
+                  docker-compose down
