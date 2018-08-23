@@ -14,14 +14,14 @@ services:
      vpcbr:
        ipv4_address: 10.5.0.5
 
-  pymssql:
+  pymssql_x86_x64:
     image: quay.io/pypa/manylinux1_x86_64
     depends_on:
       - sqlserver
     volumes:
       - .:/io
-    command:
-      ./io/dev/build_wheels.sh
+    # command:
+    #  ./io/dev/build_wheels.sh
     networks:
       vpcbr:
         ipv4_address: 10.5.0.6

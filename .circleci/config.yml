@@ -21,14 +21,24 @@ jobs:
                   docker-compose up --abort-on-container-exit
 
             - run:
-                name: Show directory after build and test
+                name: List containers
                 command: |
-                  ls -al
+                  docker ps
 
             - run:
-                name: Show dists
+                name: Build x86_x64 wheels
                 command: |
-                  ls -al ./dist/
+                  docker exec pymssql_x86_x64 ./io/dev/build_manylinux_wheels.sh
+
+            - run:
+                name: Test x86_x64 wheels
+                command: |
+                  docker exec pymssql_x86_x64 ./io/dev/test_manylinux_wheels.sh
+
+            - run:
+                name: Show results for test output validation
+                command: |
+                  ls -al ./results
 
             - run:
                 name: Stop containers

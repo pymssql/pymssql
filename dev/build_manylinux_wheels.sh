@@ -28,11 +28,6 @@
 # docker run --name manylinux_x86_x64 --rm -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/dev/build_wheels.sh
 # docker run --name manylinux_i686 --rm -v `pwd`:/io quay.io/pypa/manylinux1_i686 /io/dev/build_wheels.sh
 #
-# Pull in Windows artifacts from appveyor https://ci.appveyor.com/project/level12/pymssql if publishing
-#
-# Run python setup.py sdist in your base environment to build the tar.gz distribution. Do this before running
-# build_wheels.sh in docker due to permissions.
-#
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
@@ -83,26 +78,10 @@ if [ ! -f /io/dist/*tar.gz* ]; then
     pushd /io/
     /opt/python/cp36-cp36m/bin/python setup.py sdist
     popd
-else
-    echo "sdist already exists"
 fi
 
 # Move wheels to dist for install and upload
 mv /io/wheelhouse/* /io/dist/
-
-# Rename test template file for CI
-mv /io/tests/tests.cfg.tpl /io/tests/tests.cfg
-
-if [ ! -d /io/results ]; then
-    mkdir /io/results
-fi
-
-# Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
-for PYBIN in /opt/python/*/bin/; do
-    "${PYBIN}/pip" install pymssql --no-index -f /io/dist
-    "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
-    "${PYBIN}/pytest" /io --junitxml=/io/results/${PYBIN}_test_results.xml
-done
 
 # Remove wheel and egg directory for next container build (i686 vs x86_x64)
 rm -rf /io/wheelhouse/ /io/.eggs/ /io/pymssql.egg-info/
@@ -110,9 +89,4 @@ rm -rf /io/wheelhouse/ /io/.eggs/ /io/pymssql.egg-info/
 # Cleanup FreeTDS directories
 rm -rf /io/freetds/ # /io/misc/ /io/include/ /io/doc/ /io/samples/ /io/vms/ /io/wins32/
 
-# Upload the wheels to test.pypi.org
-# twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-
-# Test installing from test.pypi.org
-# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --pre pymssql
-
+echo "Done building wheels."
