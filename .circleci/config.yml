@@ -2,28 +2,12 @@ version: 2
 jobs:
     build:
         machine: true
-
         steps:
             - checkout
-
-            - run:
-                name: folder listing for debugging
-                command: ls -al
-
-            - run:
-                name: Build docker-compose containers
-                command: |
-                  docker-compose build
-
             - run:
                 name: Start containers
                 command: |
                   docker-compose up -d
-
-            - run:
-                name: List containers
-                command: |
-                  docker ps
 
             - run:
                 name: Build x86_x64 wheels
@@ -46,18 +30,33 @@ jobs:
                   docker exec project_pymssql_i686_1 ./io/dev/test_manylinux_wheels.sh
 
             - run:
-                name: Show results for test output validation
-                command: |
-                  ls -al ./results
-
-            - run:
                 name: Stop containers
                 command: |
                   docker-compose down
 
+            - run:
+                name: Directory path
+                command: |
+                  ls -la
+
             - store_test_results:
-                path: ./results
+                path: results/
 
             - store_artifacts:
-                path: ./dist
+                path: dist/
 
+    test:
+        machine: true
+        steps:
+            - checkout
+            - run:
+                name: List directories to see if they persist across machine executors
+                command: |
+                  ls -la
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test
