@@ -48,7 +48,6 @@ jobs:
     test:
         machine: true
         steps:
-            - checkout
             - run:
                 name: List directories to see if they persist across machine executors
                 command: |
