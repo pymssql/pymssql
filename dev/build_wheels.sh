@@ -95,7 +95,7 @@ mv /io/tests/tests.cfg.tpl /io/tests/tests.cfg
 
 if [ ! -d /io/results ]; then
     mkdir /io/results
-else
+fi
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
