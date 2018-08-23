@@ -20,8 +20,6 @@ services:
       - sqlserver
     volumes:
       - .:/io
-    # command:
-    #  ./io/dev/build_wheels.sh
     networks:
       vpcbr:
         ipv4_address: 10.5.0.6
