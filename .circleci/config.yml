@@ -18,7 +18,7 @@ jobs:
             - run:
                 name: Start containers
                 command: |
-                  docker-compose up --abort-on-container-exit
+                  docker-compose up
 
             - run:
                 name: List containers
@@ -28,12 +28,12 @@ jobs:
             - run:
                 name: Build x86_x64 wheels
                 command: |
-                  docker exec pymssql_x86_x64 ./io/dev/build_manylinux_wheels.sh
+                  docker exec pymssql ./io/dev/build_manylinux_wheels.sh
 
             - run:
                 name: Test x86_x64 wheels
                 command: |
-                  docker exec pymssql_x86_x64 ./io/dev/test_manylinux_wheels.sh
+                  docker exec pymssql ./io/dev/test_manylinux_wheels.sh
 
             - run:
                 name: Show results for test output validation

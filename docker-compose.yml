@@ -14,7 +14,7 @@ services:
      vpcbr:
        ipv4_address: 10.5.0.5
 
-  pymssql_x86_x64:
+  pymssql:
     image: quay.io/pypa/manylinux1_x86_64
     depends_on:
       - sqlserver
