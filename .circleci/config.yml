@@ -75,6 +75,11 @@ jobs:
           at: /home/circleci/project
 
       - run:
+          name: Circle Tag
+          command: |
+            echo '$CIRCLE_TAG'
+
+      - run:
           name: Check and upload to PyPi
           command: |
             ./dev/deploy_manylinux_wheels.sh
