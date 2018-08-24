@@ -9,6 +9,12 @@ if [ ! -d /io/results ]; then
     mkdir /io/results
 fi
 
+
+# Install Python dependencies and compile wheels
+for PYBIN in /opt/python/*/bin; do
+    "${PYBIN}/pip" install pytest SQLAlchemy Sphinx sphinx-rtd-theme Cython wheel
+done
+
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f /io/dist
