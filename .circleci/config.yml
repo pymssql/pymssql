@@ -66,6 +66,19 @@ jobs:
             - store_artifacts:
                 path: dist/
 
+    deploy:
+      docker:
+        - image: circleci/python:3.6-stretch-browsers
+
+      steps:
+      - attach_workspace:
+          at: /home/circleci/project
+
+      - run:
+          name: Check and upload to PyPi
+          command: |
+            ./dev/deploy_manylinux_wheels.sh
+
 workflows:
   version: 2
   build_and_test:
@@ -74,3 +87,6 @@ workflows:
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+          - test
