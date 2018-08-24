@@ -80,13 +80,18 @@ jobs:
             echo '$CIRCLE_TAG'
 
       - run:
+          name: alter path
+          command: |
+            export PATH=$PATH:/home/circleci/.local/bin:
+
+      - run:
           name: Check and upload to PyPi
           command: |
             ./dev/deploy_manylinux_wheels.sh
 
 workflows:
   version: 2
-  build_and_test:
+  build_test_deploy:
     jobs:
       - build
       - test:
