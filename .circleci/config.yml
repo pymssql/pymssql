@@ -75,18 +75,11 @@ jobs:
           at: /home/circleci/project
 
       - run:
-          name: Circle Tag
-          command: |
-            echo "$CIRCLE_TAG"
-
-      - run:
-          name: alter path
-          command: |
-            export PATH=$PATH:/home/circleci/.local/bin:
-
-      - run:
           name: Check and upload to PyPi
           command: |
+            echo "$CIRCLE_TAG"
+            export PATH=$PATH:/home/circleci/.local/bin
+            echo "$PATH"
             ./dev/deploy_manylinux_wheels.sh
 
 workflows:

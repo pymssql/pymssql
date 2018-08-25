@@ -5,7 +5,7 @@
 
 if [ -z "$CIRCLE_TAG" ]; then
   sudo pip install twine --upgrade
-  twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
+  /home/circleci/.local/bin/twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
 else
   echo "Not a tagged release $CIRCLE_TAG"
 fi
