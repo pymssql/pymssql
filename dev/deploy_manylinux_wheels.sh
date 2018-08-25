@@ -4,7 +4,7 @@
 # pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --pre pymssql
 
 if [ -z "$CIRCLE_TAG" ]; then
-  pip install --user twine --upgrade
+  sudo pip install twine --upgrade
   twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
 else
   echo "Not a tagged release $CIRCLE_TAG"
