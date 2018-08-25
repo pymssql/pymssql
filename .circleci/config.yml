@@ -75,12 +75,16 @@ jobs:
           at: /home/circleci/project
 
       - run:
-          name: Check and upload to PyPi
+          name: upload to pypi
           command: |
-            echo "$CIRCLE_TAG"
-            export PATH=$PATH:/home/circleci/.local/bin
-            echo "$PATH"
-            ./dev/deploy_manylinux_wheels.sh
+            python3 -m venv venv
+            . venv/bin/activate
+            pip3 install twine
+            if [ -z "$CIRCLE_TAG" ]; then
+              twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
+            else
+              echo "Not a tagged release $CIRCLE_TAG"
+            fi
 
 workflows:
   version: 2
