@@ -77,11 +77,11 @@ jobs:
       - run:
           name: upload to pypi
           command: |
+            echo $CIRCLE_TAG
             python3 -m venv venv
             . venv/bin/activate
             pip3 install twine
-            if [ -z ${CIRCLE_TAG+x} ]; then
-              echo $CIRCLE_TAG
+            if [[ -v $CIRCLE_TAG ]]; then
               twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
             else
               echo "Not a tagged release $CIRCLE_TAG"
