@@ -20,6 +20,8 @@ def download_sqlalchemy_tarball():
     sys.stdout.write('DONE\n')
 
 def extract_sqlalchemy_tarball():
+    sys.stdout.write('Tarfile...%s' % SQLALCHEMY_TAR_GZ)
+    sys.stdout.flush()
     tarball = tarfile.open(SQLALCHEMY_TAR_GZ, 'r:gz')
     sys.stdout.write('Extracting %s... ' % SQLALCHEMY_TAR_GZ)
     sys.stdout.flush()
@@ -62,6 +64,8 @@ if not os.path.exists(SQLALCHEMY_TAR_GZ):
     download_sqlalchemy_tarball()
 
 if not os.path.exists(SQLALCHEMY_DIR):
+    sys.stdout.write(os.listdir(os.getcwd()))
+    sys.stdout.flush()
     extract_sqlalchemy_tarball()
 
 run_sqlalchemy_tests()
