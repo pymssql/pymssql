@@ -10,7 +10,7 @@ import urllib
 SQLALCHEMY_VERSION     = "1.2.11"
 SQLALCHEMY_DIR         = "SQLAlchemy-%s" % SQLALCHEMY_VERSION
 SQLALCHEMY_TAR_GZ      = "%s.tar.gz" % SQLALCHEMY_DIR
-SQLALCHEMY_TAR_GZ_URL  = "http://pypi.python.org/packages/source/S/SQLAlchemy/%s" % SQLALCHEMY_TAR_GZ
+SQLALCHEMY_TAR_GZ_URL  = "https://pypi.python.org/packages/source/S/SQLAlchemy/%s" % SQLALCHEMY_TAR_GZ
 
 def download_sqlalchemy_tarball():
     sys.stdout.write('Downloading %s... ' % SQLALCHEMY_TAR_GZ_URL)

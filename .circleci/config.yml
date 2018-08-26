@@ -48,7 +48,7 @@ jobs:
             - run:
                 name: Define Environment Variable at Runtime
                 command: |
-                  echo 'export CIRCLE_CI_BUILD=$(cat true)' >> $BASH_ENV
+                  echo 'export CIRCLE_CI_BUILD=true' >> $BASH_ENV
                   source $BASH_ENV
 
             - run:

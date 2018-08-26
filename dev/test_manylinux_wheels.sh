@@ -24,8 +24,7 @@ for PYBIN in /opt/python/*/bin/; do
 done
 
 
-pushd /io/
-ls -la
+pushd /io
 # Run SQL Alchemy Tests
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}python" tests/run_sqlalchemy_tests.py
