@@ -21,10 +21,7 @@ def download_sqlalchemy_tarball():
 def extract_sqlalchemy_tarball():
     sys.stdout.write('Tarfile...%s' % SQLALCHEMY_TAR_GZ)
     sys.stdout.flush()
-    if os.getenv('TEST_PY'):
-        tarball = tarfile.open('./%s' % SQLALCHEMY_TAR_GZ, 'r:gz')
-    else:
-        tarball = tarfile.open(SQLALCHEMY_TAR_GZ, 'r:gz')
+    tarball = tarfile.open(SQLALCHEMY_TAR_GZ, 'r:gz')
     sys.stdout.write('Extracting %s... ' % SQLALCHEMY_TAR_GZ)
     sys.stdout.flush()
     tarball.extractall('.')
@@ -61,20 +58,10 @@ def get_dburi():
         port=port,
         database=database)
 
-if os.getenv('TEST_PY'):
-    sys.stdout.write('Detected CIRCLE CI environment')
-    sys.stdout.flush()
-    os.chdir('./io')
-
 if not os.path.exists(SQLALCHEMY_TAR_GZ):
     download_sqlalchemy_tarball()
 
 if not os.path.exists(SQLALCHEMY_DIR):
-    f = os.listdir('.')
-    for file in f:
-        sys.stdout.write(str(file))
-        sys.stdout.write('\n')
-        sys.stdout.flush()
     extract_sqlalchemy_tarball()
 
 run_sqlalchemy_tests()

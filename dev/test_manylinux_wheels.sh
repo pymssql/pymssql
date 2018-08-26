@@ -23,7 +23,12 @@ for PYBIN in /opt/python/*/bin/; do
 #    "${PYBIN}pytest" /io --junitxml=/io/results/${TEST_PY}_test_results.xml
 done
 
-ls -la ./io/tests/run_sqlalchemy_tests.py
+
+wget https://files.pythonhosted.org/packages/source/S/SQLAlchemy/SQLAlchemy-1.2.11.tar.gz
+tar xvzf SQLAlchemy-1.2.11.tar.gz
+ls -la .
+ls -la ./io
+
 
 # Run SQL Alchemy Tests
 for PYBIN in /opt/python/*/bin/; do
