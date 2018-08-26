@@ -67,7 +67,7 @@ for k in d:
     sys.stdout.write('\n')
     sys.stdout.flush()
 
-if os.getenv('CIRCLECI'):
+if os.getenv('TEST_PY'):
     sys.stdout('Detected CIRCLE CI environment')
     sys.stdout.flush()
     os.chdir('./io')
