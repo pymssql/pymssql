@@ -12,7 +12,6 @@ SQLALCHEMY_DIR         = "SQLAlchemy-%s" % SQLALCHEMY_VERSION
 SQLALCHEMY_TAR_GZ      = "%s.tar.gz" % SQLALCHEMY_DIR
 SQLALCHEMY_TAR_GZ_URL  = "http://pypi.python.org/packages/source/S/SQLAlchemy/%s" % SQLALCHEMY_TAR_GZ
 
-
 def download_sqlalchemy_tarball():
     sys.stdout.write('Downloading %s... ' % SQLALCHEMY_TAR_GZ_URL)
     sys.stdout.flush()
@@ -59,6 +58,11 @@ def get_dburi():
         port=port,
         database=database)
 
+
+if os.getenv('CIRCLECI'):
+    sys.stdout('Detected CIRCLE CI environment')
+    sys.stdout.flush()
+    os.chdir('./io')
 
 if not os.path.exists(SQLALCHEMY_TAR_GZ):
     download_sqlalchemy_tarball()
