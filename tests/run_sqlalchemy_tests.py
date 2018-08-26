@@ -64,8 +64,10 @@ if not os.path.exists(SQLALCHEMY_TAR_GZ):
     download_sqlalchemy_tarball()
 
 if not os.path.exists(SQLALCHEMY_DIR):
-    sys.stdout.write(os.listdir(os.getcwd()))
-    sys.stdout.flush()
+    f = os.listdir('.')
+    for file in f:
+        sys.stdout.write(str(file))
+        sys.stdout.flush()
     extract_sqlalchemy_tarball()
 
 run_sqlalchemy_tests()
