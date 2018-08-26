@@ -58,8 +58,16 @@ def get_dburi():
         port=port,
         database=database)
 
+d = os.environ
 
-if os.getenv('PYMSSQL_CIRCLE_CI'):
+for k in d:
+    sys.stdout.write(str(k))
+    sys.stdout.write('\n')
+    sys.stdout.write(str(d[k]))
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+
+if os.getenv('CIRCLE_CI_BUILD'):
     sys.stdout.write('Detected CIRCLE CI environment')
     sys.stdout.flush()
     os.chdir('./io')
