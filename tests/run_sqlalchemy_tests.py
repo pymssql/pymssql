@@ -58,6 +58,14 @@ def get_dburi():
         port=port,
         database=database)
 
+d = os.environ
+
+for k in d:
+    sys.stdout.write(str(k))
+    sys.stdout.write('\n')
+    sys.stdout.write(str(d[k]))
+    sys.stdout.write('\n')
+    sys.stdout.flush()
 
 if os.getenv('CIRCLECI'):
     sys.stdout('Detected CIRCLE CI environment')
