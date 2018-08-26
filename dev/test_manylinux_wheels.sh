@@ -27,6 +27,10 @@ done
 pushd /io
 # Run SQL Alchemy Tests
 for PYBIN in /opt/python/*/bin/; do
+    PYV=`python -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:1]));sys.stdout.write(t)";`
+    if [ $PYV == '2' ]; then
+        pip install mock
+    fi
     "${PYBIN}/pip" install nose
     "${PYBIN}python" tests/run_sqlalchemy_tests.py
 done
