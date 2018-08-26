@@ -23,9 +23,10 @@ for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}pytest" /io --junitxml=/io/results/${TEST_PY}_test_results.xml
 done
 
-ls .
-ls ./io
 ls ./io/tests
+
+ls ./io/tests/run_sqlalchemy_tests.py
+
 # Run SQL Alchemy Tests
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}python ./io/tests/run_sqlalchemy_tests.py"
