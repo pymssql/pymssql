@@ -87,7 +87,7 @@ else:
 
     try:
         from Cython.Distutils import build_ext as _build_ext
-    except ImportError, ModuleNotFoundError:
+    except (ImportError, ModuleNotFoundError):
         import subprocess
 
         errno = subprocess.call([sys.executable, "-m", "pip", "install", "Cython"])
