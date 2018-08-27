@@ -1,0 +1,29 @@
+version: 2
+jobs:
+    build:
+        docker:
+            - image: docker/compose:1.22.0
+
+        steps:
+            - checkout
+            - setup_remote_docker
+
+            - run:
+                name: folder listing for debugging
+                command: ls -al
+
+            - run:
+                name: Build docker-compose containers
+                command: |
+                  docker-compose build
+
+            - run:
+                name: Start containers
+                command: |
+                  docker-compose up -d
+
+            - run:
+                name: Show dists
+                command: |
+                  ls dists/
+

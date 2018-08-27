@@ -90,10 +90,14 @@ fi
 # Move wheels to dist for install and upload
 mv /io/wheelhouse/* /io/dist/
 
+# Rename test template file for CI
+mv /io/tests/tests.cfg.tpl /io/tests/tests.cfg
+
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f /io/dist
     "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
+    "${PYBIN}/pytest" /io
 done
 
 # Remove wheel and egg directory for next container build (i686 vs x86_x64)
