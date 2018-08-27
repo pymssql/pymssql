@@ -20,18 +20,18 @@ for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f /io/dist
     "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
     export TEST_PY="$(${PYBIN}/python -c 'import platform; major, minor, patch = platform.python_version_tuple(); print(major+minor+patch)')"
-#    "${PYBIN}pytest" /io --junitxml=/io/results/${TEST_PY}_test_results.xml
+    "${PYBIN}pytest" /io --junitxml=/io/results/${TEST_PY}_test_results.xml
 done
 
 
-pushd /io
-# Run SQL Alchemy Tests
-for PYBIN in /opt/python/*/bin/; do
-    PYV=`python -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:1]));sys.stdout.write(t)";`
-    if [ $PYV == '2' ]; then
-        pip install mock
-    fi
-    "${PYBIN}/pip" install nose
-    "${PYBIN}python" tests/run_sqlalchemy_tests.py
-done
-popd
+## Run SQL Alchemy Tests
+#pushd /io
+#for PYBIN in /opt/python/*/bin/; do
+#    PYV=`python -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:1]));sys.stdout.write(t)";`
+#    if [ $PYV == '2' ]; then
+#        pip install mock
+#    fi
+#    "${PYBIN}/pip" install nose
+#    "${PYBIN}python" tests/run_sqlalchemy_tests.py
+#done
+#popd
