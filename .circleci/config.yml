@@ -46,12 +46,6 @@ jobs:
                   docker-compose up -d
 
             - run:
-                name: Define Environment Variable at Runtime
-                command: |
-                  echo 'export CIRCLE_CI_BUILD=true' >> $BASH_ENV
-                  source $BASH_ENV
-
-            - run:
                 name: Test x86_x64 wheels
                 command: |
                   docker exec project_pymssql_x86_x64_1 ./io/dev/test_manylinux_wheels.sh
