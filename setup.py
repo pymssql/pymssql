@@ -90,11 +90,11 @@ else:
     except ModuleNotFoundError:
         import subprocess
 
-	errno = subprocess.call([sys.executable, "-m", "pip", "install", "Cython"])
-	if errno:
-	    print("Please install Cython package")
-	    raise SystemExit(errno)
-	else:
+        errno = subprocess.call([sys.executable, "-m", "pip", "install", "Cython"])
+        if errno:
+            print("Please install Cython package")
+            raise SystemExit(errno)
+        else:
             from Cython.Distutils import build_ext as _build_ext
 
 from distutils.dir_util import remove_tree
