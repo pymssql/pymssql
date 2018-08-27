@@ -85,7 +85,18 @@ else:
     from setuptools.dist import Distribution
     Distribution(dict(setup_requires='Cython>=0.19.1'))
 
-    from Cython.Distutils import build_ext as _build_ext
+    try:
+        from Cython.Distutils import build_ext as _build_ext
+    except ModuleNotFoundError:
+        import subprocess
+
+	errno = subprocess.call([sys.executable, "-m", "pip", "install", "Cython"])
+	if errno:
+	    print("Please install Cython package")
+	    raise SystemExit(errno)
+	else:
+            from Cython.Distutils import build_ext as _build_ext
+
 from distutils.dir_util import remove_tree
 import struct
 
