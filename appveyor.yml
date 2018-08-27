@@ -21,11 +21,17 @@ environment:
     FREETDS_JOB: "Environment%%3A%%20PLAT%%3DWin%PYTHON_ARCH%%%2C%%20WIDTH%%3D%PYTHON_ARCH%%%2C%%20VS_VERSION%%3D%VS_VER%%%2C%%20TDSVER%%3D%TDS_VER%"
     FREETDS_URL: '"%FREETDS_BASE_URL%/vs%VS_VER%_%PYTHON_ARCH%-%FREETDS_BRANCH%_withoutssl.zip?branch=%FREETDS_BRANCH%&job=%FREETDS_JOB%"'
 
+    TEST_PYPI_USERNAME:
+        secure: hDyq40wCvSUhkSlRUe9ecw==
+
+    TEST_PYPI_PASSWORD:
+        secure: ve8I3ZkQZBOdEqF59CLt7w==
+
     PYPI_USERNAME:
-      secure: NNN9CjI55JgpCgiS2Gg6/g==
+      secure: hDyq40wCvSUhkSlRUe9ecw==
 
     PYPI_PASSWORD:
-      secure: twq900sa0YG9Vx6V7vdo4g==
+      secure: slUdLrTWmxhTw+QN/JcmAA==
 
   matrix:
 
@@ -61,6 +67,14 @@ environment:
       TDS_VER: "7.2"
       INSTANCENAME: "SQL2008R2SP2"
 
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.0"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2015"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2008R2SP2"
+
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.14"
       PYTHON_ARCH: "64"
@@ -87,6 +101,14 @@ environment:
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.4"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2015"
+      TDS_VER: "7.3"
+      INSTANCENAME: "SQL2008R2SP2"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
       PYTHON_ARCH: "64"
       ARCH: x86_64
       VS_VER: "2015"
@@ -125,6 +147,14 @@ environment:
       TDS_VER: "7.2"
       INSTANCENAME: "SQL2012SP1"
 
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.0"
+      PYTHON_ARCH: "32"
+      ARCH: x86
+      VS_VER: "2015"
+      TDS_VER: "7.2"
+      INSTANCENAME: "SQL2012SP1"
+
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.14"
       PYTHON_ARCH: "64"
@@ -151,6 +181,14 @@ environment:
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.4"
+      PYTHON_ARCH: "64"
+      ARCH: x86_64
+      VS_VER: "2015"
+      TDS_VER: "7.3"
+      INSTANCENAME: "SQL2012SP1"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
       PYTHON_ARCH: "64"
       ARCH: x86_64
       VS_VER: "2015"
@@ -186,7 +224,8 @@ install:
   # pip will build them from source using the MSVC compiler matching the
   # target Python version and architecture
   - "%CMD_IN_ENV% pip install -r dev\\dev-requirements.pip"
-  - cmd: if %PYTHON_VERSION:~0,1% == 3 ( %CMD_IN_ENV% pip install gevent==1.1.b6 ) else ( %CMD_IN_ENV% pip install gevent )
+  #- cmd: if %PYTHON_VERSION:~0,1% == 3 ( %CMD_IN_ENV% pip install gevent==1.1.b6 ) else ( %CMD_IN_ENV% pip install gevent )
+  - "%CMD_IN_ENV% pip install gevent"
 
 before_build:
   # win-iconv
@@ -235,6 +274,7 @@ on_success:
     if ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
       If ($env:INSTANCENAME -eq "SQL2012SP1") {
         pip install twine --upgrade
-        twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD --config-file dev\appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+        twine upload -u $env:TEST_PYPI_USERNAME -p $env:TEST_PYPI_PASSWORD --config-file dev\appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+        # twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD  $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
       }
     }
