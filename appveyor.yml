@@ -219,7 +219,7 @@ install:
   # target Python version and architecture
   - "%CMD_IN_ENV% pip install -r dev\\dev-requirements.pip"
   #- cmd: if %PYTHON_VERSION:~0,1% == 3 ( %CMD_IN_ENV% pip install gevent==1.1.b6 ) else ( %CMD_IN_ENV% pip install gevent )
-  - cmd: %CMD_IN_ENV% pip install gevent
+  - "%CMD_IN_ENV% pip install gevent"
 
 before_build:
   # win-iconv
