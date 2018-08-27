@@ -1,21 +1,44 @@
 version: 2
 jobs:
     build:
-        docker:
-            - image: docker/compose:1.22.0
-
+        machine: true
         steps:
             - checkout
-            - setup_remote_docker
-
             - run:
-                name: folder listing for debugging
-                command: ls -al
-
-            - run:
-                name: Build docker-compose containers
+                name: Start containers
                 command: |
-                  docker-compose build
+                  docker-compose up -d
+
+            - run:
+                name: Build x86_x64 wheels
+                command: |
+                  docker exec project_pymssql_x86_x64_1 ./io/dev/build_manylinux_wheels.sh
+
+            - run:
+                name: Build i686 wheels
+                command: |
+                  docker exec project_pymssql_i686_1 ./io/dev/build_manylinux_wheels.sh
+
+            - run:
+                name: Stop containers
+                command: |
+                  docker-compose down
+
+            - persist_to_workspace:
+                root: /home/circleci/project
+                paths: .
+
+
+    test:
+        machine: true
+        steps:
+            - attach_workspace:
+                at: /home/circleci/project
+
+            - run:
+                name: List directories to see if they persist across machine executors
+                command: |
+                  ls -la
 
             - run:
                 name: Start containers
@@ -23,7 +46,55 @@ jobs:
                   docker-compose up -d
 
             - run:
-                name: Show dists
+                name: Test x86_x64 wheels
                 command: |
-                  ls dists/
+                  docker exec project_pymssql_x86_x64_1 ./io/dev/test_manylinux_wheels.sh
 
+            - run:
+                name: Test i686 wheels
+                command: |
+                  docker exec project_pymssql_i686_1 ./io/dev/test_manylinux_wheels.sh
+
+            - run:
+                name: Stop containers
+                command: |
+                  docker-compose down
+
+            - store_test_results:
+                path: results/
+
+            - store_artifacts:
+                path: dist/
+
+    deploy:
+      docker:
+        - image: circleci/python:3.6
+
+      steps:
+      - attach_workspace:
+          at: /home/circleci/project
+
+      - run:
+          name: upload to pypi
+          command: |
+            if [[ -v $CIRCLE_TAG ]]; then
+              echo $CIRCLE_TAG
+              python3 -m venv venv
+              . venv/bin/activate
+              pip3 install twine
+              twine upload -u $TEST_PYPI_USERNAME -p $TEST_PYPI_PASSWORD --repository testpypi dist/*
+            else
+              echo "Not a tagged release $CIRCLE_TAG"
+            fi
+
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+          - test
