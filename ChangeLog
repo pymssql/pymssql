@@ -27,6 +27,10 @@ General
 
 - Accept 7.3 as TDS protocol version when establishing a connection.
 
+- Add Python 3.7 support
+
+- Drop Python 3.3 support
+
 Features
 --------
 
