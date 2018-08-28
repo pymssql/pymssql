@@ -274,7 +274,7 @@ on_success:
     if ($env:APPVEYOR_REPO_TAG -eq "true" -or $env:APPVEYOR_REPO_TAG -eq "True") {
       If ($env:INSTANCENAME -eq "SQL2012SP1") {
         pip install twine --upgrade
-        twine upload -u $env:TEST_PYPI_USERNAME -p $env:TEST_PYPI_PASSWORD --config-file dev\appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
-        # twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD  $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+        # twine upload -u $env:TEST_PYPI_USERNAME -p $env:TEST_PYPI_PASSWORD --config-file dev\appveyor\pypirc -r testpypi $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
+        twine upload -u $env:PYPI_USERNAME -p $env:PYPI_PASSWORD  $env:APPVEYOR_BUILD_FOLDER\dist\*.whl
       }
     }
