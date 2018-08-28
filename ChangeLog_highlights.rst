@@ -1,13 +1,17 @@
 Recent Changes
 ==============
 
-Version 2.1.4 - To be released
+Version 2.1.4 - 2018-08-28
 ==============================
 
 General
 -------
 
 - Drop support for versions of FreeTDS older than 0.91.
+
+- Add Python 3.7 support
+
+- Drop Python 3.3 support
 
 Features
 --------
