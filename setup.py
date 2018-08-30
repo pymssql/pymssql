@@ -172,7 +172,6 @@ else:
     FREETDS = None
 
     if sys.platform == 'darwin':
-        FREETDS = fpath('freetds0.95', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
@@ -309,7 +308,7 @@ class build_ext(_build_ext):
                     if LINK_OPENSSL:
                         libraries.extend(['libeay32MD', 'ssleay32MD'])
 
-            FREETDS = fpath('freetds0.95', '{0}_{1}'.format(freetds_dir, BITNESS))
+            FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
             suffix = '' if BITNESS == 32 else '64'
             OPENSSL = fpath('openssl', 'lib{}'.format(suffix))
             for e in self.extensions:
