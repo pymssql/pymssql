@@ -45,7 +45,12 @@ cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
 from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
 
-from collections import Iterable
+# Attempt to import from newer collections.abc, which will fail on Python 2.7
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 import os
 import sys
 import socket
