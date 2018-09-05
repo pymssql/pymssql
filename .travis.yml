@@ -15,10 +15,9 @@ before_install:
 - travis_retry pip install pytest SQLAlchemy
 - travis_retry pip install Sphinx sphinx-rtd-theme
 - pip --version
-- travis_retry pip install Cython
 install:
 - if [[ $FREETDS_VERSION == '1.00' ]]; then dev/build_freetds_linux.sh; export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1; fi
-- python setup.py develop
+- pip install --editable .
 script:
 - . dev/travis_env.sh
 - echo "\$PYMSSQL_TEST_DATABASE = \"$PYMSSQL_TEST_DATABASE\""
