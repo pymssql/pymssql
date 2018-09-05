@@ -15,3 +15,4 @@ SQLAlchemy-*/
 SQLAlchemy-*.tar.gz
 freetds/
 .idea/
+venv/
