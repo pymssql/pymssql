@@ -172,7 +172,6 @@ else:
     FREETDS = None
 
     if sys.platform == 'darwin':
-        FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
         print("""setup.py: Detected Darwin/Mac OS X.
     You can install FreeTDS with Homebrew or MacPorts, or by downloading
     and compiling it yourself.
@@ -188,7 +187,7 @@ else:
 
     if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
         if SYSTEM == 'Linux':
-            FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
+            FREETDS = fpath('freetds0.95', 'nix_%s' % BITNESS)
         elif SYSTEM == 'FreeBSD':
             print("""setup.py: Detected FreeBSD.
     For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
