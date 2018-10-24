@@ -1,12 +1,11 @@
-# --------------------------------------------------------------------------
-# This is a Dockerfile to build an Ubuntu 14.04 Docker image with
-# pymssql and FreeTDS
+# ------------------------------------------------------------------------------
+# This is a Dockerfile to build a Debian Docker image with pymssql and FreeTDS.
 #
 # Use a command like:
 #     docker build -t pymssql/pymssql .
-# --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-FROM  orchardup/python:2.7
+FROM  python:3
 MAINTAINER  Marc Abramowitz <marc@marc-abramowitz.com> (@msabramo)
 
 # Install apt packages
@@ -15,11 +14,11 @@ RUN apt-get update && apt-get install -y \
     freetds-common \
     freetds-dev
 
-RUN pip install Cython
-RUN pip install ipython
-RUN pip install SQLAlchemy
-RUN pip install pandas
-RUN pip install Alembic
+RUN pip3 install Cython
+RUN pip3 install ipython
+RUN pip3 install SQLAlchemy
+RUN pip3 install pandas
+RUN pip3 install Alembic
 
 # Add source directory to Docker image
 # Note that it's beneficial to put this as far down in the Dockerfile as
