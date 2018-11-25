@@ -9,6 +9,7 @@ tests/tests.cfg
 .tox
 dist
 *.egg
+*.eggs
 *.egg-info
 docs/_build
 SQLAlchemy-*/
