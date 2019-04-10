@@ -1,31 +1,32 @@
-# --------------------------------------------------------------------------
-# This is a Dockerfile to build an Ubuntu 14.04 Docker image with
-# pymssql and FreeTDS
-#
-# Use a command like:
-#     docker build -t pymssql/pymssql .
-# --------------------------------------------------------------------------
+FROM  ubuntu:18.04
+MAINTAINER  Tyler French tylerfrench2@gmail.com (@frenchtoasters)
 
-FROM  orchardup/python:2.7
-MAINTAINER  Marc Abramowitz <marc@marc-abramowitz.com> (@msabramo)
+# Install dependices
+RUN apt-get update && apt-get install -y \
+    unixodbc \
+    unixodbc-dev \
+    unixodbc-bin \
+    libodbc1 \
+    odbcinst1debian2 \
+    tdsodbc \
+    php-odbc \
+    python3 \
+    python3-pip
 
-# Install apt packages
+# Install FreeTDS
 RUN apt-get update && apt-get install -y \
     freetds-bin \
     freetds-common \
-    freetds-dev
+    freetds-dev \
+    libct4 \
+    libsybdb5
 
-RUN pip install Cython
-RUN pip install ipython
-RUN pip install SQLAlchemy
-RUN pip install pandas
-RUN pip install Alembic
+# Install pip dependencies
+RUN pip3 install Cython
 
 # Add source directory to Docker image
-# Note that it's beneficial to put this as far down in the Dockerfile as
-# possible to maximize the chances of being able to use image caching
 ADD . /opt/src/pymssql/
 
-RUN pip install /opt/src/pymssql
+RUN pip3 install /opt/src/pymssql
 
-CMD ["ipython"]
+CMD ["python3"]
