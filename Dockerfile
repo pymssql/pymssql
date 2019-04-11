@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     tdsodbc \
     php-odbc \
     python3 \
-    python3-pip
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install FreeTDS
 RUN apt-get update && apt-get install -y \
@@ -19,7 +20,8 @@ RUN apt-get update && apt-get install -y \
     freetds-common \
     freetds-dev \
     libct4 \
-    libsybdb5
+    libsybdb5 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pip dependencies
 RUN pip3 install Cython
