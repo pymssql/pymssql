@@ -24,8 +24,8 @@ This is an effort to convert the pymssql low-level C module to Cython.
 # MA  02110-1301  USA
 #
 
-DEF PYMSSQL_DEBUG = 0
-DEF PYMSSQL_DEBUG_ERRORS = 0
+DEF PYMSSQL_DEBUG = 1
+DEF PYMSSQL_DEBUG_ERRORS = 1
 DEF PYMSSQL_CHARSETBUFSIZE = 100
 DEF MSSQLDB_MSGSIZE = 1024
 DEF PYMSSQL_MSGSIZE = (MSSQLDB_MSGSIZE * 8)
@@ -235,9 +235,6 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
 
-    if severity < _min_error_severity:
-        return INT_CANCEL
-
     if dberrstr == NULL:
         dberrstr = ''
     if oserrstr == NULL:
@@ -249,7 +246,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
             oserr, dberrstr, oserrstr, DBDEAD(dbproc));
         fprintf(stderr, "*** previous max severity = %d\n\n",
-            _mssql_last_msg_severity);
+            _mssql_last_msg_severity)
 
     mssql_lastmsgstr = _mssql_last_msg_str
     mssql_lastmsgno = &_mssql_last_msg_no
@@ -272,6 +269,9 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
+
+    if severity < _min_error_severity:
+        return INT_CANCEL
 
     if oserr != DBNOERR and oserr != 0:
         if severity == EXCOMM:
@@ -1291,9 +1291,19 @@ cdef class MSSQLConnection:
 
             # Since python doesn't have a do/while loop do it this way
             while True:
+                log("_mssql.MSSQLConnection.get_result(): dbproc = ", self.dbproc)
+
                 with nogil:
                     self.last_dbresults = dbresults(self.dbproc)
+
+                log("_mssql.MSSQLConnection.get_result(): last_dbresults = ",
+                    self.last_dbresults)
+
                 self.num_columns = dbnumcols(self.dbproc)
+
+                log("_mssql.MSSQLConnection.get_result(): num_columns = ",
+                    self.num_columns)
+
                 if self.last_dbresults != SUCCEED or self.num_columns > 0:
                     break
             check_cancel_and_raise(self.last_dbresults, self)
