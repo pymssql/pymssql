@@ -438,6 +438,10 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
+def parse_test_requirements():
+    with open('requirements-test.txt') as r:
+        return r.readlines()
+
 setup(
     name  = 'pymssql',
     version = extract_version(),
@@ -478,7 +482,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_git'],
-    tests_require=['pytest', 'unittest2'],
+    tests_require=parse_test_requirements(),
     ext_modules = ext_modules(),
 
 )
