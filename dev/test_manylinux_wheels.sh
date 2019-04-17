@@ -1,5 +1,5 @@
 #!/bin/bash
-# Need to test the wheels that where build with build_manylinux_wheels.sh
+# Need to test the wheels that were built with build_manylinux_wheels.sh
 
 # Rename test template file for CI
 mv /io/tests/tests.cfg.tpl /io/tests/tests.cfg

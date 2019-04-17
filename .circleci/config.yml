@@ -20,6 +20,12 @@ jobs:
                   docker exec project_pymssql_i686_1 ./io/dev/build_manylinux_wheels.sh
 
             - run:
+                name: clean dist/ and move wheels there for install and update
+                command: |
+                  rm /io/dist/* || true
+                  mv /io/wheelhouse/* /io/dist/
+
+            - run:
                 name: Stop containers
                 command: |
                   docker-compose down
