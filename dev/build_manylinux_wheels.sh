@@ -53,9 +53,14 @@ pushd /io/freetds
 make install
 popd
 
+# Cleanup FreeTDS directory
+rm -rf /io/freetds/
+
 
 #Make wheelhouse directory if it doesn't exist yet
-mkdir /io/wheelhouse
+if [ ! -d /io/wheelhouse ]; then
+    mkdir /io/wheelhouse
+fi
 
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
@@ -83,7 +88,5 @@ fi
 # Remove egg directories for next container build (i686 vs x86_x64)
 rm -rf /io/.eggs/ /io/pymssql.egg-info/
 
-# Cleanup FreeTDS directories
-rm -rf /io/freetds/ # /io/misc/ /io/include/ /io/doc/ /io/samples/ /io/vms/ /io/wins32/
 
 echo "Done building wheels."
