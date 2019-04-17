@@ -1979,21 +1979,29 @@ MssqlConnection = MSSQLConnection
 ## Test Helper Functions ##
 ###########################
 
-def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr):
+def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr,
+                     mark_connection_as_dead=False):
     """
     Expose err_handler function and its side effects to facilitate testing.
     """
     cdef DBPROCESS *dbproc = NULL
     cdef char *dberrstrc = NULL
     cdef char *oserrstrc = NULL
+
     if dberrstr:
         dberrstr_byte_string = dberrstr.encode('UTF-8')
         dberrstrc = dberrstr_byte_string
+
     if oserrstr:
         oserrstr_byte_string = oserrstr.encode('UTF-8')
         oserrstrc = oserrstr_byte_string
+
     if connection:
-        dbproc = (<MSSQLConnection>connection).dbproc
+        if mark_connection_as_dead:
+            (<MSSQLConnection>connection).dbproc = dbproc = NULL
+        else:
+            dbproc = (<MSSQLConnection>connection).dbproc
+
     results = (
         err_handler(dbproc, severity, dberr, oserr, dberrstrc, oserrstrc),
         get_last_msg_str(connection),
