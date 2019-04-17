@@ -779,6 +779,7 @@ cdef class MSSQLConnection:
             return None
 
         if not self._connected:
+            self.free_c_mem()
             return None
 
         clr_err(self)
@@ -788,14 +789,28 @@ cdef class MSSQLConnection:
 
         self.mark_disconnected()
 
+    def free_c_mem(self):
+        if self.last_msg_proc:
+            PyMem_Free(self.last_msg_proc)
+            self.last_msg_proc = NULL
+
+        if self.last_msg_srv:
+            PyMem_Free(self.last_msg_srv)
+            self.last_msg_srv = NULL
+
+        if self.last_msg_str:
+            PyMem_Free(self.last_msg_str)
+            self.last_msg_str = NULL
+
+        if self._charset:
+            PyMem_Free(self._charset)
+            self._charset = NULL
+
     def mark_disconnected(self):
         log("_mssql.MSSQLConnection.mark_disconnected()")
         self.dbproc = NULL
         self._connected = 0
-        PyMem_Free(self.last_msg_proc)
-        PyMem_Free(self.last_msg_srv)
-        PyMem_Free(self.last_msg_str)
-        PyMem_Free(self._charset)
+        self.free_c_mem()
         connection_object_list.remove(self)
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
