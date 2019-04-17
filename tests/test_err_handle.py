@@ -105,6 +105,7 @@ class ErrHandleTests(unittest.TestCase):
 
     def test_errors_below_min_severity_still_trigger_dead_conns_to_be_marked_as_disconnected(self):
         # ensure dead connections are closed even if severity < min error severity
+        # Issue: https://github.com/pymssql/pymssql/issues/631
         severity = 1
         dberr = 20047
         oserr = 0
