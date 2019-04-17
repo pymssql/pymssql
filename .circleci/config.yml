@@ -22,8 +22,8 @@ jobs:
             - run:
                 name: clean dist/ and move wheels there for install and update
                 command: |
-                  rm /io/dist/* || true
-                  mv /io/wheelhouse/* /io/dist/
+                  rm dist/* || true
+                  mv wheelhouse/* dist/
 
             - run:
                 name: Stop containers
