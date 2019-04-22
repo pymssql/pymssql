@@ -1291,21 +1291,14 @@ cdef class MSSQLConnection:
 
             # Since python doesn't have a do/while loop do it this way
             while True:
-                log("_mssql.MSSQLConnection.get_result(): dbproc = ", self.dbproc)
-
                 with nogil:
                     self.last_dbresults = dbresults(self.dbproc)
 
-                log("_mssql.MSSQLConnection.get_result(): last_dbresults = ",
-                    self.last_dbresults)
-
                 self.num_columns = dbnumcols(self.dbproc)
-
-                log("_mssql.MSSQLConnection.get_result(): num_columns = ",
-                    self.num_columns)
 
                 if self.last_dbresults != SUCCEED or self.num_columns > 0:
                     break
+
             check_cancel_and_raise(self.last_dbresults, self)
 
             self._rows_affected = dbcount(self.dbproc)
