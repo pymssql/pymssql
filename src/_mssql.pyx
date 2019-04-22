@@ -265,13 +265,13 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             conn.mark_disconnected()
         break
 
+    if severity < _min_error_severity:
+        return INT_CANCEL
+
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
         mssql_lastmsgno[0] = dberr
         mssql_lastmsgstate[0] = oserr
-
-    if severity < _min_error_severity:
-        return INT_CANCEL
 
     if oserr != DBNOERR and oserr != 0:
         if severity == EXCOMM:
