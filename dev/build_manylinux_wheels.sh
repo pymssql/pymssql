@@ -34,7 +34,7 @@ set -e -x
 # Remove freetds package distributed with the repo if present.
 rm -rf /io/freetds0.95
 
-# Install freetds and use in build. Yum channel shows version 0.91. Retrieving latest stable release for builds.
+# Install latest stable freetds version (currently 1.1.4) and use in build
 export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1
 
 rm -rf /io/freetds
@@ -46,16 +46,21 @@ export CFLAGS="-fPIC"  # for the 64 bits version
 
 pushd /io/freetds
 ./configure --enable-msdblib \
-  --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=7.1 \
+  --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=auto \
   --disable-apps --disable-server --disable-pool --disable-odbc \
   --with-openssl=no --with-gnutls=no
 
 make install
 popd
 
+# Cleanup FreeTDS directory
+rm -rf /io/freetds/
+
 
 #Make wheelhouse directory if it doesn't exist yet
-mkdir /io/wheelhouse
+if [ ! -d /io/wheelhouse ]; then
+    mkdir /io/wheelhouse
+fi
 
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
@@ -80,13 +85,8 @@ if [ ! -f /io/dist/*tar.gz* ]; then
     popd
 fi
 
-# Move wheels to dist for install and upload
-mv /io/wheelhouse/* /io/dist/
+# Remove egg directories for next container build (i686 vs x86_x64)
+rm -rf /io/.eggs/ /io/pymssql.egg-info/
 
-# Remove wheel and egg directory for next container build (i686 vs x86_x64)
-rm -rf /io/wheelhouse/ /io/.eggs/ /io/pymssql.egg-info/
-
-# Cleanup FreeTDS directories
-rm -rf /io/freetds/ # /io/misc/ /io/include/ /io/doc/ /io/samples/ /io/vms/ /io/wins32/
 
 echo "Done building wheels."

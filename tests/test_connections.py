@@ -1,11 +1,7 @@
 from __future__ import with_statement
 from os import path, makedirs, environ
 import re
-import shutil
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import unittest
 
 import _mssql
 

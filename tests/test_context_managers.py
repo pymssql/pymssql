@@ -2,10 +2,7 @@
 Test context managers -- i.e.: the `with` statement
 """
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import unittest
 
 from pymssql import InterfaceError
 from .helpers import pymssqlconn, mssqlconn

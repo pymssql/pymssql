@@ -235,9 +235,6 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int _min_error_severity = min_error_severity
     cdef char mssql_message[PYMSSQL_MSGSIZE]
 
-    if severity < _min_error_severity:
-        return INT_CANCEL
-
     if dberrstr == NULL:
         dberrstr = ''
     if oserrstr == NULL:
@@ -249,7 +246,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
             oserr, dberrstr, oserrstr, DBDEAD(dbproc));
         fprintf(stderr, "*** previous max severity = %d\n\n",
-            _mssql_last_msg_severity);
+            _mssql_last_msg_severity)
 
     mssql_lastmsgstr = _mssql_last_msg_str
     mssql_lastmsgno = &_mssql_last_msg_no
@@ -267,6 +264,9 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             log("+++ err_handler: dbproc is dead; killing conn...\n")
             conn.mark_disconnected()
         break
+
+    if severity < _min_error_severity:
+        return INT_CANCEL
 
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
@@ -1293,9 +1293,12 @@ cdef class MSSQLConnection:
             while True:
                 with nogil:
                     self.last_dbresults = dbresults(self.dbproc)
+
                 self.num_columns = dbnumcols(self.dbproc)
+
                 if self.last_dbresults != SUCCEED or self.num_columns > 0:
                     break
+
             check_cancel_and_raise(self.last_dbresults, self)
 
             self._rows_affected = dbcount(self.dbproc)
@@ -1969,21 +1972,29 @@ MssqlConnection = MSSQLConnection
 ## Test Helper Functions ##
 ###########################
 
-def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr):
+def test_err_handler(connection, int severity, int dberr, int oserr, dberrstr, oserrstr,
+                     mark_connection_as_dead=False):
     """
     Expose err_handler function and its side effects to facilitate testing.
     """
     cdef DBPROCESS *dbproc = NULL
     cdef char *dberrstrc = NULL
     cdef char *oserrstrc = NULL
+
     if dberrstr:
         dberrstr_byte_string = dberrstr.encode('UTF-8')
         dberrstrc = dberrstr_byte_string
+
     if oserrstr:
         oserrstr_byte_string = oserrstr.encode('UTF-8')
         oserrstrc = oserrstr_byte_string
+
     if connection:
-        dbproc = (<MSSQLConnection>connection).dbproc
+        if mark_connection_as_dead:
+            (<MSSQLConnection>connection).dbproc = dbproc = NULL
+        else:
+            dbproc = (<MSSQLConnection>connection).dbproc
+
     results = (
         err_handler(dbproc, severity, dberr, oserr, dberrstrc, oserrstrc),
         get_last_msg_str(connection),
