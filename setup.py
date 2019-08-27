@@ -209,7 +209,7 @@ else:
             if compiler.has_function('clock_gettime', libraries=['rt']):
                 libraries.append('rt')
 
-usr_local = '/usr/local'
+usr_local = sys.prefix
 if osp.exists(usr_local):
     add_dir_if_exists(
         include_dirs,
