@@ -46,6 +46,7 @@ Most of the times this should be all what's needed.
   .. code-block:: bash
 
       brew install freetds
+      pip install cython
       pip install pymssql
 
   it will fetch the source distribution from the `Python Package Index
