@@ -1768,6 +1768,53 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
         return DBVERSION_71
     raise MSSQLException('unrecognized tds version: %s' % verstr)
 
+#####################
+## Time zone class ##
+#####################
+class MSSQLTimezone(datetime.tzinfo):
+    def __init__(self, offset):
+        if not isinstance(offset, datetime.timedelta):
+            raise TypeError('offset must be a timedelta')
+        (delta_minutes, delta_seconds) = divmod(offset.total_seconds(), 60)
+        if delta_seconds != 0:
+            raise ValueError('offset must be an integral number of minutes')
+        self._offset = offset
+        (h, m) = divmod(abs(delta_minutes), 60)
+        if delta_minutes < 0:
+            self._name = 'UTC-%02d:%02d' % (h, m)
+        else:
+            self._name = 'UTC+%02d:%02d' % (h, m)
+
+    def utcoffset(self, dt):
+        return self._offset
+
+    def fromutc(self, dt):
+        if dt.tzinfo is not self:
+            raise ValueError('dt.tzinfo must equal self')
+        return dt + self._offset
+
+    def dst(self, dt):
+        return None
+
+    def tzname(self, dt):
+        return self._name
+
+    def __repr__(self):
+        return "%s(%r)" % (type(self).__name__, self._offset)
+
+    def __eq__(self, other):
+        return (isinstance(other, MSSQLTimezone)
+                and other._offset == self._offset)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self._offset)
+
+    def __reduce__(self):
+        return (type(self), (self._offset,))
+
 #######################
 ## Quoting Functions ##
 #######################
