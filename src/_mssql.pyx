@@ -1875,10 +1875,37 @@ cdef _quote_simple_value(value, charset='utf8', tds_version_tuple=()):
             return '0x' + value.encode('hex')
 
     if isinstance(value, datetime.datetime):
-        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
-            value.year, value.month, value.day,
-            value.hour, value.minute, value.second,
-            value.microsecond / 1000)
+        if tds_version_tuple >= (7, 3):
+            # If using TDS 7.3 or later, then the server supports
+            # DATETIME2 and DATETIMEOFFSET types.  Use these types to
+            # preserve microsecond precision of the input value.
+
+            # Although it would be tempting to use strftime here, note
+            # that strftime in Python 2.7 chokes on years prior to
+            # 1900.
+            tstr = "%04d-%02d-%02d %02d:%02d:%02d.%06d" % (
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond)
+            offset = value.utcoffset()
+            if offset is not None:
+                m = offset.total_seconds() / 60
+                if m < 0:
+                    tstr += ' -%02d:%02d' % divmod(-m, 60)
+                else:
+                    tstr += ' +%02d:%02d' % divmod(m, 60)
+                return "CAST('" + tstr + "' AS DATETIMEOFFSET)"
+            else:
+                return "CAST('" + tstr + "' AS DATETIME2)"
+        else:
+            # If using TDS 7.2 or earlier, use ODBC datetime format
+            # for compatibility.  Note that this loses precision
+            # twice: it is truncated to millisecond precision, then on
+            # the server side it is rounded to the nearest 1/300s.
+            return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond / 1000)
 
     if isinstance(value, datetime.date):
         return "{d '%04d-%02d-%02d'} " % (
