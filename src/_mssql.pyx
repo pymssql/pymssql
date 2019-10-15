@@ -147,6 +147,7 @@ SQLUUID = 36
 SQLDATE = 40
 SQLTIME = 41
 SQLDATETIME2 = 42
+SQLDATETIMEOFFSET = 43
 
 #######################
 ## Exception classes ##
@@ -860,6 +861,12 @@ cdef class MSSQLConnection:
             dbanydatecrack(self.dbproc, &di2, dbtype, data);
             return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
                 di2.minute, di2.second, (di2.nanosecond + 500) // 1000)
+
+        elif dbtype == SQLDATETIMEOFFSET:
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            tz = MSSQLTimezone(datetime.timedelta(minutes=di2.tzone))
+            return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
+                di2.minute, di2.second, (di2.nanosecond + 500) // 1000, tz)
 
         elif dbtype == SQLDATE:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
