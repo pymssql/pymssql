@@ -73,6 +73,20 @@ cdef extern from "sqlfront.h":
         DBINT millisecond
         DBINT tzone
 
+    ctypedef struct        DBDATEREC2:
+        DBINT year
+        DBINT quarter
+        DBINT month
+        DBINT day
+        DBINT dayofyear
+        DBINT week
+        DBINT weekday
+        DBINT hour
+        DBINT minute
+        DBINT second
+        DBINT nanosecond
+        DBINT tzone
+
     ctypedef struct DBNUMERIC:
         BYTE precision
         BYTE scale
@@ -303,6 +317,20 @@ cdef extern from "sqlfront.h":
     #   Return values:
     #     SUCCEED always
     RETCODE dbdatecrack(DBPROCESS *, DBDATEREC *, DBDATETIME *)
+
+    # Break any kind of date or time value into useful pieces.
+    #
+    #   Parameters:
+    #     dbproc    contains all information needed by db-lib to manage
+    #               communications with the server.
+    #     di        output: structure to contain the exploded parts of
+    #               datetime.
+    #     type      input: type of date/time value returned by dbcoltype().
+    #     data      input: date/time value to be converted.
+    #
+    #   Return values:
+    #     SUCCEED always
+    RETCODE dbanydatecrack(DBPROCESS *, DBDATEREC2 *, int, void *)
 
     # Get size of current row's data in a regular result column.
     #
