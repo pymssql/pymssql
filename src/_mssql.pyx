@@ -574,6 +574,7 @@ cdef class MSSQLConnection:
         self.last_msg_proc[0] = <char>0
         self.column_names = None
         self.column_types = None
+        self.timezones = {}
 
     def __init__(self, server="localhost", user=None, password=None,
             charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
@@ -864,7 +865,12 @@ cdef class MSSQLConnection:
 
         elif dbtype == SQLDATETIMEOFFSET:
             dbanydatecrack(self.dbproc, &di2, dbtype, data);
-            tz = MSSQLTimezone(datetime.timedelta(minutes=di2.tzone))
+            # Memoize timezone objects.
+            try:
+                tz = self.timezones[di2.tzone]
+            except KeyError:
+                tz = MSSQLTimezone(datetime.timedelta(minutes=di2.tzone))
+                self.timezones[di2.tzone] = tz
             return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
                 di2.minute, di2.second, (di2.nanosecond + 500) // 1000, tz)
 
