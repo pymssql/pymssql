@@ -1907,6 +1907,9 @@ cdef _quote_simple_value(value, charset='utf8', tds_version_tuple=()):
                 value.hour, value.minute, value.second,
                 value.microsecond / 1000)
 
+    if isinstance(value, datetime.time):
+        return value.strftime("CAST('%H:%M:%S.%f' AS TIME)")
+
     if isinstance(value, datetime.date):
         return "{d '%04d-%02d-%02d'} " % (
         value.year, value.month, value.day)
@@ -1964,7 +1967,8 @@ cdef _substitute_params(toformat, params, charset, tds_version_tuple):
 
     if not issubclass(type(params),
             (bool, int, long, float, unicode, str, bytes, bytearray, dict, tuple,
-             datetime.datetime, datetime.date, dict, decimal.Decimal, uuid.UUID)):
+             datetime.datetime, datetime.date, datetime.time,
+             decimal.Decimal, uuid.UUID)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
