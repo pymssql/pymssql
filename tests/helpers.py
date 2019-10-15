@@ -5,7 +5,7 @@ import time
 import pytest
 
 def eq_(a, b):
-    assert a == b
+    assert a == b, '%r != %r' % (a, b)
 
 def skip_test(reason='No reason given to skip_test'):
     pytest.skip(reason)
