@@ -805,6 +805,7 @@ cdef class MSSQLConnection:
         cdef long prevPrecision
         cdef BYTE precision
         cdef DBDATEREC di
+        cdef DBDATEREC2 di2
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
@@ -848,12 +849,17 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype in (SQLDATETIM4, SQLDATETIME2):
+        elif dbtype == SQLDATETIM4:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
                 <BYTE *>&dt, -1)
             dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif dbtype == SQLDATETIME2:
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
+                di2.minute, di2.second, (di2.nanosecond + 500) // 1000)
 
         elif dbtype == SQLDATE:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
@@ -862,10 +868,9 @@ cdef class MSSQLConnection:
             return datetime.date(di.year, di.month, di.day)
 
         elif dbtype == SQLTIME:
-            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
-                <BYTE *>&dt, -1)
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
-            return datetime.time(di.hour, di.minute, di.second, di.millisecond * 1000)
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            return datetime.time(di2.hour, di2.minute, di2.second,
+                (di2.nanosecond + 500) // 1000)
 
         elif dbtype == SQLDATETIME:
             dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
