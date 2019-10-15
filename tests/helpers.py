@@ -35,6 +35,7 @@ def mssqlconn(conn_properties=None):
         password=config.password,
         database=config.database,
         port=config.port,
+        tds_version=config.tds_version,
         conn_properties=conn_properties
     )
 
@@ -46,6 +47,7 @@ def pymssqlconn(**kwargs):
         password=config.password,
         database=config.database,
         port=config.port,
+        tds_version=config.tds_version,
         **kwargs
     )
 
