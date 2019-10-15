@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import binascii
 from datetime import time
+from datetime import timedelta
 from datetime import date
 from datetime import datetime
 import decimal
@@ -10,6 +11,8 @@ import pickle
 import sys
 import unittest
 import uuid
+
+from _mssql import MSSQLTimezone
 
 from .helpers import get_sql_server_version
 
@@ -64,7 +67,8 @@ def build_create_table_query(conn):
                 ','
                 'stamp_date date,',
                 'stamp_time time,',
-                'stamp_datetime2 datetime2'] +
+                'stamp_datetime2 datetime2,'
+                'stamp_datetimeoffset datetimeoffset'] +
             create_test_table_sql[-1:])
     return create_sql
 
@@ -206,6 +210,30 @@ class TestTypes(unittest.TestCase):
         colval = self.insert_and_select('stamp_datetime2', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
+
+    def test_datetimeoffset(self):
+        if get_sql_server_version(self.conn) < 2008:
+            pytest.skip("DATETIMEOFFSET field type isn't supported by SQL Server versions prior to 2008.")
+        if self.conn.tds_version < 7.3:
+            pytest.skip("DATETIMEOFFSET field type isn't supported by TDS protocol older than 7.3.")
+
+        testtz = MSSQLTimezone(timedelta(minutes=-83))
+        testval = datetime(2013, 1, 2, 3, 4, 5, 4321, testtz)
+        colval = self.insert_and_select('stamp_datetimeoffset', testval, 's')
+        typeeq(testval, colval)
+        eq_(testval, colval)
+        eq_(testtz.utcoffset(testval), colval.tzinfo.utcoffset(colval))
+
+        # test correct interpretation of timezone offsets (the same
+        # timestamp expressed in a different timezone should be equal)
+        testtz2 = MSSQLTimezone(timedelta(minutes=65))
+        testval2 = testval.astimezone(testtz2)
+        self.conn.execute_query('select stamp_datetimeoffset from pymssql'
+                                ' where stamp_datetimeoffset = %s',
+                                (testval2,))
+        rows = tuple(self.conn)
+        eq_(len(rows), 1)
+        eq_(rows[0]['stamp_datetimeoffset'], testval)
 
     def test_decimal(self):
         # test rounding down
