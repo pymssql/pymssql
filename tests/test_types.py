@@ -196,7 +196,7 @@ class TestTypes(unittest.TestCase):
             pytest.skip("TIME field type isn't supported by SQL Server versions prior to 2008.")
         if self.conn.tds_version < 7.3:
             pytest.skip("TIME field type isn't supported by TDS protocol older than 7.3.")
-        testval = time(3, 4, 5, 3000)
+        testval = time(3, 4, 5, 4321)
         colval = self.insert_and_select('stamp_time', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
@@ -206,7 +206,7 @@ class TestTypes(unittest.TestCase):
             pytest.skip("DATETIME2 field type isn't supported by SQL Server versions prior to 2008.")
         if self.conn.tds_version < 7.3:
             pytest.skip("DATETIME2 field type isn't supported by TDS protocol older than 7.3.")
-        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
+        testval = datetime(2013, 1, 2, 3, 4, 5, 4321)
         colval = self.insert_and_select('stamp_datetime2', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)
