@@ -8,7 +8,6 @@ Complete documentation of ``pymssql`` module classes, methods and properties.
 
 Module-level symbols
 ====================
-
 .. data:: __version__
 
    pymssql version as an Unicode constant. E.g. ``u"2.1.1"``, ``u"2.2.0"``
@@ -253,7 +252,7 @@ make queries against the database and obtaining results. You create
 ``Cursor`` instances by calling :py:meth:`~Connection.cursor()` method on
 an open :py:class:`Connection` connection object.
 
-Cusor object properties
+Cursor object properties
 -----------------------
 
 .. attribute:: Cursor.rowcount
