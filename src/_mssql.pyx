@@ -1254,7 +1254,8 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        return _substitute_params(format, params, self.charset)
+        return _substitute_params(format, params, self.charset,
+            self.tds_version_tuple)
 
     def get_header(self):
         """
@@ -1831,7 +1832,7 @@ class MSSQLTimezone(datetime.tzinfo):
 #######################
 ## Quoting Functions ##
 #######################
-cdef _quote_simple_value(value, charset='utf8'):
+cdef _quote_simple_value(value, charset='utf8', tds_version_tuple=()):
 
     if value == None:
         return b'NULL'
@@ -1885,8 +1886,8 @@ cdef _quote_simple_value(value, charset='utf8'):
 
     return None
 
-cdef _quote_or_flatten(data, charset='utf8'):
-    result = _quote_simple_value(data, charset)
+cdef _quote_or_flatten(data, charset='utf8', tds_version_tuple=()):
+    result = _quote_simple_value(data, charset, tds_version_tuple)
 
     if result is not None:
         return result
@@ -1896,7 +1897,7 @@ cdef _quote_or_flatten(data, charset='utf8'):
 
     quoted = []
     for value in data:
-        value = _quote_simple_value(value, charset)
+        value = _quote_simple_value(value, charset, tds_version_tuple)
 
         if value is None:
             raise ValueError('found an unsupported type')
@@ -1907,8 +1908,9 @@ cdef _quote_or_flatten(data, charset='utf8'):
 # This function is supposed to take a simple value, tuple or dictionary,
 # normally passed in via the params argument in the execute_* methods. It
 # then quotes and flattens the arguments and returns then.
-cdef _quote_data(data, charset='utf8'):
-    result = _quote_simple_value(data)
+cdef _quote_data(data, charset='utf8', tds_version_tuple=()):
+    # XXX This looks broken - should charset be used here?
+    result = _quote_simple_value(data, 'utf8', tds_version_tuple)
 
     if result is not None:
         return result
@@ -1916,20 +1918,20 @@ cdef _quote_data(data, charset='utf8'):
     if issubclass(type(data), dict):
         result = {}
         for k, v in data.iteritems():
-            result[k] = _quote_or_flatten(v, charset)
+            result[k] = _quote_or_flatten(v, charset, tds_version_tuple)
         return result
 
     if issubclass(type(data), tuple):
         result = []
         for v in data:
-            result.append(_quote_or_flatten(v, charset))
+            result.append(_quote_or_flatten(v, charset, tds_version_tuple))
         return tuple(result)
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
 _re_pos_param = re.compile(br'(%([sd]))')
 _re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
-cdef _substitute_params(toformat, params, charset):
+cdef _substitute_params(toformat, params, charset, tds_version_tuple):
     if params is None:
         return toformat
 
@@ -1939,9 +1941,9 @@ cdef _substitute_params(toformat, params, charset):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
-        quoted = _quote_data(params, charset)
+        quoted = _quote_data(params, charset, tds_version_tuple)
     else:
-        quoted = _quote_data(params)
+        quoted = _quote_data(params, 'utf8', tds_version_tuple)
 
     # positional string substitution now requires a tuple
     if hasattr(quoted, 'startswith'):
@@ -2017,8 +2019,8 @@ def quote_or_flatten(data):
 def quote_data(data):
     return _quote_data(data)
 
-def substitute_params(toformat, params, charset='utf8'):
-    return _substitute_params(toformat, params, charset)
+def substitute_params(toformat, params, charset='utf8', tds_version_tuple=()):
+    return _substitute_params(toformat, params, charset, tds_version_tuple)
 
 ###########################
 ## Compatibility Aliases ##
