@@ -1,6 +1,8 @@
+import datetime
+
 from .helpers import eq_
 
-from _mssql import substitute_params
+from _mssql import substitute_params, MSSQLTimezone
 
 
 def test_single_param():
@@ -41,6 +43,30 @@ def test_unicode_params():
 
     res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, u'str'))
     eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'str'")
+
+
+def test_datetime_params():
+    res = substitute_params('SELECT %s', datetime.date(1800, 6, 30))
+    eq_(res, b"SELECT {d '1800-06-30'} ")
+
+    dt = datetime.datetime(1800, 6, 30, 12, 34, 56, 789123)
+    res = substitute_params('SELECT %s', dt)
+    eq_(res, b"SELECT {ts '1800-06-30 12:34:56.789'}")
+
+    res = substitute_params('SELECT %s', dt, tds_version_tuple=(7, 3))
+    eq_(res, b"SELECT CAST('1800-06-30 12:34:56.789123' AS DATETIME2)")
+
+    dt2 = dt.replace(tzinfo=MSSQLTimezone(datetime.timedelta(hours=1)))
+    res = substitute_params('SELECT %s', dt2)
+    eq_(res, b"SELECT {ts '1800-06-30 12:34:56.789'}")
+
+    res = substitute_params('SELECT %s', dt2, tds_version_tuple=(7, 3))
+    eq_(res, (b"SELECT CAST('1800-06-30 12:34:56.789123 +01:00'"
+              b" AS DATETIMEOFFSET)"))
+
+    t = datetime.time(12, 34, 56, 789123)
+    res = substitute_params('SELECT %s', t, tds_version_tuple=(7, 3))
+    eq_(res, b"SELECT CAST('12:34:56.789123' AS TIME)")
 
 
 def test_single_param_with_d():
