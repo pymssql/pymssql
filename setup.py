@@ -157,7 +157,7 @@ SYSTEM = platform.system()
 print("setup.py: platform.system() => %r" % SYSTEM)
 print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
 if SYSTEM == 'Linux':
-    print("setup.py: platform.linux_distribution() => %r" % (platform.linux_distribution(),))
+    print("setup.py: platform.platform() => %r" % (platform.platform(),))
 if SYSTEM != 'Windows':
     print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
 
