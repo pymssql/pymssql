@@ -3,10 +3,13 @@
 Recent Changes
 ==============
 
-Version 3.0.1 & 3.0.2 - 2019-11-15
+Version 3.0.3 - 2019-11-15
 ==================================
 
-Fix messages that say "pymssql<=3.0" should be just "<'.  Thanks Eric for reporting.
+Fix messages that say "pymssql<=3.0" should be just "<'.  Thanks Eric Moyer for reporting.
+
+Versions 3.0.1 & 3.0.2 were released for the same reason, but with various readme typos that pypi
+now requires a new version release to fix.
 
 Version 3.0 - 2019-11-15
 ==============================

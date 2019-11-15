@@ -451,7 +451,7 @@ https://github.com/pymssql/pymssql/issues/668
 
 setup(
     name  = 'pymssql',
-    version = '3.0.2',
+    version = '3.0.3',
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',
