@@ -443,7 +443,7 @@ class CustomInstallCommand(InstallCommand):
     def run(self):
         msg = '''
 The pymssql project has been discontinued.  To install the last working released version, use a
-version specifier like "pymssql<=3.0".  For details and alternatives see:
+version specifier like "pymssql<3.0".  For details and alternatives see:
 https://github.com/pymssql/pymssql/issues/668
 '''.strip()
         raise DeprecationWarning(msg)
@@ -451,7 +451,7 @@ https://github.com/pymssql/pymssql/issues/668
 
 setup(
     name  = 'pymssql',
-    version = '3.0',
+    version = '3.0.1',
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
     author = 'Damien Churchill',

@@ -4,7 +4,7 @@ The Pymssql Project is Being Discontinued
 ==========================================
 
 To install the last working released version, install with a version specifier like "pymmsql<=3.0".
-E.g. `pip install "pymssql<=3.0"`
+E.g. `pip install "pymssql<3.0"`
 
 Details and alternatives at: https://github.com/pymssql/pymssql/issues/668
 
