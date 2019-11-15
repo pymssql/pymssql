@@ -1,3 +1,7 @@
+The Pymssql Project is Being Discontinued
+==========================================
+
+Details at: https://github.com/pymssql/pymssql/issues/668
 
 pymssql - DB-API interface to Microsoft SQL Server
 ==================================================
