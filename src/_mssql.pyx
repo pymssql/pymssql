@@ -218,7 +218,7 @@ cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
 
-if PY_MAJOR_VERSION == '3':
+if PY_MAJOR_VERSION == 3:
     string_types = str,
 else:
     string_types = basestring,
