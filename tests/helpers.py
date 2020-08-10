@@ -483,7 +483,7 @@ def get_sql_server_version(mssql_connection):
     ver_code = int(result.split('.')[0])
     if ver_code >= 12:
         major_version = 2014
-    if ver_code == 11:
+    elif ver_code == 11:
         major_version = 2012
     elif ver_code == 10:
         major_version = 2008
