@@ -151,9 +151,6 @@ SQLDATETIME2 = 42
 #######################
 ## Exception classes ##
 #######################
-cdef extern from "pyerrors.h":
-    ctypedef class __builtin__.Exception [object PyBaseExceptionObject]:
-        pass
 
 cdef class MSSQLException(Exception):
     """
