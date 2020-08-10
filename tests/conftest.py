@@ -26,7 +26,7 @@ from .helpers import cfgpath, clear_db, get_app_lock, release_app_lock
 _parser = ConfigParser({
     'server': 'localhost',
     'username': 'sa',
-    'password': '',
+    'password': 'sqlServerPassw0rd',
     'database': 'tempdb',
     'port': '1433',
     'ipaddress': '127.0.0.1',
