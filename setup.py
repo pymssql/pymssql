@@ -403,7 +403,7 @@ def ext_modules():
     else:
         source_extension = 'pyx'
 
-    return [
+    ext_modules = [
         Extension('_mssql', [osp.join('src', '_mssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
@@ -415,6 +415,9 @@ def ext_modules():
             library_dirs = library_dirs
         ),
     ]
+    for e in ext_modules:
+        e.cython_directives = {'language_level': sys.version_info[0]}
+    return ext_modules
 
 
 class PyTest(TestCommand):
