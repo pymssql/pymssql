@@ -37,40 +37,40 @@ class TestCons(unittest.TestCase):
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
-        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
         self.assertIn(server, dump_server_name)
-        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        dump_server_host_name = re.search('server_host_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_server_host_name, server)
-        dump_user_name = re.search('user_name = (\S+)', cdump).groups()[0]
+        dump_user_name = re.search('user_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_user_name, username)
-        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        dump_port = re.search('port = (\\S+)', cdump).groups()[0]
         self.assertIn(port, dump_port)
 
     def test_connection_by_ip(self):
         cdump = self.connect(server=ipaddress, port=port, user=username, password=password)
-        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
         self.assertIn(ipaddress, dump_server_name)
-        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        dump_server_host_name = re.search('server_host_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_server_host_name, ipaddress)
 
     def test_port_override_ipaddress(self):
         server_join = '%s:%s' % (ipaddress, port)
         cdump = self.connect(server=server_join, user=username, password=password)
-        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
         self.assertIn(server_join, dump_server_name)
-        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        dump_server_host_name = re.search('server_host_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_server_host_name, ipaddress)
-        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        dump_port = re.search('port = (\\S+)', cdump).groups()[0]
         self.assertIn(port, dump_port)
 
     def test_port_override_name(self):
         server_join = '%s:%s' % (server, port)
         cdump = self.connect(server=server_join, user=username, password=password)
-        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
         self.assertIn(server, dump_server_name)
-        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        dump_server_host_name = re.search('server_host_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_server_host_name, server)
-        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        dump_port = re.search('port = (\\S+)', cdump).groups()[0]
         self.assertIn(port, dump_port)
 
     def test_instance(self):
@@ -78,11 +78,11 @@ class TestCons(unittest.TestCase):
             skip_test()
         server_join = r'%s\%s' % (server, instance)
         cdump = self.connect(server=server_join, user=username, password=password)
-        dump_server_name = re.search('server_name = (\S+)', cdump).groups()[0]
+        dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
         self.assertIn(server, dump_server_name)
-        dump_server_host_name = re.search('server_host_name = (\S+)', cdump).groups()[0]
+        dump_server_host_name = re.search('server_host_name = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_server_host_name, server)
-        dump_port = re.search('port = (\S+)', cdump).groups()[0]
+        dump_port = re.search('port = (\\S+)', cdump).groups()[0]
         self.assertEqual(dump_port, 0)
 
     def test_repeated_failed_connections(self):
