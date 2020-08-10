@@ -20,5 +20,5 @@ class TestUnicode(unittest.TestCase):
 
         a, b = cursor.fetchone()
 
-        self.assertEquals(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439')
-        self.assertEquals(b, u'\u041c\u0438\u0440')
+        self.assertEqual(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439')
+        self.assertEqual(b, u'\u041c\u0438\u0440')

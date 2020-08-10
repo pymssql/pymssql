@@ -89,7 +89,7 @@ class QueryTests(unittest.TestCase):
         query = 'SELECT * FROM pymssql'
         self.mssql.execute_query(query)
         rows = tuple(self.mssql)
-        self.assertEquals(rows, ())
+        self.assertEqual(rows, ())
 
     def test03InsertSelect(self):
         self.insertSampleData()
@@ -97,24 +97,24 @@ class QueryTests(unittest.TestCase):
 
         # check row count
         rows = tuple(self.mssql)
-        self.assertEquals(10, len(rows))
+        self.assertEqual(10, len(rows))
 
         # check col count
         cols = [k for k in rows[0] if type(k) is int]
-        self.assertEquals(self.testTableColCount, len(cols))
+        self.assertEqual(self.testTableColCount, len(cols))
 
     def test19MultipleResults(self):
         self.mssql.execute_query("SELECT 'ret1'; SELECT 'ret2'; SELECT 'ret3'")
         rows = tuple(self.mssql)
-        self.assertEquals(rows[0][0], 'ret1')
+        self.assertEqual(rows[0][0], 'ret1')
         self.mssql.nextresult()
 
         rows = tuple(self.mssql)
-        self.assertEquals(rows[0][0], 'ret2')
+        self.assertEqual(rows[0][0], 'ret2')
         self.mssql.nextresult()
 
         rows = tuple(self.mssql)
-        self.assertEquals(rows[0][0], 'ret3')
+        self.assertEqual(rows[0][0], 'ret3')
 
     def test04BinaryTypeSqlInjection(self):
         self.mssql.execute_query('SELECT * FROM pymssql WHERE bin_data=%s', ('0x OR 1=1;',))

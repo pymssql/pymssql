@@ -37,6 +37,6 @@ class TestMSSQLConnectionWithDebugQueries(unittest.TestCase):
 
         with redirect_stderr() as stderr:
             row = self.conn.execute_row(sql)
-            self.assertEquals(row, expected_row)
+            self.assertEqual(row, expected_row)
 
         self.assertEqual(stderr.getvalue(), "#%s#\n" % sql)
