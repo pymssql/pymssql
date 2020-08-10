@@ -288,7 +288,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             mssql_lastmsgstr, dberr, severity, dberrstr)
 
     strncpy(mssql_lastmsgstr, mssql_message, PYMSSQL_MSGSIZE)
-    mssql_lastmsgstr[ PYMSSQL_MSGSIZE - 1 ] = '\0'
+    mssql_lastmsgstr[ PYMSSQL_MSGSIZE - 1 ] = b'\0'
 
     return INT_CANCEL
 
@@ -1006,7 +1006,7 @@ cdef class MSSQLConnection:
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
             strncpy(strValue, tmp, len(value) + 1)
-            strValue[ len(value) ] = '\0';
+            strValue[ len(value) ] = b'\0';
             dbValue[0] = <BYTE *>strValue
             return 0
 
@@ -1305,7 +1305,7 @@ cdef class MSSQLConnection:
             self.num_columns = dbnumcols(self.dbproc)
 
             snprintf(log_message, sizeof(log_message), "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
-            log_message[ sizeof(log_message) - 1 ] = '\0'
+            log_message[ sizeof(log_message) - 1 ] = b'\0'
             log(log_message)
 
             column_names = list()
@@ -1724,11 +1724,11 @@ cdef char *_remove_locale(char *s, size_t buflen):
     cdef int i, x = 0, last_sep = -1
 
     for i, c in enumerate(s[0:buflen]):
-        if c in (',', '.'):
+        if c in (b',', b'.'):
             last_sep = i
 
     for i, c in enumerate(s[0:buflen]):
-        if (c >= '0' and c <= '9') or c in ('+', '-'):
+        if (c >= b'0' and c <= b'9') or c in (b'+', b'-'):
             stripped[x] = c
             x += 1
         elif i == last_sep:
