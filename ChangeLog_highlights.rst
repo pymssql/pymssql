@@ -1,25 +1,5 @@
-.. default-role:: code
-
 Recent Changes
 ==============
-
-Version 3.0.3 - 2019-11-15
-==================================
-
-Fix messages that say "pymssql<=3.0" should be just "<'.  Thanks Eric Moyer for reporting.
-
-Versions 3.0.1 & 3.0.2 were released for the same reason, but with various readme typos that pypi
-now requires a new version release to fix.
-
-Version 3.0 - 2019-11-15
-==============================
-
-Release "stub" version that errors during install to notify of project's discontinuation.
-
-To install the last working released version, install with a version specifier like "pymmsql<3.0".
-E.g. `pip install "pymssql<3.0"`
-
-For details and alternatives, see: https://github.com/pymssql/pymssql/issues/668
 
 Version 2.1.4 - 2018-08-28
 ==============================
