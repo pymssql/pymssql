@@ -521,7 +521,9 @@ cdef class MSSQLConnection:
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
-            if version == 11:
+            if version == 12:
+                return 7.4
+            elif version == 11:
                 return 7.3
             elif version == 10:
                 return 7.2
@@ -543,7 +545,9 @@ cdef class MSSQLConnection:
         """
         def __get__(self):
             cdef int version = dbtds(self.dbproc)
-            if version == 11:
+            if version == 12:
+                return (7, 4)
+            elif version == 11:
                 return (7, 3)
             elif version == 10:
                 return (7, 2)
@@ -1458,9 +1462,10 @@ cdef class MSSQLStoredProcedure:
 
         # We firstly want to check if tdsver is >= 7 as anything less
         # doesn't support remote procedure calls.
+        cdef int version = dbtds(connection.dbproc)
         if connection.tds_version < 7:
             raise MSSQLDriverException("Stored Procedures aren't "
-                "supported with a TDS version less than 7.")
+                "supported with a TDS version less than 7. Got %r (%r)" % (connection.tds_version, version))
 
         self.conn = connection
         self.dbproc = connection.dbproc
