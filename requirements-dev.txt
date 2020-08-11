@@ -3,3 +3,4 @@ gevent
 pytest
 setuptools
 sqlalchemy
+wheel
