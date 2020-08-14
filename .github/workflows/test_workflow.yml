@@ -20,7 +20,7 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2017-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: sqlServerPassw0rd
+          SA_PASSWORD: ${{secrets.PYMSSQL_TEST_PASSWORD}}
         ports:
           - 1433:1433
 
@@ -40,6 +40,8 @@ jobs:
         python setup.py build install
         # stop the build if there are Python syntax errors or undefined names
     - name: Test with pytest
+      env:
+          PYMSSQL_TEST_PASSWORD: ${{secrets.PYMSSQL_TEST_PASSWORD}}
       run: |
         pytest
     - name: build wheel
