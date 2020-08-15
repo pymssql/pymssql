@@ -1,0 +1,37 @@
+name: Build Macos
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+            python-version: [2, 3.6, 3.7, 3.8]
+            os: [macos-latest]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+            python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+            brew install freetds
+            python -m pip install --upgrade pip
+            pip install -r requirements-dev.txt
+
+    - name: build & install
+      run: python setup.py build install
+
+    - name: build wheel
+      run: python setup.py bdist_wheel
