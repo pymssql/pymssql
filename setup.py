@@ -287,13 +287,14 @@ class build_ext(_build_ext):
                     if LINK_OPENSSL:
                         libraries.extend(['libeay32MD', 'ssleay32MD'])
 
-            FREETDS = fpath('freetds', '{0}_{1}'.format(freetds_dir, BITNESS))
+            FREETDS = 'freetds'
             suffix = '' if BITNESS == 32 else '64'
             OPENSSL = fpath('openssl', 'lib{}'.format(suffix))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 e.include_dirs.append(osp.join(FREETDS, 'include'))
+                e.library_dirs.append(osp.join(FREETDS, 'lib'))
                 e.include_dirs.append(osp.join(ROOT, 'build', 'include'))
                 e.library_dirs.append(osp.join(ROOT, 'build', 'lib'))
                 if LINK_OPENSSL:
