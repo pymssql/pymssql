@@ -31,6 +31,7 @@ _parser = ConfigParser({
     'port': '1433',
     'ipaddress': '127.0.0.1',
     'instance': '',
+    'tds_version': '',
 })
 
 def pytest_addoption(parser):
@@ -55,6 +56,7 @@ def pytest_configure(config):
     th.config.port = os.getenv('PYMSSQL_TEST_PORT') or _parser.get(section, 'port')
     th.config.ipaddress = os.getenv('PYMSSQL_TEST_IPADDRESS') or _parser.get(section, 'ipaddress')
     th.config.instance = os.getenv('PYMSSQL_TEST_INSTANCE') or _parser.get(section, 'instance')
+    th.config.tds_version = os.getenv('PYMSSQL_TEST_TDS_VERSION') or _parser.get(section, 'tds_version') or None
     th.config.orig_decimal_prec = decimal.getcontext().prec
     th.mark_slow = pytest.mark.slow
     th.skip_test = pytest.skip

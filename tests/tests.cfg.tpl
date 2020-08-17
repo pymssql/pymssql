@@ -12,6 +12,7 @@ password = YourStrong!Passw0rd
 database = tempdb
 port = 1433
 ipaddress = 10.5.0.5
+tds_version = 7.1
 # Instance isn't working with docker even though select @@servicename returns MSSQLSERVER
 # instance = MSSQLSERVER
 
@@ -24,3 +25,4 @@ password = somepass
 database = testdb
 port = 1435
 instance = testinst
+tds_version = 7.3

@@ -5,7 +5,7 @@ import time
 import pytest
 
 def eq_(a, b):
-    assert a == b
+    assert a == b, '%r != %r' % (a, b)
 
 def skip_test(reason='No reason given to skip_test'):
     pytest.skip(reason)
@@ -35,6 +35,7 @@ def mssqlconn(conn_properties=None):
         password=config.password,
         database=config.database,
         port=config.port,
+        tds_version=config.tds_version,
         conn_properties=conn_properties
     )
 
@@ -46,6 +47,7 @@ def pymssqlconn(**kwargs):
         password=config.password,
         database=config.database,
         port=config.port,
+        tds_version=config.tds_version,
         **kwargs
     )
 

@@ -147,6 +147,7 @@ SQLUUID = 36
 SQLDATE = 40
 SQLTIME = 41
 SQLDATETIME2 = 42
+SQLDATETIMEOFFSET = 43
 
 #######################
 ## Exception classes ##
@@ -574,6 +575,7 @@ cdef class MSSQLConnection:
         self.last_msg_proc[0] = <char>0
         self.column_names = None
         self.column_types = None
+        self.timezones = {}
 
     def __init__(self, server="localhost", user=None, password=None,
             charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
@@ -806,6 +808,7 @@ cdef class MSSQLConnection:
         cdef long prevPrecision
         cdef BYTE precision
         cdef DBDATEREC di
+        cdef DBDATEREC2 di2
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
@@ -849,12 +852,28 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype in (SQLDATETIM4, SQLDATETIME2):
+        elif dbtype == SQLDATETIM4:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
                 <BYTE *>&dt, -1)
             dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.millisecond * 1000)
+
+        elif dbtype == SQLDATETIME2:
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
+                di2.minute, di2.second, (di2.nanosecond + 500) // 1000)
+
+        elif dbtype == SQLDATETIMEOFFSET:
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            # Memoize timezone objects.
+            try:
+                tz = self.timezones[di2.tzone]
+            except KeyError:
+                tz = MSSQLTimezone(datetime.timedelta(minutes=di2.tzone))
+                self.timezones[di2.tzone] = tz
+            return datetime.datetime(di2.year, di2.month, di2.day, di2.hour,
+                di2.minute, di2.second, (di2.nanosecond + 500) // 1000, tz)
 
         elif dbtype == SQLDATE:
             dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
@@ -863,10 +882,9 @@ cdef class MSSQLConnection:
             return datetime.date(di.year, di.month, di.day)
 
         elif dbtype == SQLTIME:
-            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
-                <BYTE *>&dt, -1)
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
-            return datetime.time(di.hour, di.minute, di.second, di.millisecond * 1000)
+            dbanydatecrack(self.dbproc, &di2, dbtype, data);
+            return datetime.time(di2.hour, di2.minute, di2.second,
+                (di2.nanosecond + 500) // 1000)
 
         elif dbtype == SQLDATETIME:
             dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
@@ -1237,7 +1255,8 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        return _substitute_params(format, params, self.charset)
+        return _substitute_params(format, params, self.charset,
+            self.tds_version_tuple)
 
     def get_header(self):
         """
@@ -1765,10 +1784,57 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
         return DBVERSION_71
     raise MSSQLException('unrecognized tds version: %s' % verstr)
 
+#####################
+## Time zone class ##
+#####################
+class MSSQLTimezone(datetime.tzinfo):
+    def __init__(self, offset):
+        if not isinstance(offset, datetime.timedelta):
+            raise TypeError('offset must be a timedelta')
+        (delta_minutes, delta_seconds) = divmod(offset.total_seconds(), 60)
+        if delta_seconds != 0:
+            raise ValueError('offset must be an integral number of minutes')
+        self._offset = offset
+        (h, m) = divmod(abs(delta_minutes), 60)
+        if delta_minutes < 0:
+            self._name = 'UTC-%02d:%02d' % (h, m)
+        else:
+            self._name = 'UTC+%02d:%02d' % (h, m)
+
+    def utcoffset(self, dt):
+        return self._offset
+
+    def fromutc(self, dt):
+        if dt.tzinfo is not self:
+            raise ValueError('dt.tzinfo must equal self')
+        return dt + self._offset
+
+    def dst(self, dt):
+        return None
+
+    def tzname(self, dt):
+        return self._name
+
+    def __repr__(self):
+        return "%s(%r)" % (type(self).__name__, self._offset)
+
+    def __eq__(self, other):
+        return (isinstance(other, MSSQLTimezone)
+                and other._offset == self._offset)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self._offset)
+
+    def __reduce__(self):
+        return (type(self), (self._offset,))
+
 #######################
 ## Quoting Functions ##
 #######################
-cdef _quote_simple_value(value, charset='utf8'):
+cdef _quote_simple_value(value, charset='utf8', tds_version_tuple=()):
 
     if value == None:
         return b'NULL'
@@ -1811,10 +1877,40 @@ cdef _quote_simple_value(value, charset='utf8'):
             return '0x' + value.encode('hex')
 
     if isinstance(value, datetime.datetime):
-        return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
-            value.year, value.month, value.day,
-            value.hour, value.minute, value.second,
-            value.microsecond / 1000)
+        if tds_version_tuple >= (7, 3):
+            # If using TDS 7.3 or later, then the server supports
+            # DATETIME2 and DATETIMEOFFSET types.  Use these types to
+            # preserve microsecond precision of the input value.
+
+            # Although it would be tempting to use strftime here, note
+            # that strftime in Python 2.7 chokes on years prior to
+            # 1900.
+            tstr = "%04d-%02d-%02d %02d:%02d:%02d.%06d" % (
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond)
+            offset = value.utcoffset()
+            if offset is not None:
+                m = offset.total_seconds() / 60
+                if m < 0:
+                    tstr += ' -%02d:%02d' % divmod(-m, 60)
+                else:
+                    tstr += ' +%02d:%02d' % divmod(m, 60)
+                return "CAST('" + tstr + "' AS DATETIMEOFFSET)"
+            else:
+                return "CAST('" + tstr + "' AS DATETIME2)"
+        else:
+            # If using TDS 7.2 or earlier, use ODBC datetime format
+            # for compatibility.  Note that this loses precision
+            # twice: it is truncated to millisecond precision, then on
+            # the server side it is rounded to the nearest 1/300s.
+            return "{ts '%04d-%02d-%02d %02d:%02d:%02d.%03d'}" % (
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond / 1000)
+
+    if isinstance(value, datetime.time):
+        return value.strftime("CAST('%H:%M:%S.%f' AS TIME)")
 
     if isinstance(value, datetime.date):
         return "{d '%04d-%02d-%02d'} " % (
@@ -1822,8 +1918,8 @@ cdef _quote_simple_value(value, charset='utf8'):
 
     return None
 
-cdef _quote_or_flatten(data, charset='utf8'):
-    result = _quote_simple_value(data, charset)
+cdef _quote_or_flatten(data, charset='utf8', tds_version_tuple=()):
+    result = _quote_simple_value(data, charset, tds_version_tuple)
 
     if result is not None:
         return result
@@ -1833,7 +1929,7 @@ cdef _quote_or_flatten(data, charset='utf8'):
 
     quoted = []
     for value in data:
-        value = _quote_simple_value(value, charset)
+        value = _quote_simple_value(value, charset, tds_version_tuple)
 
         if value is None:
             raise ValueError('found an unsupported type')
@@ -1844,8 +1940,9 @@ cdef _quote_or_flatten(data, charset='utf8'):
 # This function is supposed to take a simple value, tuple or dictionary,
 # normally passed in via the params argument in the execute_* methods. It
 # then quotes and flattens the arguments and returns then.
-cdef _quote_data(data, charset='utf8'):
-    result = _quote_simple_value(data)
+cdef _quote_data(data, charset='utf8', tds_version_tuple=()):
+    # XXX This looks broken - should charset be used here?
+    result = _quote_simple_value(data, 'utf8', tds_version_tuple)
 
     if result is not None:
         return result
@@ -1853,32 +1950,33 @@ cdef _quote_data(data, charset='utf8'):
     if issubclass(type(data), dict):
         result = {}
         for k, v in data.iteritems():
-            result[k] = _quote_or_flatten(v, charset)
+            result[k] = _quote_or_flatten(v, charset, tds_version_tuple)
         return result
 
     if issubclass(type(data), tuple):
         result = []
         for v in data:
-            result.append(_quote_or_flatten(v, charset))
+            result.append(_quote_or_flatten(v, charset, tds_version_tuple))
         return tuple(result)
 
     raise ValueError('expected a simple type, a tuple or a dictionary.')
 
 _re_pos_param = re.compile(br'(%([sd]))')
 _re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
-cdef _substitute_params(toformat, params, charset):
+cdef _substitute_params(toformat, params, charset, tds_version_tuple):
     if params is None:
         return toformat
 
     if not issubclass(type(params),
             (bool, int, long, float, unicode, str, bytes, bytearray, dict, tuple,
-             datetime.datetime, datetime.date, dict, decimal.Decimal, uuid.UUID)):
+             datetime.datetime, datetime.date, datetime.time,
+             decimal.Decimal, uuid.UUID)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
-        quoted = _quote_data(params, charset)
+        quoted = _quote_data(params, charset, tds_version_tuple)
     else:
-        quoted = _quote_data(params)
+        quoted = _quote_data(params, 'utf8', tds_version_tuple)
 
     # positional string substitution now requires a tuple
     if hasattr(quoted, 'startswith'):
@@ -1954,8 +2052,8 @@ def quote_or_flatten(data):
 def quote_data(data):
     return _quote_data(data)
 
-def substitute_params(toformat, params, charset='utf8'):
-    return _substitute_params(toformat, params, charset)
+def substitute_params(toformat, params, charset='utf8', tds_version_tuple=()):
+    return _substitute_params(toformat, params, charset, tds_version_tuple)
 
 ###########################
 ## Compatibility Aliases ##

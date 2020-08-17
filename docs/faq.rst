@@ -258,15 +258,29 @@ and ``TIME`` columns as simple strings. For example::
       u'datetime': datetime.datetime(2014, 1, 9, 12, 41, 59, 403000)}]
     >>> cursor.execute("DROP TABLE dates_and_times")
 
+Additionally, when a :class:`python:datetime.datetime` instance is used as a
+query parameter, it is converted into a ``DATETIME`` value, which can cause
+surprising results due to loss of precision::
+
+    >>> cursor.execute("CREATE TABLE dt2 (t DATETIME2)")
+    >>> cursor.execute("INSERT INTO dt2 VALUES (%s)",
+    ...                datetime.datetime(2001, 1, 1, 12, 34, 56, 6000))
+    >>> cursor.execute("SELECT * FROM dt2 WHERE t >= %s",
+    ...                datetime.datetime(2001, 1, 1, 12, 34, 56, 8000))
+    >>> cursor.fetchall()
+    [{u't': u'2001-01-01 12:34:56.0066667'}]
+    >>> cursor.execute("DROP TABLE dt2")
+
 Yep, so the problem here is that ``DATETIME`` has been supported by `FreeTDS
-<http://www.freetds.org/>`_ for a long time, but ``DATE`` and ``TIME`` are
-newer types in SQL Server, Microsoft never added support for them to db-lib
-and FreeTDS added support for them in version 0.95.
+<http://www.freetds.org/>`_ for a long time, but ``DATE``, ``TIME``,
+``DATETIME2``, and ``DATETIMEOFFSET`` are newer types in SQL Server, Microsoft
+never added support for them to db-lib and FreeTDS added support for them in
+version 0.95.
 
 If you need support for these data types (i.e. they get returned from the
-database as their native corresponding Python data types instead of as strings)
-as well as for the ``DATETIME2`` one, then make sure the following conditions
-are met:
+database as their native corresponding Python data types instead of as strings,
+and Python values are converted to ``DATETIME2`` or ``DATETIMEOFFSET`` instead
+of ``DATETIME``), then make sure the following conditions are met:
 
 * You are connecting to SQL Server 2008 or newer.
 * You are using FreeTDS 0.95 or newer.
