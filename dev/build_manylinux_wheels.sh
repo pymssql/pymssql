@@ -52,7 +52,9 @@ popd
 
 
 #Make wheelhouse directory if it doesn't exist yet
-mkdir wheelhouse
+if [ ! -d wheelhouse ]; then
+    mkdir wheelhouse
+fi
 
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
