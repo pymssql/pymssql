@@ -31,9 +31,6 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
-# Remove freetds package distributed with the repo if present.
-rm -rf /io/freetds0.95
-
 # Install freetds and use in build. Yum channel shows version 0.91. Retrieving latest stable release for builds.
 export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1
 
