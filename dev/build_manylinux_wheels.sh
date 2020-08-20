@@ -64,8 +64,12 @@ for PYBIN in /opt/python/*/bin; do
 done
 
 # Verify the wheels and move from *-linux_* to -manylinux_*
-for whl in wheelhouse/*.whl; do
-   auditwheel repair "$whl" -w wheelhouse/
+for wheel in ./wheelhouse/*.whl; do
+    if ! auditwheel show "$wheel"; then
+        echo "Skipping non-platform wheel $wheel"
+    else
+        auditwheel repair "$wheel" -w ./wheelhouse/
+    fi
 done
 
 # Remove non manylinux wheels
