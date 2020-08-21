@@ -74,7 +74,7 @@ jobs:
         DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
       run: |
         docker pull $DOCKER_IMAGE
-        docker run --rm -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
+        docker run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
 
     - name: copy wheels
       run: |
