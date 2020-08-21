@@ -58,8 +58,7 @@ fi
 
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
-    "${PYBIN}/pip" install --upgrade pip setuptools
-    "${PYBIN}/pip" install pytest SQLAlchemy Sphinx sphinx-rtd-theme Cython wheel
+    "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
     "${PYBIN}/pip" wheel . -w wheelhouse/
 done
 
@@ -84,6 +83,7 @@ mv wheelhouse/* dist/
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install pymssql --no-index -f dist
+    "${PYBIN}/pip" install pytest SQLAlchemy
     "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
     "${PYBIN}/pytest" .
 done
