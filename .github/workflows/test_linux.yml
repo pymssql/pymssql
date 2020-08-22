@@ -74,12 +74,18 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - name: BUILD wheels
+    - name: Build and test wheels
       env:
         DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
       run: |
         docker pull $DOCKER_IMAGE
         docker run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
+
+    - name: Archive wheels and sdist
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: dist
 
     - name: copy wheels
       run: |
