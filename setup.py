@@ -35,22 +35,7 @@ try:
 except ImportError:
     pass
 
-sys.path.append(osp.join(osp.dirname(__file__), '.pyrex'))
-
 from setuptools import setup, Extension
-
-# Work around Setuptools' broken (Cython-unaware) monkeypatching
-# to support Pyrex. This monkeypatching makes the Cython step get skipped if
-# using setuptools (not distribute) and Pyrex is not installed.
-# (from https://github.com/sampsyo/pylastfp/blob/master/setup.py)
-# http://code.google.com/p/pymssql/issues/detail?id=14
-try:
-    import setuptools.dist
-except ImportError:
-    pass
-else:
-    Extension.__init__ = setuptools.dist._get_unpatched(setuptools.extension.Extension).__init__
-
 from setuptools.command.test import test as TestCommand
 
 LINK_FREETDS_STATICALLY = True
