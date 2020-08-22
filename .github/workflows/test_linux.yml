@@ -3,8 +3,14 @@ name: Linux
 on:
   push:
     #branches: [ master ]
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
   pull_request:
     #branches: [ master ]
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
 
 jobs:
 
@@ -43,7 +49,6 @@ jobs:
     - name: build & install
       run: |
         python setup.py build install
-        # stop the build if there are Python syntax errors or undefined names
 
     - name: Test with pytest
       run: |
