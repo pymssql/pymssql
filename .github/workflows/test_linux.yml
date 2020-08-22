@@ -2,12 +2,17 @@ name: Linux
 
 on:
   push:
-    #branches: [ master ]
+    branches:
+        - '**'
     paths-ignore:
         - docs/**
         - ChangeLog*
+    tags:
+        - 'v[0-9]+.[0-9]+.[0-9]+'
+        - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
   pull_request:
-    #branches: [ master ]
+    branches:
+        - '**'
     paths-ignore:
         - docs/**
         - ChangeLog*
@@ -74,19 +79,26 @@ jobs:
 
     - uses: actions/checkout@v2
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+
     - name: Build and test wheels
       env:
         DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
       run: |
         docker pull $DOCKER_IMAGE
         docker run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
+        ls -la dist
 
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
-        name: wheels
+        name: pymssql-wheels-manylinux1_${{ matrix.arch }}-${{ github.sha }}
         path: dist
 
-    - name: copy wheels
+    - name: Publish wheels
+      if: startsWith(github.ref, 'refs/tags/v')
       run: |
-        ls -la dist
+        pip install twine --upgrade
+        #twine upload --skip-existing -u __token__ -p ${{secrets.PYPI_TOKEN_PYMSSQL}} dist/*
+        twine upload --skip-existing -u __token__ -p ${{secrets.TEST_PYPI_TOKEN_PYMSSQL}} --repository-url=https://test.pypi.org/legacy/ dist/*
