@@ -93,7 +93,7 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
-        name: pymssql-wheels-manylinux1_${{ matrix.arch }}-${{ github.sha }}
+        name: pymssql-${{ runner.os }}-manylinux1_${{ matrix.arch }}-${{ github.sha }}
         path: dist
 
     - name: Publish wheels
