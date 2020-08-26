@@ -14,6 +14,7 @@ jobs:
       matrix:
             python-version: [2, 3.5, 3.6, 3.7, 3.8]
             os: [windows-latest]
+            architecture: [x86, x64]
 
     steps:
 
@@ -37,6 +38,6 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
-        name: pymssql-${{ runner.os }}-${{ github.sha }}
+        name: pymssql-${{ runner.os }}-${{ matrix.arch }}-${{ github.sha }}
         path: dist
 
