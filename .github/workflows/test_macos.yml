@@ -27,11 +27,16 @@ jobs:
     - name: Install dependencies
       run: |
             brew install freetds
-            python -m pip install --upgrade pip
+            pip install --upgrade pip
             pip install -r requirements-dev.txt
 
-    - name: build & install
-      run: python setup.py build install
+    - name: build wheel and sdist
+      run: |
+            pip wheel . -w dist
+            python setup.py sdist
 
-    - name: build wheel
-      run: python setup.py bdist_wheel
+    - name: Archive wheels and sdist
+      uses: actions/upload-artifact@v2
+      with:
+        name: pymssql-${{ runner.os }}-${{ github.sha }}
+        path: dist
