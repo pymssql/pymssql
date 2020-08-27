@@ -2,9 +2,20 @@ name: macOS
 
 on:
   push:
-    branches: [ master ]
+    branches:
+        - '**'
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
+    tags:
+        - 'v[0-9]+.[0-9]+.[0-9]+'
+        - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
   pull_request:
-    branches: [ master ]
+    branches:
+        - '**'
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
 
 jobs:
   build:
@@ -40,3 +51,10 @@ jobs:
       with:
         name: pymssql-${{ runner.os }}-${{ github.sha }}
         path: dist
+
+    - name: Publish wheels
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        pip install twine --upgrade
+        #twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
+        twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_TEST_PYPI_TOKEN}} --repository-url=https://test.pypi.org/legacy/ dist/*
