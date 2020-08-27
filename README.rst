@@ -5,8 +5,8 @@ pymssql - DB-API interface to Microsoft SQL Server
 .. image:: https://github.com/pymssql/pymssql/workflows/Linux/badge.svg
         :target: https://github.com/pymssql/pymssql/actions?query=workflow%3A%22Linux%22
 
-.. image:: https://github.com/pymssql/pymssql/workflows/MACOS%20build/badge.svg
-        :target: https://github.com/pymssql/pymssql/actions?query=workflow%3A%22MACOS+build%22
+.. image:: https://github.com/pymssql/pymssql/workflows/macOS/badge.svg
+        :target: https://github.com/pymssql/pymssql/actions?query=workflow%3A%22macOS%22
 
 .. image:: https://github.com/pymssql/pymssql/workflows/Windows/badge.svg
         :target: https://github.com/pymssql/pymssql/actions?query=workflow%3A%22Windows%22
