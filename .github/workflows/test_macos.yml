@@ -39,7 +39,7 @@ jobs:
       run: |
             brew install freetds
             pip install --upgrade pip
-            pip install -r requirements-dev.txt
+            pip install -r dev/requirements-dev.txt
 
     - name: build wheel and sdist
       run: |
