@@ -405,7 +405,7 @@ cdef int db_sqlok(DBPROCESS *dbproc):
     return rtc
 
 cdef void clr_err(MSSQLConnection conn):
-    if conn != None:
+    if conn != None and conn in connection_object_list:
         conn.last_msg_no = 0
         conn.last_msg_severity = 0
         conn.last_msg_state = 0
@@ -787,17 +787,29 @@ cdef class MSSQLConnection:
         with nogil:
             dbclose(self.dbproc)
 
-        self.mark_disconnected()
+        self._real_close()
 
-    def mark_disconnected(self):
-        log("_mssql.MSSQLConnection.mark_disconnected()")
-        self.dbproc = NULL
+    def _real_close(self):
+        """
+        Free resources used by this object.
+        """
+        log("_mssql.MSSQLConnection.real_close()")
+        if self in connection_object_list:
+            connection_object_list.remove(self)
         self._connected = 0
+        self.dbproc = NULL
         PyMem_Free(self.last_msg_proc)
         PyMem_Free(self.last_msg_srv)
         PyMem_Free(self.last_msg_str)
         PyMem_Free(self._charset)
-        connection_object_list.remove(self)
+
+    def mark_disconnected(self):
+        """
+        Mark connection disconnected.
+        Disconnected connections are "collected" at next interaction via "cancel" function.
+        """
+        log("_mssql.MSSQLConnection.mark_disconnected()")
+        self._connected = 0
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")
