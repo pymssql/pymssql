@@ -17,7 +17,10 @@ General
 
 - Use Github Actions for building wheels for Linux, macOS and Windows.
 
-- Do not use bundled FreeTDS-0.95 binaries.
+- Drop bundled FreeTDS-0.95 binaries.
+
+- Unless some critical bug is discovered, this will be the last release with Python2
+  support.
 
 
 Version 2.1.4 - 2018-08-28 - Alex Hagerman
