@@ -1,8 +1,27 @@
 Recent Changes
 ==============
 
-Version 2.1.4 - 2018-08-28
-==============================
+Version 2.1.5 - 2020-09-17 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Revert deprecation
+
+- Support Python-3.8. Update tests for Python-3.8 compatibility.
+
+- Use correct language level for building Cython extension.
+
+- Fix FreeTDS version checks. Add check for version 7.4.
+
+- Use Github Actions for building wheels for Linux, macOS and Windows.
+
+- Do not use bundled FreeTDS-0.95 binaries.
+
+
+Version 2.1.4 - 2018-08-28 - Alex Hagerman
+==========================================
 
 General
 -------
