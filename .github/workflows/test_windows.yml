@@ -27,7 +27,7 @@ jobs:
       matrix:
             python-version: [2, 3.5, 3.6, 3.7, 3.8]
             os: [windows-latest]
-            architecture: [x86, x64]
+            python-architecture: [x86, x64]
 
     steps:
 
@@ -37,6 +37,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
             python-version: ${{ matrix.python-version }}
+            architecture: ${{ matrix.python-architecture}}
 
     - name: Install vcpython27
       if: matrix.python-version == 2
@@ -51,7 +52,7 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
-        name: pymssql-${{ runner.os }}-${{ matrix.arch }}-${{ github.sha }}
+        name: pymssql-${{ runner.os }}-${{ matrix.python-architecture }}-${{ github.sha }}
         path: dist
 
     - name: Publish wheels
