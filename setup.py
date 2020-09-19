@@ -459,7 +459,7 @@ setup(
       "Operating System :: Unix",
     ],
     zip_safe = False,
-    setup_requires=['setuptools_git'],
+    setup_requires=['setuptools_git', 'Cython'],
     tests_require=['pytest', 'unittest2'],
     ext_modules = ext_modules(),
 
