@@ -460,7 +460,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_git', 'Cython'],
-    tests_require=['pytest', 'unittest2'],
+    tests_require=['pytest', 'pytest-timeout', 'unittest2'],
     ext_modules = ext_modules(),
 
 )

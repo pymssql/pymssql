@@ -12,7 +12,7 @@ fi
 
 # Install Python dependencies and compile wheels
 for PYBIN in /opt/python/*/bin; do
-    "${PYBIN}/pip" install pytest SQLAlchemy Sphinx sphinx-rtd-theme Cython wheel
+    "${PYBIN}/pip" install pytest pytest-timeout SQLAlchemy Sphinx sphinx-rtd-theme Cython wheel
 done
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install

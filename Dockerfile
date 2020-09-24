@@ -20,7 +20,7 @@ RUN pip install ipython
 RUN pip install SQLAlchemy
 RUN pip install pandas
 RUN pip install Alembic
-RUN pip install pytest
+RUN pip install pytest pytest-timeout
 RUN pip install gevent
 
 # Add source directory to Docker image

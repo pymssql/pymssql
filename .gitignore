@@ -17,4 +17,9 @@ freetds/
 .idea/
 venv/
 *~
+*.bak
+.eggs
+.eric?project
+*.e4p
+cython_debug/*
 

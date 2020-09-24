@@ -1,6 +1,7 @@
 cython
 gevent
 pytest
+pytest-timeout
 setuptools
 sqlalchemy
 wheel
