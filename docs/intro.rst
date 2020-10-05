@@ -74,6 +74,18 @@ Most of the times this should be all what's needed.
     Windows Wheel package doesn't have SSL support so it can't be used to
     connect to :doc:`Azure <azure>`.
 
+* Anaconda / Miniconda
+
+  A conda install of pymssql will mitigate the need to edit config files 
+  outside of the user's home directory on some unix-like systems.
+  This is especially useful when root access is restricted and/or Homebrew
+  can't be installed.  This method requires no additional compilation or 
+  configuration.
+
+  .. code-block:: bash
+
+      conda install pymssql
+
 See Installation and :doc:`freetds` for more advanced scenarios.
 
 **Docker**
