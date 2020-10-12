@@ -99,7 +99,8 @@ Binary = bytes
 
 cdef dict DBTYPES = {
     'bool': _mssql.SQLBITN,
-    'str': _mssql.SQLVARCHAR,
+    'str': _mssql.SQLVARBINARY,
+    'bytes': _mssql.SQLVARBINARY,
     'unicode': _mssql.SQLVARCHAR,
     'Decimal': _mssql.SQLDECIMAL,
     'datetime': _mssql.SQLDATETIME,
