@@ -1464,7 +1464,7 @@ cdef class MSSQLStoredProcedure:
         # We firstly want to check if tdsver is >= 7 as anything less
         # doesn't support remote procedure calls.
         cdef int version = dbtds(connection.dbproc)
-        if connection.tds_version < 7:
+        if connection.tds_version is None or connection.tds_version < 7:
             raise MSSQLDriverException("Stored Procedures aren't "
                 "supported with a TDS version less than 7. Got %r (%r)" % (connection.tds_version, version))
 
