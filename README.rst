@@ -27,26 +27,13 @@ provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
 Detailed information on pymssql is available on the website:
 
-http://pymssql.org
+`pymssql.readthedocs.io <https://pymssql.readthedocs.io/en/stable/>`_
 
 New development is happening on GitHub at:
 
-https://github.com/pymssql/pymssql
+`github.com/pymssql/pymssql <https://github.com/pymssql/pymssql>`_
 
 There is a Google Group for discussion at:
 
-https://groups.google.com/forum/?fromgroups#!forum/pymssql
-
-
-Do you use pymssql?
--------------------
-
-Can you take a minute and fill out this survey to help us prioritize development tasks?
-
-https://www.surveymonkey.com/s/KMQ8BM5
-
-
-.. image:: https://d2weczhvl823v0.cloudfront.net/pymssql/pymssql/trend.png
-   :alt: Bitdeli badge
-   :target: https://bitdeli.com/free
+`groups.google.com <https://groups.google.com/forum/?fromgroups#!forum/pymssql>`_
 
