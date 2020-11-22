@@ -101,6 +101,11 @@ cdef extern from "sqlfront.h":
     int CI_REGULAR
     int MAXCOLNAMELEN
 
+    ## Bulk Copy Constants ##
+    int DB_IN
+    int DB_OUT
+    int BCPHINTS
+
     ## Version Constants ##
     int DBVERSION_42
     int DBVERSION_70
@@ -197,7 +202,7 @@ cdef extern from "sqlfront.h":
     #               communications with the server.
     void dbclose(DBPROCESS *) nogil
 
-    # Close a connection to the server and free associated resources.
+    # Append SQL to the command buffer.
     #
     #   Parameters:
     #     dbproc    contains all information needed by db-lib to manage
@@ -641,6 +646,89 @@ cdef extern from "sqlfront.h":
     #     FAIL      on error
     RETCODE dbrpcsend(DBPROCESS *) nogil
     ## End Remote Procedure functions ##
+
+    ## Bulk Copy Functions ##
+    # Commit a set of rows to the table.
+    #
+    #   Parameters
+    #     dbproc  contains all information needed by db-lib to manage communications with the server.
+    #
+    #   Returns
+    #      Count of rows saved, or -1 on error.
+    DBINT bcp_batch (DBPROCESS *) nogil
+
+    # Bind a program host variable to a database column.
+    #
+    #   Parameters
+    #
+    #     dbproc	contains all information needed by db-lib to manage communications with the server.
+    #     varaddr	address of host variable
+    #     prefixlen	length of any prefix found at the beginning of varaddr, in bytes.
+    #     Use zero for fixed-length datatypes.
+    #     varlen	bytes of data in varaddr. Zero for NULL, -1 for fixed-length datatypes.
+    #     terminator	byte sequence that marks the end of the data in varaddr
+    #     termlen	length of terminator
+    #     vartype	datatype of the host variable
+    #     table_column	Nth column, starting at 1, in the table.
+    #
+    #   Return values:
+    #     SUCCEED   normal
+    #     FAIL      on error
+    RETCODE bcp_bind (DBPROCESS *, BYTE *, int, DBINT, BYTE *, int, int, int) nogil
+
+    # Conclude the transfer of data from program variables.
+    #
+    #   Parameters
+    #     dbproc  contains all information needed by db-lib to manage communications with the server.
+    #
+    #   Returns
+    #     The count of rows saved, or -1 on error.
+    DBINT bcp_done (DBPROCESS *) nogil
+
+    # Set "hints" for uploading a file. A FreeTDS-only function.
+    #
+    #   Parameters
+    #     dbproc    contains all information needed by db-lib to manage communications with the server.
+    #     option    symbolic constant indicating the option to be set, one of:
+    #         BCPLABELED Not implemented.
+    #         BCPHINTS The hint to be passed when the bulk-copy begins.
+    #     value     The string constant for option a/k/a the hint. One of:
+    #         ORDER               The data are ordered in accordance with the table's clustered index.
+    #         ROWS_PER_BATCH      The batch size
+    #         KILOBYTES_PER_BATCH The approximate number of kilobytes to use for a batch size
+    #         TABLOCK             Lock the table
+    #         CHECK_CONSTRAINTS   Apply constraints
+    #         FIRE_TRIGGERS       Fire any INSERT triggers on the target table
+    #     valuelen  The strlen of value.
+    RETCODE bcp_options (DBPROCESS *, int, BYTE *, int) nogil
+
+    # Write data in host variables to the table.
+    #
+    #   Parameters
+    #     dbproc  contains all information needed by db-lib to manage communications with the server.
+    #
+    #   Returns:
+    #     SUCCEED   normal
+    #     FAIL      on error
+    #
+    RETCODE bcp_sendrow (DBPROCESS *) nogil
+
+    # Prepare for bulk copy operation on a table.
+    #
+    #   Parameters
+    #     dbproc    contains all information needed by db-lib to manage communications with the server.
+    #     tblname   the name of the table receiving or providing the data.
+    #     hfile     the data file opposite the table, if any.
+    #     errfile   the "error file" captures messages and, if errors are encountered, copies of any rows that could not be written to the table.
+    #     direction one of
+    #        DB_IN writing to the table
+    #        DB_OUT writing to the host file
+    #
+    #   Returns:
+    #     SUCCEED   normal
+    #     FAIL      on error
+    RETCODE bcp_init (DBPROCESS *, const char *, const char *, const char *, int) nogil
+    ## End Bulk Copy Functions ##
 
     ## Macros ##
     DBBOOL DBDEAD(DBPROCESS *)
