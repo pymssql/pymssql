@@ -73,7 +73,7 @@ import struct
 def fs_cleanup(files=None, dirs=None):
     """
     A context manager to remove ``files`` and ``dirs`` from the
-    source tree. Useful to cleanup anciliary intermediate files.
+    source tree. Useful to cleanup ancillary intermediate files.
     """
     yield
     if files:

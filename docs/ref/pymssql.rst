@@ -118,8 +118,8 @@ Functions
 
        * Specify its value explicitly by passing a value for this parameter or
        * Configure it using facilities provided by FreeTDS (see `here
-         <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
-         and `here <http://www.freetds.org/userguide/envvar.htm>`_)
+         <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`__
+         and `here <http://www.freetds.org/userguide/envvar.htm>`__)
 
      This might look cumbersome but at the same time means you can now fully
      configure the characteristics of a connection to SQL Server from Python
@@ -253,8 +253,8 @@ make queries against the database and obtaining results. You create
 ``Cursor`` instances by calling :py:meth:`~Connection.cursor()` method on
 an open :py:class:`Connection` connection object.
 
-Cusor object properties
------------------------
+Cursor object properties
+------------------------
 
 .. attribute:: Cursor.rowcount
 
@@ -278,8 +278,8 @@ Cusor object properties
    This is the extension of the DB-API specification. Returns current 0-based
    index of the cursor in the result set.
 
-Cusor object methods
---------------------
+Cursor object methods
+---------------------
 
 .. method:: Cursor.close()
 

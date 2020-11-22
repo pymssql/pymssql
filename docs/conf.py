@@ -104,8 +104,8 @@ pygments_style = 'sphinx'
 #keep_warnings = False
 
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None),
-    'gevent': ('http://gevent.org/', None),
+    'python': ('http://docs.python.org/3', None),
+    'gevent': ('http://www.gevent.org/', None),
 }
 
 # Python's docs don't change every week.
