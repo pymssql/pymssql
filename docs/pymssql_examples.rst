@@ -220,3 +220,27 @@ handle high concurrency.
 .. _gevent: http://gevent.org
 .. _wait_read: http://gevent.org/gevent.socket.html#gevent.socket.wait_read
 .. _Gunicorn: http://gunicorn.org
+
+Bulk copy
+===============
+
+.. versionadded:: 2.2.0
+
+The fastest way to insert data to a SQL Server table is often to use the bulk copy functions, for example::
+
+    conn = pymssql.connect(server, user, password, "tempdb")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE example (
+            col1 INT NOT NULL,
+            col2 INT NOT NULL
+        )
+    """)
+    cursor.close()
+
+    conn.bulk_copy("example", [(1, 2)] * 1000000)
+
+For more detail on fast data loading in SQL Server, including on bulk copy, read
+`The data loading performance guide`_ from Microsoft.
+
+.. _The data loading performance guide: https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2008/dd425070(v=sql.100)?redirectedfrom=MSDN
