@@ -26,6 +26,8 @@ import time
 import _mssql
 cimport _mssql
 from cpython cimport bool, PY_MAJOR_VERSION
+from libc.string cimport strlen
+from sqlfront cimport BYTE
 
 cdef extern from "version.h":
     const char *PYMSSQL_VERSION
@@ -97,32 +99,15 @@ TimeFromTicks = lambda ticks: Time(*time.localtime(ticks)[3:6])
 TimestampFromTicks = lambda ticks: Timestamp(*time.localtime(ticks)[:6])
 Binary = bytes
 
-cdef dict DBTYPES = {
-    'bool': _mssql.SQLBITN,
-    'str': _mssql.SQLVARCHAR,
-    'unicode': _mssql.SQLVARCHAR,
-    'Decimal': _mssql.SQLDECIMAL,
-    'datetime': _mssql.SQLDATETIME,
-    'date': _mssql.SQLDATETIME,
-    'float': _mssql.SQLFLT8,
-    #Dump type for work vith None
-    'NoneType': _mssql.SQLVARCHAR,
-}
 
-cdef int py2db_type(py_type, value):
-    if PY_MAJOR_VERSION == 3:
-        if py_type == 'int':
-            if value is not None and value >= -2147483648 and value <= 2147483647:  # -2^31 - 2^31-1
-                return _mssql.SQLINTN
-            else:
-                return _mssql.SQLINT8
-    else:
-        if py_type == 'int':
-            return _mssql.SQLINTN
-        if py_type == 'long':
-            return _mssql.SQLINT8
+# Bulk copy hints
+cdef char* TABLOCK = "TABLOCK"
+cdef char* CHECK_CONSTRAINTS = "CHECK_CONSTRAINTS"
+cdef char* FIRE_TRIGGERS = "FIRE_TRIGGERS"
 
-    return DBTYPES[py_type]
+cdef int TABLOCK_LEN = strlen(TABLOCK)
+cdef int CHECK_CONSTRAINTS_LEN = strlen(CHECK_CONSTRAINTS)
+cdef int FIRE_TRIGGERS_LEN = strlen(FIRE_TRIGGERS)
 
 try:
     StandardError
@@ -334,6 +319,35 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot begin transaction: ' + str(e.args[0]))
 
+    cpdef bulk_copy(self,
+                    table_name,
+                    elements,
+                    column_ids=None,
+                    batch_size=1000,
+                    tablock=False,
+                    check_constraints=False,
+                    fire_triggers=False):
+        cdef _mssql.MSSQLBCPContext bcp_context = _mssql.MSSQLBCPContext(self._conn)
+        cdef int batch_counter = 0
+        bcp_context.bcp_init(table_name)
+
+        if tablock:
+            bcp_context.bcp_hint(<BYTE*> TABLOCK, TABLOCK_LEN)
+        if check_constraints:
+            bcp_context.bcp_hint(<BYTE*> CHECK_CONSTRAINTS, CHECK_CONSTRAINTS_LEN)
+        if fire_triggers:
+            bcp_context.bcp_hint(<BYTE*> FIRE_TRIGGERS, FIRE_TRIGGERS_LEN)
+
+        for element in elements:
+            if batch_counter == batch_size:
+                bcp_context.bcp_batch()
+                batch_counter = 0
+
+            bcp_context.bcp_sendrow(element, column_ids)
+            batch_counter += 1
+        bcp_context.bcp_done()
+
+
 ##################
 ## Cursor class ##
 ##################
@@ -419,11 +433,7 @@ cdef class Cursor:
                 param_value = parameter
                 param_output = False
 
-            try:
-                type_name = param_type.__name__
-                db_type = py2db_type(type_name, param_value)
-            except (AttributeError, KeyError):
-                raise NotSupportedError('Unable to determine database type from python %s type' % type_name)
+            db_type = _mssql.py2db_type(param_type, param_value)
 
             proc.bind(param_value, db_type, output=param_output)
         try:
