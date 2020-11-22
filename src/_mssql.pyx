@@ -760,6 +760,11 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.__dealloc__()")
         self.close()
 
+        PyMem_Free(self._charset)
+        PyMem_Free(self.last_msg_str)
+        PyMem_Free(self.last_msg_srv)
+        PyMem_Free(self.last_msg_proc)
+
     def __enter__(self):
         return self
 
@@ -809,9 +814,8 @@ cdef class MSSQLConnection:
         """
         close() -- close connection to an MS SQL Server.
 
-        This function tries to close the connection and free all memory used.
-        It can be called more than once in a row. No exception is raised in
-        this case.
+        This function tries to close the connection.  It can be called more than once in a row. No exception is raised
+        in this case.
         """
         log("_mssql.MSSQLConnection.close()")
         if self == None:
@@ -831,10 +835,6 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.mark_disconnected()")
         self.dbproc = NULL
         self._connected = 0
-        PyMem_Free(self.last_msg_proc)
-        PyMem_Free(self.last_msg_srv)
-        PyMem_Free(self.last_msg_str)
-        PyMem_Free(self._charset)
         connection_object_list.remove(self)
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
