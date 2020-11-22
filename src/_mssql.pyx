@@ -1475,6 +1475,130 @@ cdef class MSSQLConnection:
         with nogil:
             dbuse(self.dbproc, dbname_cstr)
 
+    cdef bcp_init(self, object table_name):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef RETCODE rtc
+        cdef bytes table_name_bytes
+        cdef char *table_name_cstr
+
+        log("_mssql.MSSQLBCPContext.bcp_init()")
+
+        table_name_bytes = ensure_bytes(table_name, self.charset)
+        table_name_cstr = table_name_bytes
+
+        with nogil:
+            rtc = bcp_init(dbproc, table_name_cstr, NULL, NULL, DB_IN)
+        check_cancel_and_raise(rtc, self)
+
+    cdef bcp_hint(self, BYTE * value, int valuelen):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef RETCODE rtc
+
+        log("_mssql.MSSQLBCPContext.bcp_hint()")
+
+        with nogil:
+            rtc = bcp_options(dbproc, BCPHINTS, value, valuelen)
+        check_cancel_and_raise(rtc, self)
+
+    cdef bcp_bind(self, object value, int is_none, int column_db_type, int position, BYTE **data):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef RETCODE rtc
+        cdef int length = -1
+
+        log("_mssql.MSSQLBCPContext.bcp_bind()")
+
+        self.convert_python_value(value, data, &column_db_type, &length)
+        if is_none:
+            # It doesn't matter which vartype we choose here since we are passing NULL.
+            rtc = bcp_bind(
+                dbproc,          # dbproc
+                NULL,            # varaddr
+                0,               # prefixlen
+                0,               # varlen
+                NULL,            # terminator
+                0,               # termlen
+                SQLVARCHAR,      # vartype
+                position         # table_column
+            )
+        else:
+            rtc = bcp_bind(
+                dbproc,          # dbproc
+                data[0],         # varaddr
+                0,               # prefixlen
+                length,          # varlen
+                NULL,            # terminator
+                0,               # termlen
+                column_db_type,  # vartype
+                position         # table_column
+            )
+
+        check_cancel_and_raise(rtc, self)
+
+    cdef bcp_batch(self):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef int rows_inserted = -1
+
+        log("_mssql.MSSQLBCPContext.bcp_batch()")
+
+        with nogil:
+            rows_inserted = bcp_batch(dbproc)
+        if rows_inserted == -1:
+            raise_MSSQLDatabaseException(self)
+
+    cpdef bcp_sendrow(self, object element, object column_ids):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef RETCODE rtc
+        cdef int length = len(element)
+        cdef int idx = -1
+        cdef BYTE **datas = NULL
+        cdef int db_type = -1
+        cdef int is_none = -1
+        cdef int column_id = -1
+
+        log("_mssql.MSSQLBCPContext.bcp_sendrow()")
+
+        try:
+            datas = <BYTE**> PyMem_Malloc(length * sizeof(BYTE *))
+            memset(datas, 0, length * sizeof(BYTE *))
+
+            try:
+                for idx, col_value in enumerate(element):
+                    if column_ids is None:
+                        column_id = idx + 1
+                    else:
+                        try:
+                            column_id = column_ids[idx]
+                        except IndexError:
+                            raise ValueError("Too few column IDs provided")
+                    if col_value is None:
+                        db_type = 0
+                        is_none = 1
+                    else:
+                        db_type = py2db_type(type(col_value), col_value)
+                        is_none = 0
+                    self.bcp_bind(col_value, is_none, db_type, column_id, &datas[idx])
+                rtc = bcp_sendrow(dbproc)
+
+                check_cancel_and_raise(rtc, self)
+            finally:
+                for idx in range(0, length):
+                    PyMem_Free(datas[idx])
+        finally:
+            PyMem_Free(datas)
+
+    cdef bcp_done(self):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef int rows_inserted = -1
+
+        log("_mssql.MSSQLBCPContext.bcp_done()")
+
+        with nogil:
+            rows_inserted = bcp_done(dbproc)
+
+        if rows_inserted == -1:
+            raise_MSSQLDatabaseException(self)
+
+
 ##################################
 ## MSSQL Stored Procedure Class ##
 ##################################
@@ -1672,139 +1796,6 @@ cdef class MSSQLStoredProcedure:
 
         # Get the return value from the procedure ready for return.
         return dbretstatus(self.dbproc)
-
-
-###################################
-## MSSQL Bulk Copy Context Class ##
-###################################
-cdef class MSSQLBCPContext:
-    def __init__(self, MSSQLConnection connection):
-        log("_mssql.MSSQLBCPContext.__init__()")
-        self.conn = connection
-        self.dbproc = connection.dbproc
-
-    cdef bcp_init(self, object table_name):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef RETCODE rtc
-        cdef bytes table_name_bytes
-        cdef char *table_name_cstr
-
-        log("_mssql.MSSQLBCPContext.bcp_init()")
-
-        table_name_bytes = ensure_bytes(table_name, self.conn.charset)
-        table_name_cstr = table_name_bytes
-
-        with nogil:
-            rtc = bcp_init(dbproc, table_name_cstr, NULL, NULL, DB_IN)
-        check_cancel_and_raise(rtc, self.conn)
-
-    cdef bcp_hint(self, BYTE * value, int valuelen):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef RETCODE rtc
-
-        log("_mssql.MSSQLBCPContext.bcp_hint()")
-
-        with nogil:
-            rtc = bcp_options(dbproc, BCPHINTS, value, valuelen)
-        check_cancel_and_raise(rtc, self.conn)
-
-    cdef bcp_bind(self, object value, int is_none, int column_db_type, int position, BYTE **data):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef RETCODE rtc
-        cdef int length = -1
-
-        log("_mssql.MSSQLBCPContext.bcp_bind()")
-
-        self.conn.convert_python_value(value, data, &column_db_type, &length)
-        if is_none:
-            # It doesn't matter which vartype we choose here since we are passing NULL.
-            rtc = bcp_bind(
-                dbproc,          # dbproc
-                NULL,            # varaddr
-                0,               # prefixlen
-                0,               # varlen
-                NULL,            # terminator
-                0,               # termlen
-                SQLVARCHAR,      # vartype
-                position         # table_column
-            )
-        else:
-            rtc = bcp_bind(
-                dbproc,          # dbproc
-                data[0],         # varaddr
-                0,               # prefixlen
-                length,          # varlen
-                NULL,            # terminator
-                0,               # termlen
-                column_db_type,  # vartype
-                position         # table_column
-            )
-
-        check_cancel_and_raise(rtc, self.conn)
-
-    cdef bcp_batch(self):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef int rows_inserted = -1
-
-        log("_mssql.MSSQLBCPContext.bcp_batch()")
-
-        with nogil:
-            rows_inserted = bcp_batch(dbproc)
-        if rows_inserted == -1:
-            raise_MSSQLDatabaseException(self.conn)
-
-    cpdef bcp_sendrow(self, object element, object column_ids):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef RETCODE rtc
-        cdef int length = len(element)
-        cdef int idx = -1
-        cdef BYTE **datas = NULL
-        cdef int db_type = -1
-        cdef int is_none = -1
-        cdef int column_id = -1
-
-        log("_mssql.MSSQLBCPContext.bcp_sendrow()")
-
-        try:
-            datas = <BYTE**> PyMem_Malloc(length * sizeof(BYTE *))
-            memset(datas, 0, length * sizeof(BYTE *))
-
-            try:
-                for idx, col_value in enumerate(element):
-                    if column_ids is None:
-                        column_id = idx + 1
-                    else:
-                        try:
-                            column_id = column_ids[idx]
-                        except IndexError:
-                            raise ValueError("Too few column IDs provided")
-                    if col_value is None:
-                        db_type = 0
-                        is_none = 1
-                    else:
-                        db_type = py2db_type(type(col_value), col_value)
-                        is_none = 0
-                    self.bcp_bind(col_value, is_none, db_type, column_id, &datas[idx])
-                rtc = bcp_sendrow(dbproc)
-
-                check_cancel_and_raise(rtc, self.conn)
-            finally:
-                for idx in range(0, length):
-                    PyMem_Free(datas[idx])
-        finally:
-            PyMem_Free(datas)
-
-    cdef bcp_done(self):
-        cdef DBPROCESS *dbproc = self.dbproc
-        cdef int rows_inserted = -1
-
-        log("_mssql.MSSQLBCPContext.bcp_done()")
-
-        with nogil:
-            rows_inserted = bcp_done(dbproc)
-
-        if rows_inserted == -1:
-            raise_MSSQLDatabaseException(self.conn)
 
 
 cdef int check_and_raise(RETCODE rtc, MSSQLConnection conn) except 1:

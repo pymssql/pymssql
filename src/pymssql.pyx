@@ -327,25 +327,25 @@ cdef class Connection:
                     tablock=False,
                     check_constraints=False,
                     fire_triggers=False):
-        cdef _mssql.MSSQLBCPContext bcp_context = _mssql.MSSQLBCPContext(self._conn)
         cdef int batch_counter = 0
-        bcp_context.bcp_init(table_name)
+        cdef _mssql.MSSQLConnection conn = self._conn
+        conn.bcp_init(table_name)
 
         if tablock:
-            bcp_context.bcp_hint(<BYTE*> TABLOCK, TABLOCK_LEN)
+            conn.bcp_hint(<BYTE*> TABLOCK, TABLOCK_LEN)
         if check_constraints:
-            bcp_context.bcp_hint(<BYTE*> CHECK_CONSTRAINTS, CHECK_CONSTRAINTS_LEN)
+            conn.bcp_hint(<BYTE*> CHECK_CONSTRAINTS, CHECK_CONSTRAINTS_LEN)
         if fire_triggers:
-            bcp_context.bcp_hint(<BYTE*> FIRE_TRIGGERS, FIRE_TRIGGERS_LEN)
+            conn.bcp_hint(<BYTE*> FIRE_TRIGGERS, FIRE_TRIGGERS_LEN)
 
         for element in elements:
             if batch_counter == batch_size:
-                bcp_context.bcp_batch()
+                conn.bcp_batch()
                 batch_counter = 0
 
-            bcp_context.bcp_sendrow(element, column_ids)
+            self._conn.bcp_sendrow(element, column_ids)
             batch_counter += 1
-        bcp_context.bcp_done()
+        conn.bcp_done()
 
 
 ##################

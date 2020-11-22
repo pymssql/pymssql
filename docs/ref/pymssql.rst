@@ -243,6 +243,22 @@ Connection object methods
 
    Roll back current transaction.
 
+.. method:: Connection.bulk_copy(self, table_name, elements, column_ids=None, batch_size=1000, tablock=False, check_constraints=False, fire_triggers=False)
+
+   .. versionadded:: 2.2.0
+
+   Insert data into the target table using the Bulk Copy protocol.
+
+   :param str table_name: The name of the target table.
+   :param List[Tuple] elements: The data to insert.
+   :param List[int] column_ids: The IDs of the target columns.  The first column in a table is index 1.  If unset will
+       default to n, where n is the number of elements in each tuple passed as data.
+   :param int batch_size: Commit rows to the target table for every batch_size rows, defaults to 1_000.
+   :param bool tablock: Set TABLOCK hint.
+   :param bool check_constraints: Set CHECK_CONSTRAINTS hint.
+   :param bool fire_triggers: Set FIRE_TRIGGERS hint.
+
+
 ``Cursor`` class
 ================
 
