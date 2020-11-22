@@ -6,9 +6,9 @@ from tests.helpers import drop_table, pymssqlconn
 
 
 tablename = "pymssql"
-simple_table = f"CREATE TABLE {tablename} (a1 INT, a2 INT, a3 INT)"
-complex_table = f"""
-    CREATE TABLE {tablename} (
+simple_table = "CREATE TABLE %s (a1 INT, a2 INT, a3 INT)" % tablename
+complex_table = """
+    CREATE TABLE %s (
         pk_id int IDENTITY (1, 1) NOT NULL,
         uuid uniqueidentifier DEFAULT newsequentialid(),
         col_real real UNIQUE,
@@ -17,7 +17,7 @@ complex_table = f"""
         col_bit bit,
         col_varchar varchar(50)
     )
-"""
+""" % tablename
 
 
 class TestTypes(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestTypes(unittest.TestCase):
         self.conn = pymssqlconn()
         drop_table(self.conn._conn, tablename)
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         self.conn.close()
 
     def expect_simple_table_content(self, query, content):
@@ -46,25 +46,25 @@ class TestTypes(unittest.TestCase):
 
     def test_lots_of_rows_single_batch(self):
         self.conn._conn.execute_non_query(simple_table)
-        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 100_000, batch_size=1_000_000)
+        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 100000, batch_size=1000000)
         self.expect_simple_table_content('select top 2 * from pymssql', [(1, 2, 3), (4, 5, 6)])
-        self.expect_row_count(200_000)
+        self.expect_row_count(200000)
 
     def test_batches(self):
         self.conn._conn.execute_non_query(simple_table)
 
-        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 100_000, batch_size=1_000)
+        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 100000, batch_size=1000)
 
         self.expect_simple_table_content('select top 2 * from pymssql', [(1, 2, 3), (4, 5, 6)])
-        self.expect_row_count(200_000)
+        self.expect_row_count(200000)
 
     def test_exact_batch_size(self):
         self.conn._conn.execute_non_query(simple_table)
 
-        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 500, batch_size=1_000)
+        self.conn.bulk_copy(tablename, [(1, 2, 3), (4, 5, 6)] * 500, batch_size=1000)
 
         self.expect_simple_table_content('select top 2 * from pymssql', [(1, 2, 3), (4, 5, 6)])
-        self.expect_row_count(1_000)
+        self.expect_row_count(1000)
 
     def test_tablock_hint(self):
         self.simple_table_test([(1, 2, 3), (4, 5, 6)], tablock=True)
