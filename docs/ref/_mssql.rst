@@ -131,8 +131,8 @@ Functions
 
         * Specify its value explicitly by passing a value for this parameter or
         * Configure it using facilities provided by FreeTDS (see `here
-          <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`_
-          and `here <http://www.freetds.org/userguide/envvar.htm>`_)
+          <http://www.freetds.org/userguide/freetdsconf.htm#TAB.FREETDS.CONF>`__
+          and `here <http://www.freetds.org/userguide/envvar.htm>`__)
 
       This might look cumbersome but at the same time means you can now fully
       configure the characteristics of a connection to SQL Server when using
