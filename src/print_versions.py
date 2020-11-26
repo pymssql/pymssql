@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import platform
+import sys
+
 import pymssql
 import _mssql
 
 def main():
+
+    print("System:")
+    print("platform.system()       :", platform.system())
+    print("platform.architecture() :", platform.architecture())
+    if platform.system() != 'Windows':
+        print("platform.libc_ver()     :", platform.libc_ver())
+
+    print("Python:")
+    print("sys.version             :", sys.version)
 
     print("pymssql:")
     print("VERSION            :", pymssql.VERSION)
