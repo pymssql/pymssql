@@ -676,9 +676,6 @@ def set_max_connections(int limit):
     """
     _mssql.set_max_connections(limit)
 
-cdef extern from "sybdb.h":
-    char *dbversion()
-
 # Only recent versions of FreeTDS have the ct_config function
 # so this can break builds
 # Maybe later we can enable this or make it conditional
@@ -705,4 +702,7 @@ IF HAS_CT_CONFIG:
         return buf
 
 def get_dbversion():
-    return dbversion()
+    """
+    Return string representing the version of db-lib.
+    """
+    return _mssql.get_dbversion()

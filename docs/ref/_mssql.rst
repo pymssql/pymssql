@@ -37,6 +37,14 @@ Variables whose values you can change to alter behavior on a global basis:
 Functions
 =========
 
+.. function:: get_dbversion()
+
+    Wrapper around DB-Library's ``dbversion()`` function which returns the
+    version of FreeTDS (actually the version of DB-Lib) in string form. E.g.
+    ``"freetds v1.2.5"``.
+
+   .. versionadded:: 2.2.0
+
 .. function:: set_max_connections(number)
 
     Sets maximum number of simultaneous connections allowed to be open at any

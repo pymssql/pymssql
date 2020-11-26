@@ -2181,6 +2181,12 @@ def set_max_connections(int limit):
     """
     dbsetmaxprocs(limit)
 
+def get_dbversion():
+    """
+    Return string representing the version of db-lib.
+    """
+    return dbversion().decode('ascii')
+
 cdef void init_mssql():
     if dbinit() == FAIL:
         raise MSSQLDriverException("dbinit() failed")

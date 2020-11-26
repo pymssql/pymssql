@@ -139,6 +139,13 @@ cdef extern from "sqlfront.h":
         SYBVARCHAR
 
     ## Primary functions ##
+
+    # See which version of db-lib is in use.
+    #
+    #   Returns:
+    #     null-terminated ASCII string representing the version of db-lib.
+    const char *dbversion()
+
     # Get address of compute column data.
     #
     #   Parameters:
