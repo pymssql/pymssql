@@ -195,7 +195,6 @@ class build_ext(_build_ext):
             extra_cc_args = []
             if isinstance(self.compiler, Mingw32CCompiler):
                 # Compiler is Mingw32
-                freetds_dir = 'ming'
                 extra_cc_args = [
                     '-Wl,-allow-multiple-definition',
                     '-Wl,-subsystem,windows-mthreads',
@@ -209,14 +208,6 @@ class build_ext(_build_ext):
                 ]
             else:
                 # Assume compiler is Visual Studio
-                if sys.version_info >= (3, 5):
-                    freetds_dir = 'vs2015'
-                elif sys.version_info >= (3, 3):
-                    freetds_dir = 'vs2010'
-                elif sys.version_info >= (2, 7) and BITNESS == 64:
-                    freetds_dir = 'vs2010'
-                else:
-                    freetds_dir = 'vs2008'
                 if LINK_FREETDS_STATICALLY:
                     libraries = [
                         'iconv', 'replacements',
