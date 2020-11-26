@@ -20,7 +20,6 @@
 # MA  02110-1301  USA
 #
 
-import contextlib
 import os
 import os.path as osp
 import sys
@@ -55,7 +54,6 @@ have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
 from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
-from distutils import ccompiler
 if have_c_files:
     from distutils.command.build_ext import build_ext as _build_ext
 else:
@@ -66,56 +64,12 @@ else:
     Distribution(dict(setup_requires='Cython>=0.19.1'))
 
     from Cython.Distutils import build_ext as _build_ext
-from distutils.dir_util import remove_tree
 import struct
-
-@contextlib.contextmanager
-def fs_cleanup(files=None, dirs=None):
-    """
-    A context manager to remove ``files`` and ``dirs`` from the
-    source tree. Useful to cleanup ancillary intermediate files.
-    """
-    yield
-    if files:
-        for fname in files:
-            path = fpath(fname)
-            if osp.exists(path):
-                os.remove(path)
-    if dirs:
-        for dname in dirs:
-            path = fpath(dname)
-            if osp.exists(path):
-                remove_tree(path)
-
-@contextlib.contextmanager
-def stdchannel_redirected(stdchannel, dest_filename):
-    """
-    A context manager to temporarily redirect stdout or stderr
-
-    e.g.:
-
-    with stdchannel_redirected(sys.stderr, os.devnull):
-        ...
-    """
-
-    try:
-        oldstdchannel = os.dup(stdchannel.fileno())
-        dest_file = open(dest_filename, 'w')
-        os.dup2(dest_file.fileno(), stdchannel.fileno())
-
-        yield
-    finally:
-        if oldstdchannel is not None:
-            os.dup2(oldstdchannel, stdchannel.fileno())
-        if dest_file is not None:
-            dest_file.close()
 
 def add_dir_if_exists(filtered_dirs, *dirs):
     for d in dirs:
         if osp.exists(d):
             filtered_dirs.append(d)
-
-compiler = ccompiler.new_compiler()
 
 _extra_compile_args = [
     '-DMSDBLIB'
@@ -172,10 +126,15 @@ else:
 
     libraries = ['sybdb']
 
-    #with fs_cleanup(files=['a.out'], dirs=['tmp']):
-        #with stdchannel_redirected(sys.stderr, os.devnull):
-    if compiler.has_function('clock_gettime', libraries=['rt']):
-        libraries.append('rt')
+    # check for clock_gettime, link with librt for glibc<2.17
+    from dev import ccompiler
+    compiler = ccompiler.new_compiler()
+    if not compiler.has_function('clock_gettime(0,NULL)', includes=['time.h']):
+        if compiler.has_function('clock_gettime(0,NULL)', includes=['time.h'], libraries=['rt']):
+            libraries.append('rt')
+        else:
+            print("setup.py: could not locate 'clock_gettime' function required by FreeTDS.")
+            sys.exit(1)
 
 usr_local = '/usr/local'
 if osp.exists(usr_local):
