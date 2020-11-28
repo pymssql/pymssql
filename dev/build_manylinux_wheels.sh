@@ -86,6 +86,7 @@ for PYBIN in /opt/python/*/bin/; do
     "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
     "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
     "${PYBIN}/pytest" -s .
+    "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
 done
 
 # Remove wheel and egg directory for next container build (i686 vs x86_x64)

@@ -706,3 +706,39 @@ def get_dbversion():
     Return string representing the version of db-lib.
     """
     return _mssql.get_dbversion()
+
+def version_info():
+    """
+        Returns string with version information about pymssql, FreeTDS, Python and OS.
+    """
+
+    import platform
+    import sys
+    import io
+
+    output = io.StringIO()
+    print("System:", file=output)
+    print("platform.system()       :", platform.system(), file=output)
+    print("platform.architecture() :", platform.architecture(), file=output)
+    if platform.system() != 'Windows':
+        print("platform.libc_ver()     :", platform.libc_ver(), file=output)
+
+    print("Python:", file=output)
+    print("sys.version             :", sys.version, file=output)
+
+    print("pymssql:", file=output)
+    print("VERSION            :", VERSION, file=output)
+    print("version            :", __version__, file=output)
+    print("full_version       :", __full_version__, file=output)
+    print("dbversion          :", get_dbversion(), file=output)
+
+    print("_mssql:", file=output)
+    print("VERSION            :", _mssql.VERSION, file=output)
+    print("version            :", _mssql.__version__, file=output)
+    print("full_version       :", _mssql.__full_version__, file=output)
+    print("dbversion          :", _mssql.get_dbversion(), file=output)
+    print("login_timeout      :", _mssql.login_timeout, file=output)
+    print("min_error_severity :", _mssql.min_error_severity, file=output)
+    contents = output.getvalue()
+    output.close()
+    return contents

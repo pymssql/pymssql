@@ -187,6 +187,18 @@ Functions
 
     A pymssql extension to the DB-API 2.0.
 
+.. function:: version_info()
+
+    .. versionadded:: 2.2.0
+
+    Returns string with version information about pymssql, FreeTDS, Python and OS.
+    Please include the output of this function when reporting bus etc.::
+
+    /<path to your python>/python -c "import pymssql; print(pymssql.version_info())"
+
+    A pymssql extension to the DB-API 2.0.
+
+
 ``Connection`` class
 ====================
 
