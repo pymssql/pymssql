@@ -7,7 +7,7 @@ import pymssql
 
 @pytest.mark.timeout(120)
 @pytest.mark.xfail(strict=False)
-@pytest.mark.parametrize('to', range(2,20,2))
+@pytest.mark.parametrize('to', range(2,10,2))
 def test_remote_connect_timeout(to):
 
     t = time.time()
