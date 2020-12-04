@@ -415,7 +415,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_scm', 'Cython'],
-    tests_require=['pytest', 'pytest-timeout', 'unittest2'],
+    tests_require=['psutil', 'pytest', 'pytest-timeout', 'unittest2'],
     ext_modules = ext_modules(),
 
 )
