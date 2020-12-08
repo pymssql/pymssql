@@ -136,7 +136,7 @@ else:
             print("setup.py: could not locate 'clock_gettime' function required by FreeTDS.")
             sys.exit(1)
 
-usr_local = '/usr/local'
+usr_local = sys.prefix
 if osp.exists(usr_local):
     add_dir_if_exists(
         include_dirs,
