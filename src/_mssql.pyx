@@ -114,6 +114,13 @@ NUMBER = 3
 DATETIME = 4
 DECIMAL = 5
 
+DATE = 6
+INT = 7
+LONG = 8
+FLOAT = 9
+DOUBLE = 10
+
+
 ##################
 ## DB-LIB types ##
 ##################
@@ -1876,15 +1883,22 @@ cdef inline int get_length(DBPROCESS *dbproc, int row_info, int col) nogil:
 ## Helper Functions ##
 ######################
 cdef int get_api_coltype(int coltype):
-    if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4, SQLINT8, SQLINTN,
-            SQLFLT4, SQLFLT8, SQLFLTN):
-        return NUMBER
+    if coltype in (SQLBIT, SQLINT1, SQLINT2, SQLINT4):
+        return INT
+    elif coltype in (SQLINT8, SQLINTN):
+        return LONG
+    elif coltype == SQLFLT4:
+        return FLOAT
+    elif coltype in (SQLFLT8, SQLFLTN):
+        return DOUBLE
     elif coltype in (SQLMONEY, SQLMONEY4, SQLMONEYN, SQLNUMERIC,
             SQLDECIMAL):
         return DECIMAL
-    elif coltype in (SQLDATETIME, SQLDATETIM4, SQLDATETIMN):
+    elif coltype == SQLDATE:
+        return DATE
+    elif coltype in (SQLDATETIME, SQLDATETIM4, SQLDATETIMN, SQLDATETIME2):
         return DATETIME
-    elif coltype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
+    elif coltype in (SQLVARCHAR, SQLCHAR, SQLTEXT, SQLTIME):
         return STRING
     else:
         return BINARY
