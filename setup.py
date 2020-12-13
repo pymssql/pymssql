@@ -379,10 +379,6 @@ setup(
       "Intended Audience :: Developers",
       "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
       "Programming Language :: Python",
-      "Programming Language :: Python :: 2.7",
-      "Programming Language :: Python :: 3",
-      "Programming Language :: Python :: 3.4",
-      "Programming Language :: Python :: 3.5",
       "Programming Language :: Python :: 3.6",
       "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
@@ -397,7 +393,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_scm', 'Cython'],
-    tests_require=['psutil', 'pytest', 'pytest-timeout', 'unittest2'],
+    tests_require=['psutil', 'pytest', 'pytest-timeout'],
     ext_modules = ext_modules(),
 
 )

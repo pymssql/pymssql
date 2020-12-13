@@ -57,7 +57,9 @@ if [ ! -d wheelhouse ]; then
 fi
 
 # Install Python dependencies and compile wheels
-for PYBIN in /opt/python/*/bin; do
+PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+for i in $PYTHONS; do
+    PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
     "${PYBIN}/pip" wheel . -w wheelhouse/
 done
@@ -81,7 +83,8 @@ find wheelhouse/ -type f ! -name '*manylinux*' -delete
 mv wheelhouse/* dist/
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
-for PYBIN in /opt/python/*/bin/; do
+for i in $PYTHONS; do
+    PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install pymssql --no-index -f dist
     "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
     "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
