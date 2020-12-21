@@ -1,8 +1,8 @@
 [build-system]
 requires = ["setuptools>=42", "setuptools_scm[toml]>=3.4", "wheel", "Cython"]
 
-[tool.setuptools_scm]
-write_to = "src/version.h"
-write_to_template = '#define PYMSSQL_VERSION "{version}"'
+#[tool.setuptools_scm]
+#write_to = "src/version.h"
+#write_to_template = '#define PYMSSQL_VERSION "{version}"'
+##local_scheme = "no-local-version"
 #local_scheme = "no-local-version"
-local_scheme = "no-local-version"

@@ -370,22 +370,17 @@ class PyTest(TestCommand):
 
 
 setup(
-    name  = 'pymssql',
-    use_scm_version = {
-        "write_to": "src/version.h",
-        "write_to_template": '#define PYMSSQL_VERSION "{version}"',
-        "local_scheme": "no-local-version",
-    },
+    name  = 'pymssql-plus',
+    version='0.1.0',
+
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
-    author = 'Damien Churchill',
-    author_email = 'damoxc@gmail.com',
-    maintainer = 'pymssql development team',
-    maintainer_email = 'pymssql@googlegroups.com',
+    author = 'BeanNan',
+    author_email = 'fjn.aniaan@gmail.com',
     license = 'LGPL',
     platforms = 'any',
     keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
-    url = 'http://pymssql.org',
+    url = 'https://github.com/BeanNan/pymssql',
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
