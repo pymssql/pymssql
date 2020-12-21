@@ -1,0 +1,49 @@
+name: publish-windows
+
+on:
+  push:
+
+jobs:
+  publish-windows:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+            python-version: [3.6, 3.7, 3.8, 3.9]
+            os: [windows-latest]
+            python-architecture: [x64]
+
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+            python-version: ${{ matrix.python-version }}
+            architecture: ${{ matrix.python-architecture}}
+
+    - name: Install vcpython27
+      if: matrix.python-version == 2
+      run: choco install vcpython27 -f -y
+
+    - name: Install dependencies
+      run: choco install gperf
+
+    - name: Build wheels
+      run: python dev/build_windows_wheels.py
+
+    - name: Archive wheels and sdist
+      uses: actions/upload-artifact@v2
+      with:
+        name: pymssql-${{ runner.os }}-${{ matrix.python-architecture }}-${{ github.sha }}
+        path: dist
+
+    - name: Publish wheels
+      run: |
+        pip install twine --upgrade
+        twine upload --skip-existing -u __token__ -p ${{secrets.PYPI_TOKEN}} dist/*
