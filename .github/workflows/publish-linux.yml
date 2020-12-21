@@ -24,6 +24,7 @@ jobs:
       env:
         DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
       run: |
+        echo $DOCKER_IMAGE
         docker image pull $DOCKER_IMAGE
         docker container run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
         ls -la dist
