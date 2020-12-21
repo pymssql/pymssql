@@ -5,11 +5,10 @@ on:
 
 jobs:
   publish-linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        os: [ubuntu-latest]
+        arch: [i686, x86_64]
 
     steps:
 
