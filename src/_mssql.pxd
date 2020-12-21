@@ -29,6 +29,8 @@ cdef class MSSQLConnection:
     cdef char *last_msg_proc
     cdef tuple column_names
     cdef tuple column_types
+    cdef tuple column_precisions
+    cdef tuple column_scales
 
     cdef object msghandler
 

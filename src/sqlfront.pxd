@@ -263,6 +263,8 @@ cdef extern from "sqlfront.h":
     DBINT dbconvert_ps(DBPROCESS * dbprocess, int srctype, BYTE * src, DBINT srclen, int desttype, BYTE * dest, DBINT destlen,
         DBTYPEINFO * typeinfo)
 
+    DBTYPEINFO *dbcoltypeinfo(DBPROCESS *dbproc, int)
+
     # Get count of rows processed.
     #
     #   Parameters:

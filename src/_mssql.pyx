@@ -619,6 +619,8 @@ cdef class MSSQLConnection:
         self.last_msg_proc[0] = <char>0
         self.column_names = None
         self.column_types = None
+        self.column_precisions = None
+        self.column_scales = None
 
     def __init__(self, server="localhost", user=None, password=None,
             charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
@@ -814,6 +816,8 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.clear_metadata()")
         self.column_names = None
         self.column_types = None
+        self.column_precisions = None
+        self.column_scales = None
         self.num_columns = 0
         self.last_dbresults = 0
 
@@ -1306,7 +1310,9 @@ cdef class MSSQLConnection:
             for col in xrange(1, self.num_columns + 1):
                 col_name = self.column_names[col - 1]
                 col_type = self.column_types[col - 1]
-                header_tuple.append((col_name, col_type, None, None, None, None, None))
+                col_precision = self.column_precisions[col - 1]
+                col_scale = self.column_scales[col - 1]
+                header_tuple.append((col_name, col_type, None, None, col_precision, col_scale, None))
             return tuple(header_tuple)
         finally:
             log("_mssql.MSSQLConnection.get_header() END")
@@ -1325,6 +1331,7 @@ cdef class MSSQLConnection:
     cdef get_result(self):
         cdef int coltype
         cdef char log_message[200]
+        cdef DBTYPEINFO * coltypeinfo
 
         log("_mssql.MSSQLConnection.get_result() BEGIN")
 
@@ -1359,6 +1366,8 @@ cdef class MSSQLConnection:
 
             column_names = list()
             column_types = list()
+            column_precisions = list()
+            column_scales = list()
 
             for col in xrange(1, self.num_columns + 1):
                 col_name = dbcolname(self.dbproc, col)
@@ -1370,9 +1379,14 @@ cdef class MSSQLConnection:
                 column_names.append(column_name)
                 coltype = dbcoltype(self.dbproc, col)
                 column_types.append(get_api_coltype(coltype))
+                coltypeinfo = dbcoltypeinfo(self.dbproc, col)
+                column_precisions.append(coltypeinfo.precision)
+                column_scales.append(coltypeinfo.scale)
 
             self.column_names = tuple(column_names)
             self.column_types = tuple(column_types)
+            self.column_precisions = tuple(column_precisions)
+            self.column_scales = tuple(column_scales)
         finally:
             log("_mssql.MSSQLConnection.get_result() END")
 
