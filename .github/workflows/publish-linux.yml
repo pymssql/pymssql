@@ -26,7 +26,7 @@ jobs:
       env:
         DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
       run: |
-        python /io/dev/build_manylinux_wheels.sh
+        python dev/build_manylinux_wheels.sh
         ls -la dist
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
