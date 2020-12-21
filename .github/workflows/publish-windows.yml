@@ -1,7 +1,9 @@
 name: publish-windows
 
 on:
-  push:
+  release:
+    types:
+      - created
 
 jobs:
   publish-windows:

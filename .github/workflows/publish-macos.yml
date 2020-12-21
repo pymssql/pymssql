@@ -1,7 +1,9 @@
 name: publish-macos
 
 on:
-  push:
+  release:
+    types:
+      - created
 
 
 jobs:

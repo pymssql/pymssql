@@ -1,7 +1,9 @@
 name: publish-linux
 
 on:
-  push:
+  release:
+    types:
+      - created
 
 jobs:
   publish-linux:
