@@ -17,14 +17,8 @@ import pytest
 
 
 def get_bytes_buffer():
-    try:
-        # Python 2
-        from StringIO import StringIO
-        return StringIO()
-    except ImportError:
-        # Python 3
-        from io import BytesIO
-        return BytesIO()
+    from io import BytesIO
+    return BytesIO()
 
 from .helpers import drop_table, mssqlconn, clear_table, config, eq_, pymssqlconn
 
