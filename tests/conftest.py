@@ -31,7 +31,7 @@ _parser = ConfigParser({
 def pytest_addoption(parser):
     parser.addoption(
         "--pymssql-section",
-        type="string",
+        type=str,
         default=os.environ.get('PYMSSQL_TEST_CONFIG', 'DEFAULT'),
         help="The name of the section to use from tests.cfg"
     )
