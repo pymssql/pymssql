@@ -35,6 +35,7 @@ yum install -y openssl-devel
 
 /opt/python/cp38-cp38/bin/python dev/build.py \
     --ws-dir=./freetds \
+    --dist-dir=. \
     --prefix=/usr/local \
     --freetds-version="1.2.18" \
     --with-openssl=yes
