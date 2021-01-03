@@ -103,13 +103,13 @@ jobs:
         name: pymssql-${{ runner.os }}-manylinux1_${{ matrix.arch }}-${{ github.sha }}
         path: dist
 
-    - name: Publish wheels
+    - name: Publish wheels and sdist
       if: github.repository_owner == 'pymssql' && startsWith(github.ref, 'refs/tags/v')
       run: |
         pip install twine --upgrade
         twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
 
-    - name: Publish wheels on test.pypi.org
+    - name: Publish wheels and sdist on test.pypi.org
       if: github.repository_owner == 'pymssql' && github.ref == 'refs/heads/master'
       run: |
         pip install twine --upgrade
