@@ -26,7 +26,7 @@ class TestConfig(object):
             # can not be made
             if e.args[0][0] != 20009:
                 raise
-        with open(config_dump_path, 'rU') as fh:
+        with open(config_dump_path, 'r') as fh:
             return fh.read()
 
     def test_config_values(self):
