@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import gc
 import psutil
 import pymssql
 
@@ -9,11 +10,13 @@ def test_memory_leak_on_unsuccessful_connect():
     p = psutil.Process()
     m0 = p.memory_full_info()
     for i in range(10):
+        gc.collect()
         try:
             pymssql.connect(server="www.google.com", port=81, user='username',
                             password='password', login_timeout=1)
         except:
             pass
+        gc.collect()
         m1 = p.memory_full_info()
         duss = m1.uss - m0.uss
         print(i, "uss=", m1.uss, "duss:", duss)
