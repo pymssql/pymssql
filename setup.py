@@ -21,26 +21,66 @@
 #
 
 import os
-import os.path as osp
-import sys
+from os.path import abspath, exists, dirname, join, splitext
 import platform
+import struct
+import sys
 
 from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
 
-LINK_FREETDS_STATICALLY = True
-LINK_OPENSSL = False
+# 32 bit or 64 bit system?
+BITNESS = struct.calcsize("P") * 8
+WINDOWS = platform.system() == 'Windows'
 
-ROOT = osp.abspath(osp.dirname(__file__))
+include_dirs = []
+library_dirs = []
+libraries = ['sybdb']
+
+prefix = None
+if os.getenv('PYMSSQL_FREETDS'):
+    prefix = os.path.abspath(os.getenv('PYMSSQL_FREETDS').strip())
+elif exists("/usr/local/includes/sqlfront.h"):
+    prefix = "/usr/local"
+elif exists("/opt/local/includes/sqlfront.h"): # MacPorts
+    prefix = "/opt/local"
+elif exists("/sw/includes/sqlfront.h"): # Fink
+    prefix = "/sw"
+
+if prefix:
+    print(f"prefix='{prefix}'")
+    include_dirs = [ join(prefix, "include") ]
+    if BITNESS == 64 and exists(join(prefix, "lib64")):
+        library_dirs = [ join(prefix, "lib64") ]
+    else:
+        library_dirs = [ join(prefix, "lib") ]
+
+if os.getenv('PYMSSQL_FREETDS_INCLUDEDIR'):
+    include_dirs = [ os.getenv('PYMSSQL_FREETDS_INCLUDEDIR') ]
+
+if os.getenv('PYMSSQL_FREETDS_LIBDIR'):
+    library_dirs = [ os.getenv('PYMSSQL_FREETDS_LIBDIR') ]
+
+print("setup.py: platform.system() =>", platform.system())
+print("setup.py: platform.architecture() =>", platform.architecture())
+if not WINDOWS:
+    print("setup.py: platform.libc_ver() =>", platform.libc_ver())
+print("setup.py: include_dirs =>", include_dirs)
+print("setup.py: library_dirs =>", library_dirs)
+
+LINK_FREETDS_STATICALLY = True
+LINK_OPENSSL = True
+
+ROOT = abspath(dirname(__file__))
 
 def fpath(*parts):
     """
     Return fully qualified path for parts, e.g.
     fpath('a', 'b') -> '<this dir>/a/b'
     """
-    return osp.join(ROOT, *parts)
+    return join(ROOT, *parts)
 
-have_c_files = osp.exists(fpath('_mssql.c')) and osp.exists(fpath('pymssql.c'))
+have_c_files = exists(fpath('src', '_mssql.c')) and exists(fpath('src', 'pymssql.c'))
 
 from distutils import log
 from distutils.cmd import Command
@@ -52,71 +92,15 @@ else:
     # Force `setup_requires` stuff like Cython to be installed before proceeding
     #
     from setuptools.dist import Distribution
-    Distribution(dict(setup_requires='Cython>=0.19.1'))
+    Distribution(dict(setup_requires='Cython>=0.29.21'))
 
     from Cython.Distutils import build_ext as _build_ext
-import struct
-
-def add_dir_if_exists(filtered_dirs, *dirs):
-    for d in dirs:
-        if osp.exists(d):
-            filtered_dirs.append(d)
 
 _extra_compile_args = [
     '-DMSDBLIB'
 ]
 
-WINDOWS = False
-SYSTEM = platform.system()
-
-print("setup.py: platform.system() => %r" % SYSTEM)
-print("setup.py: platform.architecture() => %r" % (platform.architecture(),))
-if SYSTEM != 'Windows':
-    print("setup.py: platform.libc_ver() => %r" % (platform.libc_ver(),))
-
-# 32 bit or 64 bit system?
-BITNESS = struct.calcsize("P") * 8
-
-include_dirs = []
-library_dirs = []
-if sys.platform == 'win32':
-    WINDOWS = True
-else:
-    FREETDS = None
-
-    if sys.platform == 'darwin':
-        FREETDS = fpath('freetds', 'darwin_%s' % BITNESS)
-        print("""setup.py: Detected Darwin/Mac OS X.
-    You can install FreeTDS with Homebrew or MacPorts, or by downloading
-    and compiling it yourself.
-
-    Homebrew (http://brew.sh/)
-    --------------------------
-    brew install freetds
-
-    MacPorts (http://www.macports.org/)
-    -----------------------------------
-    sudo port install freetds
-        """)
-
-    if not os.getenv('PYMSSQL_DONT_BUILD_WITH_BUNDLED_FREETDS'):
-        if SYSTEM == 'Linux':
-            FREETDS = fpath('freetds', 'nix_%s' % BITNESS)
-        elif SYSTEM == 'FreeBSD':
-            print("""setup.py: Detected FreeBSD.
-    For FreeBSD, you can install FreeTDS with FreeBSD Ports or by downloading
-    and compiling it yourself.
-            """)
-
-    if FREETDS and osp.exists(FREETDS) and os.getenv('PYMSSQL_BUILD_WITH_BUNDLED_FREETDS'):
-        print('setup.py: Using bundled FreeTDS in %s' % FREETDS)
-        include_dirs.append(osp.join(FREETDS, 'include'))
-        library_dirs.append(osp.join(FREETDS, 'lib'))
-    else:
-        print('setup.py: Not using bundled FreeTDS')
-
-    libraries = ['sybdb']
-
+if not WINDOWS:
     # check for clock_gettime, link with librt for glibc<2.17
     from dev import ccompiler
     compiler = ccompiler.new_compiler()
@@ -127,47 +111,6 @@ else:
             print("setup.py: could not locate 'clock_gettime' function required by FreeTDS.")
             sys.exit(1)
 
-usr_local = '/usr/local'
-if osp.exists(usr_local):
-    add_dir_if_exists(
-        include_dirs,
-        osp.join(usr_local, 'include'),
-        osp.join(usr_local, 'include/freetds'),
-        osp.join(usr_local, 'freetds/include')
-    )
-    add_dir_if_exists(
-        library_dirs,
-        osp.join(usr_local, 'lib'),
-        osp.join(usr_local, 'lib/freetds'),
-        osp.join(usr_local, 'freetds/lib')
-    )
-
-if sys.platform == 'darwin':
-    fink = '/sw'
-    if osp.exists(fink):
-        add_dir_if_exists(include_dirs, osp.join(fink, 'include'))
-        add_dir_if_exists(library_dirs, osp.join(fink, 'lib'))
-
-    macports = '/opt/local'
-    if osp.exists(macports):
-        # some mac ports paths
-        add_dir_if_exists(
-            include_dirs,
-            osp.join(macports, 'include'),
-            osp.join(macports, 'include/freetds'),
-            osp.join(macports, 'freetds/include')
-        )
-        add_dir_if_exists(
-            library_dirs,
-            osp.join(macports, 'lib'),
-            osp.join(macports, 'lib/freetds'),
-            osp.join(macports, 'freetds/lib')
-        )
-
-if sys.platform != 'win32':
-    # Windows uses a different piece of code to detect these
-    print('setup.py: include_dirs = %r' % include_dirs)
-    print('setup.py: library_dirs = %r' % library_dirs)
 
 class build_ext(_build_ext):
     """
@@ -201,14 +144,14 @@ class build_ext(_build_ext):
                 # Assume compiler is Visual Studio
                 if LINK_FREETDS_STATICALLY:
                     libraries = [
-                        'iconv', 'replacements',
+                        'replacements',
                         'db-lib', 'tds', 'tdsutils',
                         'ws2_32', 'wsock32', 'kernel32', 'shell32',
                     ]
                     if LINK_OPENSSL:
                         libraries.extend([
-                            'libeay{}MD'.format(BITNESS),
-                            'ssleay{}MD'.format(BITNESS)
+                            'libssl_static', 'libcrypto_static',
+                            'crypt32', 'advapi32', 'gdi32', 'user32',
                         ])
                 else:
                     libraries = [
@@ -216,28 +159,16 @@ class build_ext(_build_ext):
                         'ws2_32', 'wsock32', 'kernel32', 'shell32',
                     ]
                     if LINK_OPENSSL:
-                        libraries.extend(['libeay32MD', 'ssleay32MD'])
+                        libraries.extend(['libssl', 'libcrypto'])
 
-            FREETDS = 'freetds'
-            suffix = '' if BITNESS == 32 else '64'
-            OPENSSL = fpath('openssl', 'lib{}'.format(suffix))
             for e in self.extensions:
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
-                e.include_dirs.append(osp.join(FREETDS, 'include'))
-                e.library_dirs.append(osp.join(FREETDS, 'lib'))
-                e.include_dirs.append(osp.join(ROOT, 'build', 'include'))
-                e.library_dirs.append(osp.join(ROOT, 'build', 'lib'))
                 if LINK_OPENSSL:
-                    freetds_lib_dir = ''
-                else:
-                    freetds_lib_dir = 'lib'
-                if LINK_FREETDS_STATICALLY:
-                    e.library_dirs.append(osp.join(FREETDS, freetds_lib_dir))
-                else:
-                    e.library_dirs.append(osp.join(FREETDS, freetds_lib_dir))
-                if LINK_OPENSSL:
-                    e.library_dirs.append(OPENSSL)
+                    if BITNESS == 32:
+                        e.library_dirs.append("c:/Program Files (x86)/OpenSSL-Win32/lib")
+                    else:
+                        e.library_dirs.append("c:/Program Files/OpenSSL-Win64/lib")
 
         else:
             for e in self.extensions:
@@ -253,12 +184,12 @@ class clean(_clean):
     def run(self):
         _clean.run(self)
         for ext in self.distribution.ext_modules:
-            cy_sources = [osp.splitext(s)[0] for s in ext.sources]
+            cy_sources = [splitext(s)[0] for s in ext.sources]
             for cy_source in cy_sources:
                 # .so/.pyd files are created in place when using 'develop'
                 for ext in ('.c', '.so', '.pyd'):
                     generated = cy_source + ext
-                    if osp.exists(generated):
+                    if exists(generated):
                         log.info('removing %s', generated)
                         os.remove(generated)
 
@@ -316,15 +247,15 @@ def ext_modules():
         source_extension = 'pyx'
 
     ext_modules = [
-        Extension('_mssql', [osp.join('src', '_mssql.%s' % source_extension)],
+        Extension('_mssql', [join('src', '_mssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
-            library_dirs = library_dirs
+            library_dirs = library_dirs,
         ),
-        Extension('pymssql', [osp.join('src', 'pymssql.%s' % source_extension)],
+        Extension('pymssql', [join('src', 'pymssql.%s' % source_extension)],
             extra_compile_args = _extra_compile_args,
             include_dirs = include_dirs,
-            library_dirs = library_dirs
+            library_dirs = library_dirs,
         ),
     ]
     for e in ext_modules:
