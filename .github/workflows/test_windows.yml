@@ -41,12 +41,22 @@ jobs:
             python-version: ${{ matrix.python-version }}
             architecture: ${{ matrix.python-architecture}}
 
+    - name: Install OpenSSL x86
+      if: matrix.python-architecture == 'x86'
+      run: choco install openssl --forcex86
 
-    - name: Install dependencies
-      run: choco install gperf
+    - name: Install OpenSSL x64
+      if: matrix.python-architecture == 'x64'
+      run: choco install openssl
 
-    - name: Build wheels
-      run: python dev/build_windows_wheels.py
+    - name: Install & build dependencies
+      run: |
+        choco install gperf
+        python -m pip install --upgrade pip
+        pip install -r dev/requirements-dev.txt
+        python dev/build.py --ws-dir=freetds --dist-dir=dist --sdist --freetds-version="1.2.18"
+        pip install pymssql --no-index -f dist
+        python -c "import pymssql; print(pymssql.version_info())"
 
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2

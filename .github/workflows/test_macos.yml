@@ -37,16 +37,24 @@ jobs:
       with:
             python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: build wheel and sdist
+      env:
+            LDFLAGS: -L/usr/local/opt/openssl@1.1/lib
+            CPPFLAGS: -I/usr/local/opt/openssl@1.1/include
+            PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig
       run: |
-            brew install freetds
             pip install --upgrade pip
             pip install -r dev/requirements-dev.txt
-
-    - name: build wheel and sdist
-      run: |
-            pip wheel . -w dist
             python setup.py sdist
+            brew install openssl@1.1
+            python dev/build.py \
+                --ws-dir=./freetds \
+                --dist-dir=./dist \
+                --freetds-version="1.2.18" \
+                --with-openssl=yes \
+                --sdist
+            pip install pymssql --no-index -f dist
+            python -c "import pymssql; print(pymssql.version_info())"
 
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2

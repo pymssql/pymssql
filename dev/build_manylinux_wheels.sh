@@ -31,69 +31,45 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
-# Install freetds and use in build. Yum channel shows version 0.91. Retrieving latest stable release for builds.
-export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1
+yum install -y openssl-devel
 
-rm -rf freetds
-mkdir freetds
-curl -sS ftp://ftp.freetds.org/pub/freetds/stable/freetds-patched.tar.gz > freetds.tar.gz
-tar -zxvf freetds.tar.gz -C freetds --strip-components=1
-
-export CFLAGS="-fPIC"  # for the 64 bits version
-
-pushd freetds
-./configure --enable-msdblib \
-  --prefix=/usr --sysconfdir=/etc/freetds --with-tdsver=7.1 \
-  --disable-apps --disable-server --disable-pool --disable-odbc \
-  --with-openssl=no --with-gnutls=no
-
-make install
-popd
-
-
-#Make wheelhouse directory if it doesn't exist yet
-if [ ! -d wheelhouse ]; then
-    mkdir wheelhouse
-fi
+/opt/python/cp38-cp38/bin/python dev/build.py \
+    --ws-dir=./freetds \
+    --prefix=/usr/local \
+    --freetds-version="1.2.18" \
+    --with-openssl=yes
 
 # Install Python dependencies and compile wheels
 PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
-    "${PYBIN}/pip" wheel . -w wheelhouse/
+    "${PYBIN}/pip" wheel . -w .
 done
 
 # Verify the wheels and move from *-linux_* to -manylinux_*
-for wheel in ./wheelhouse/*.whl; do
+for wheel in ./*.whl; do
     if ! auditwheel show "$wheel"; then
         echo "Skipping non-platform wheel $wheel"
     else
-        auditwheel repair "$wheel" -w ./wheelhouse/
+        auditwheel repair "$wheel" -w ./dist
     fi
 done
 
-# Remove non manylinux wheels
-find wheelhouse/ -type f ! -name '*manylinux*' -delete
-
 # Create .tar.gz dist.
-/opt/python/cp36-cp36m/bin/python setup.py sdist
-
-# Move wheels to dist for install and upload
-mv wheelhouse/* dist/
+/opt/python/cp38-cp38/bin/python setup.py sdist
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install pymssql --no-index -f dist
     "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
-    "${PYBIN}/python" -c "import pymssql; pymssql.__version__;"
     "${PYBIN}/pytest" -s .
     "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
 done
 
 # Remove wheel and egg directory for next container build (i686 vs x86_x64)
-rm -rf wheelhouse/ .eggs/ pymssql.egg-info/
+rm -rf .eggs/ pymssql.egg-info/
 
 # Cleanup FreeTDS directories
 rm -rf freetds/ # misc/ include/ doc/ samples/ vms/ wins32/
