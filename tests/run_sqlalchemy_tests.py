@@ -1,7 +1,4 @@
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import os
 import sys
 import tarfile
@@ -40,7 +37,7 @@ def run_sqlalchemy_tests():
     import sqla_nose
 
 def get_dburi():
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
 
     config.read(os.path.join(os.path.dirname(__file__), 'tests.cfg'))
 

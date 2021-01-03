@@ -11,12 +11,7 @@ if '.tox' in sys.executable:
 
 import decimal
 import os
-try:
-    # Python 2
-    from ConfigParser import ConfigParser
-except ImportError:
-    # Python 3
-    from configparser import ConfigParser
+from configparser import ConfigParser
 
 import pytest
 
