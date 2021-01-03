@@ -32,7 +32,7 @@ def download(args):
         print(f"{freetds_dest} already exists")
     else:
         print(f"downloading {url} to {freetds_dest}")
-        run(f"curl -sSf {url} -o {freetds_dest}")
+        run(f"curl -sSf --retry 10 --max-time 10  {url} -o {freetds_dest}")
 
     if platform.system() == 'Windows':
         url = f"{args.iconv_url.strip('/')}/v{args.iconv_version}"
