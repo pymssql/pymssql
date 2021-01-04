@@ -57,8 +57,10 @@ def build(args, freetds_archive):
         shutil.rmtree(srcdir)
     tar.extractall(args.ws_dir)
     tar.close()
+    if args.prefix is None:
+        args.prefix = args.ws_dir / f"{topdir}-bin"
 
-    blddir = args.ws_dir / f"{srcdir}-build"
+    blddir = args.ws_dir / f"{topdir}-build"
     if blddir.exists():
         shutil.rmtree(blddir)
     blddir.mkdir(parents=True)
@@ -134,6 +136,8 @@ def build_windows(args, freetds_archive, iconv_archive):
         shutil.rmtree(srcdir)
     tar.extractall(args.ws_dir)
     tar.close()
+    if args.prefix is None:
+        args.prefix = args.ws_dir / f"{topdir}-bin"
 
     blddir = args.ws_dir / f"{topdir}-build"
     if blddir.exists():
@@ -170,7 +174,7 @@ def parse_args(argv):
                 help="Build FreeTDS with or without OpenSSL support, default is 'yes'")
 
     base = Path('~/freetds').expanduser()
-    a('-w', '--ws-dir', default=base / "archives", type=Path,
+    a('-w', '--ws-dir', default=base, type=Path,
             help="workspace directory for building FreeTDS")
     a('-p', '--prefix', default=None, type=lambda x: Path(x) if x else None,
             help="prefix for installing FreeTDS, default is WS_DIR/prefix")
@@ -197,9 +201,7 @@ def main(argv):
 
     args = parse_args(argv)
     args.ws_dir = args.ws_dir.absolute()
-    if args.prefix is None:
-        args.prefix = args.ws_dir / "prefix"
-    else:
+    if args.prefix is not None:
         args.prefix = args.prefix.absolute()
 
     freetds_archive, iconv_archive = download(args)
