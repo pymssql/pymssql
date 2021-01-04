@@ -21,13 +21,26 @@
 #
 
 import os
-from os.path import abspath, exists, dirname, join, splitext
+from os.path import exists, join, splitext
 import platform
 import struct
 import sys
 
 from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
+
+from distutils import log
+from distutils.cmd import Command
+from distutils.command.clean import clean as _clean
+
+have_c_files = exists('src/_mssql.c') and exists('src/pymssql.c')
+if have_c_files:
+    from distutils.command.build_ext import build_ext as _build_ext
+else:
+    # Force `setup_requires` stuff like Cython to be installed before proceeding
+    from setuptools.dist import Distribution
+    Distribution(dict(setup_requires='Cython>=0.29.21'))
+    from Cython.Distutils import build_ext as _build_ext
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -70,35 +83,6 @@ print("setup.py: library_dirs =>", library_dirs)
 
 LINK_FREETDS_STATICALLY = True
 LINK_OPENSSL = True
-
-ROOT = abspath(dirname(__file__))
-
-def fpath(*parts):
-    """
-    Return fully qualified path for parts, e.g.
-    fpath('a', 'b') -> '<this dir>/a/b'
-    """
-    return join(ROOT, *parts)
-
-have_c_files = exists(fpath('src', '_mssql.c')) and exists(fpath('src', 'pymssql.c'))
-
-from distutils import log
-from distutils.cmd import Command
-from distutils.command.clean import clean as _clean
-if have_c_files:
-    from distutils.command.build_ext import build_ext as _build_ext
-else:
-    #
-    # Force `setup_requires` stuff like Cython to be installed before proceeding
-    #
-    from setuptools.dist import Distribution
-    Distribution(dict(setup_requires='Cython>=0.29.21'))
-
-    from Cython.Distutils import build_ext as _build_ext
-
-_extra_compile_args = [
-    '-DMSDBLIB'
-]
 
 if not WINDOWS:
     # check for clock_gettime, link with librt for glibc<2.17
@@ -248,12 +232,12 @@ def ext_modules():
 
     ext_modules = [
         Extension('_mssql', [join('src', '_mssql.%s' % source_extension)],
-            extra_compile_args = _extra_compile_args,
+            extra_compile_args = [ '-DMSDBLIB' ],
             include_dirs = include_dirs,
             library_dirs = library_dirs,
         ),
         Extension('pymssql', [join('src', 'pymssql.%s' % source_extension)],
-            extra_compile_args = _extra_compile_args,
+            extra_compile_args = [ '-DMSDBLIB' ],
             include_dirs = include_dirs,
             library_dirs = library_dirs,
         ),
