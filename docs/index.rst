@@ -10,15 +10,14 @@ pymssql
 A simple database interface for `Python`_ that builds on top of `FreeTDS`_ to
 provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
-The 2.x branch of pymssql is built on the latest release of FreeTDS which
-**removes many of the limitations** found with older FreeTDS versions and
-the 1.x branch.
+The wheels of pymssql are built against the latest release of FreeTDS and could be 
+found on `PyPI Project`_.
+
 
 Resources
 ---------
 
-
-* `Docs & Project Home`_
+* `Project Home`_
 
   * :doc:`Quick Start <pymssql_examples>`
   * :doc:`FAQ & Troubleshooting <faq>`
@@ -27,6 +26,7 @@ Resources
 * GitHub_
 * Discussion_
 * `FreeTDS User Guide`_
+
 
 Features
 --------
@@ -38,6 +38,7 @@ Features
 * Includes a supported and documented low-level module (``_mssql``) that you
   can use instead of the DB-API
 * Supports stored procedures with both return values and output parameters
+* Supports bulk copy
 * A comprehensive test suite
 * Compatible with cooperative multi-tasking systems (gevent, etc.)
 * Can be used to connect to Azure
@@ -47,7 +48,7 @@ License
 
 pymssql is licensed under the terms of the GNU LGPL license.
 
-.. _Docs & Project Home: http://pymssql.org
+.. _Project Home: http://pymssql.org
 .. _Python: http://www.python.org/
 .. _FreeTDS: http://www.freetds.org/
 .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
