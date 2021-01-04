@@ -38,7 +38,8 @@ yum install -y openssl-devel
     --dist-dir=. \
     --prefix=/usr/local \
     --freetds-version="1.2.18" \
-    --with-openssl=yes
+    --with-openssl=yes \
+    --static-freetds
 
 # Install Python dependencies and compile wheels
 PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"

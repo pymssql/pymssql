@@ -76,11 +76,11 @@ def build(args, freetds_archive):
                   "--disable-odbc",
                   f"--with-openssl={args.with_openssl}",
                   "--with-gnutls=no",
-                  "--enable-shared",
-                  "--disable-static",
-                  #"--enable-static",
-                  #"--disable-shared",
-                  ]       
+                  ]
+    if args.static_freetds:
+        configure.extend(["--enable-static", "--disable-shared"])
+    else:
+        configure.extend(["--enable-shared", "--disable-static"])
     cmd = ' '.join(configure)
     env = os.environ.copy()
     env.update(CFLAGS="-fPIC")
@@ -172,6 +172,8 @@ def parse_args(argv):
                 help="TDS protocol version")
         a('-o', '--with-openssl', choices=['yes', 'no'], default='yes',  
                 help="Build FreeTDS with or without OpenSSL support, default is 'yes'")
+        a('-S', '--static-freetds', action='store_true', 
+                help="build FreeTDS staticly")
 
     base = Path('~/freetds').expanduser()
     a('-w', '--ws-dir', default=base, type=Path,

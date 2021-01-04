@@ -42,6 +42,9 @@ else:
     Distribution(dict(setup_requires='Cython>=0.29.21'))
     from Cython.Distutils import build_ext as _build_ext
 
+LINK_FREETDS_STATICALLY = True
+LINK_OPENSSL = True
+
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 WINDOWS = platform.system() == 'Windows'
@@ -80,9 +83,6 @@ if not WINDOWS:
     print("setup.py: platform.libc_ver() =>", platform.libc_ver())
 print("setup.py: include_dirs =>", include_dirs)
 print("setup.py: library_dirs =>", library_dirs)
-
-LINK_FREETDS_STATICALLY = True
-LINK_OPENSSL = True
 
 if not WINDOWS:
     # check for clock_gettime, link with librt for glibc<2.17
@@ -155,8 +155,12 @@ class build_ext(_build_ext):
                         e.library_dirs.append("c:/Program Files/OpenSSL-Win64/lib")
 
         else:
+            if LINK_OPENSSL and LINK_FREETDS_STATICALLY:
+                libraries.extend([ 'ssl', 'crypto' ])
+
             for e in self.extensions:
                 e.libraries.extend(libraries)
+
         _build_ext.build_extensions(self)
 
 
