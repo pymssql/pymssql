@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Some async tests with gevent.
+"""
+
 import datetime
 import pytest
 import unittest

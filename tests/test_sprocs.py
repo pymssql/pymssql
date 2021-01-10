@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test stored procedure usage.
+"""
+
 import decimal
 import datetime
 import os

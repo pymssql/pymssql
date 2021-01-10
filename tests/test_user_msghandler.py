@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test user message hanler.
+"""
+
 import unittest
 
 from .helpers import config, mssqlconn

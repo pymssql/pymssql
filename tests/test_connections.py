@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test connection to database.
+"""
+
 from __future__ import with_statement
 from os import path, makedirs, environ
 import re

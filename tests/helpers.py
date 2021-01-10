@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Various test helper functions.
+"""
+
 import logging
 from os import path
 import time

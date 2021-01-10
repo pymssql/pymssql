@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Pytest configuration.
+"""
+
 from os.path import dirname
 import sys
 

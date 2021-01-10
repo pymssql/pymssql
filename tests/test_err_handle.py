@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test error handling.
+"""
+
 from datetime import datetime
 import unittest
 

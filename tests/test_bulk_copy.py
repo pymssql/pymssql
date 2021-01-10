@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test bulk copy.
+"""
+
 import unittest
 import datetime
 

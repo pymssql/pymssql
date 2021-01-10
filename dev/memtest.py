@@ -1,4 +1,9 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/python
+"""
+
+"""
+
 import _mssql
 
 test_str = 'testing' * 1000

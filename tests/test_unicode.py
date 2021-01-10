@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test unicode usage in queries.
+"""
+
 import unittest
 
 from .helpers import pymssqlconn

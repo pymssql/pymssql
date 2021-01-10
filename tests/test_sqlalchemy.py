@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Basic SQLAlchemy tests.
+"""
+
 import unittest
 
 from .helpers import config, eq_, skip_test

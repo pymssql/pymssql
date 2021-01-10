@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test connection with as_dict=True.
+"""
+
 import unittest
 
 import pymssql

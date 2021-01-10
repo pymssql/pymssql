@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test pymssql module.
+"""
+
 import unittest
 
 import pytest

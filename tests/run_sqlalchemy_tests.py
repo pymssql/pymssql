@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Run SQLAlchemy tests with pymssql connection.
+"""
+
 import configparser
 import os
 import sys

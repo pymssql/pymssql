@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test queries with debug on.
+"""
+
 from contextlib import contextmanager
 from io import StringIO
 import sys

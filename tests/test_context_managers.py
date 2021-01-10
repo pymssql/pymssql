@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test context managers -- i.e.: the `with` statement
 """

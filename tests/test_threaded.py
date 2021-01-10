@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Test usage in threads.
+"""
+
 import sys
 import threading
 import time
