@@ -298,7 +298,7 @@ setup(
     license = 'LGPL',
     platforms = 'any',
     keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
-    url = 'http://pymssql.org',
+    url = 'http://pymssql.readthedocs.io',
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
