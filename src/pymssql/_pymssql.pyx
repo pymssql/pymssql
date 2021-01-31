@@ -23,11 +23,11 @@
 import datetime
 import time
 
-import _mssql
-cimport _mssql
+from pymssql import _mssql
+from pymssql cimport _mssql
 from cpython cimport bool, PY_MAJOR_VERSION
 from libc.string cimport strlen
-from sqlfront cimport BYTE
+from .sqlfront cimport BYTE
 
 cdef extern from "version.h":
     const char *PYMSSQL_VERSION
@@ -47,7 +47,7 @@ threadsafety = 1
 # this module uses extended python format codes
 paramstyle = 'pyformat'
 
-from _mssql import set_wait_callback
+from pymssql._mssql import set_wait_callback
 
 # store a tuple of programming error codes
 cdef object prog_errors = (

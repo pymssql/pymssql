@@ -1,5 +1,5 @@
 from cpython cimport bool
-from sqlfront cimport DBPROCESS, BYTE
+from .sqlfront cimport DBPROCESS, BYTE
 
 cdef void log(char *, ...)
 

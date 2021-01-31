@@ -56,7 +56,7 @@ import datetime
 import re
 import uuid
 
-from sqlfront cimport *
+from .sqlfront cimport *
 
 from libc.stdio cimport fprintf, snprintf, stderr, FILE
 from libc.string cimport strlen, strncpy, memcpy, memset
