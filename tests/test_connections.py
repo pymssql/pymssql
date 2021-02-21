@@ -9,7 +9,7 @@ import re
 import unittest
 import pytest
 
-import _mssql
+from pymssql import _mssql
 
 from .helpers import config, skip_test, mssqlconn
 server = config.server

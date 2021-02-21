@@ -8,7 +8,7 @@ import threading
 import time
 import unittest
 
-from _mssql import MSSQLDatabaseException
+from pymssql._mssql import MSSQLDatabaseException
 
 from .helpers import mssqlconn, StoredProc, mark_slow
 

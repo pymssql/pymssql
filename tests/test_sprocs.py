@@ -10,7 +10,7 @@ import sys
 import unittest
 
 import pymssql
-import _mssql
+from pymssql import _mssql
 
 import pytest
 

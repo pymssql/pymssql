@@ -18,7 +18,7 @@ def skip_test(reason='No reason given to skip_test'):
 def mark_slow(f):
     return f
 
-import _mssql
+from pymssql import _mssql
 import pymssql
 
 

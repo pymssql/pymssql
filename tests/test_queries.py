@@ -6,7 +6,7 @@ Test queries.
 from datetime import datetime
 import unittest
 
-import _mssql
+from pymssql import _mssql
 
 from .helpers import mssqlconn, drop_table
 

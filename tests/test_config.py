@@ -7,7 +7,7 @@ from __future__ import with_statement
 from os import path, makedirs, environ
 import shutil
 
-import _mssql
+from pymssql import _mssql
 
 from .helpers import tmpdir, skip_test
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')

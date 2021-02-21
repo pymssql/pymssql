@@ -5,7 +5,7 @@ Test parameters substitution.
 
 from .helpers import eq_
 
-from _mssql import substitute_params
+from pymssql._mssql import substitute_params
 
 
 def test_single_param():

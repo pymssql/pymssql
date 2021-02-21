@@ -4,7 +4,7 @@
 
 """
 
-import _mssql
+from pymssql import _mssql
 
 test_str = 'testing' * 1000
 

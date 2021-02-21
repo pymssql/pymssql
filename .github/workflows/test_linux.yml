@@ -63,7 +63,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest -s
+        pytest -sv
 
   wheels:
 

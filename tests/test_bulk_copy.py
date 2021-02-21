@@ -6,7 +6,7 @@ Test bulk copy.
 import unittest
 import datetime
 
-import _mssql
+from pymssql import _mssql
 from tests.helpers import drop_table, pymssqlconn
 
 

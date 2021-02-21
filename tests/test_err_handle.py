@@ -6,7 +6,7 @@ Test error handling.
 from datetime import datetime
 import unittest
 
-import _mssql
+from pymssql import _mssql
 
 
 class ErrHandleTests(unittest.TestCase):
