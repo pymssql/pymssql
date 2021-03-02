@@ -1290,6 +1290,9 @@ cdef class MSSQLConnection:
             if self.num_columns == 0:
                 log("_mssql.MSSQLConnection.get_header(): num_columns == 0")
                 return None
+            elif self.column_names is None or self.column_types is None:
+                log("_mssql.MSSQLConnection.get_header(): column_names is None or column_types is None")
+                return None
 
             header_tuple = []
             for col in xrange(1, self.num_columns + 1):
