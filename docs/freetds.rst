@@ -146,7 +146,7 @@ Please see also the :doc:`pymssql module reference <ref/pymssql>`, :doc:`_mssql
 module reference <ref/_mssql>`, and :doc:`FAQ <faq>` pages.
 
 For more information on configuring FreeTDS please go to
-http://www.freetds.org/userguide/freetdsconf.htm
+https://www.freetds.org/userguide/
 
 Testing the connection
 ----------------------
