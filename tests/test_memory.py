@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import gc
+import sys
 import psutil
 import pymssql
+import pytest
 
 
+@pytest.mark.xfail(sys.platform == "win32", reason="Memory test is not stable on Windows")
 def test_memory_leak_on_unsuccessful_connect():
 
     p = psutil.Process()
