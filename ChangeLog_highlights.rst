@@ -1,6 +1,41 @@
 Recent Changes
 ==============
 
+Version 2.2.0 - 2021-03-00 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Add Python-3.9 to the build and test matrix.
+- Drop support for Python2 and Python3 < 3.6.
+
+Features
+--------
+
+- Support bulk copy (#279). Thanks to Simon.StJG (PR-689).
+- Wheels on PyPI link FreeTDS statically. Windows wheels build against OpenSSL.
+- Convert pymssql to a package. **Potential compatibility issue:** projects using
+  low level *_mssql* module need to import it from *pymssql* first.
+
+Bug fixes
+---------
+
+- Fixed a deadlock caused by a missing release of GIL (#540), thanks to
+  filip.stefanak (PR-541) and Juraj Bubniak (PR-683).
+- Prevents memory leak on login failure. Thanks to caogtaa and Simon.StJG (PR-690).
+- Fix check for TDS version (#652 and #669).
+- Documentation fixes. Thanks to Simon Biggs, Shane Kimble, Simon.StJG and Dale Evans.
+
+Internals
+---------
+
+- Introduce script dev/build.py to build FreeTDS and pymssql wheels.
+- Simplify setup.py, introduce environment variables to select FreeTDS includes
+  and libraries.
+
+
+
 Version 2.1.5 - 2020-09-17 - Mikhail Terekhov
 =============================================
 
