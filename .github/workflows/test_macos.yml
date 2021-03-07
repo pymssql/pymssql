@@ -57,6 +57,10 @@ jobs:
             pip install pymssql --no-index -f dist
             python -c "import pymssql; print(pymssql.version_info())"
 
+    - name: Test with pytest
+      run: |
+        pytest -sv
+
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
