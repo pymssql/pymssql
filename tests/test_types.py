@@ -11,7 +11,7 @@ import sys
 import unittest
 import uuid
 
-from .helpers import get_sql_server_version
+from .helpers import get_sql_server_version, test_server_required
 
 import pytest
 
@@ -63,6 +63,7 @@ def build_create_table_query(conn):
     return create_sql
 
 
+@test_server_required
 class TestTypes(unittest.TestCase):
     tname = 'pymssql'
 
@@ -284,6 +285,7 @@ class TestTypes(unittest.TestCase):
         eq_(origval, colval)
 
 
+@test_server_required
 class TestTypesPymssql(unittest.TestCase):
     tname = 'pymssql'
 

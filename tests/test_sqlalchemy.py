@@ -5,7 +5,7 @@ Basic SQLAlchemy tests.
 
 import unittest
 
-from .helpers import config, eq_, skip_test
+from .helpers import config, eq_, skip_test, test_server_required
 
 try:
     import sqlalchemy as sa
@@ -29,7 +29,7 @@ meta = sa.MetaData()
 Base = declarative_base(metadata=meta)
 Session = sessionmaker(bind=engine)
 
-sess = Session()
+#sess = Session()
 
 class SAObj(Base):
     __tablename__ = 'sa_test_objs'
@@ -37,31 +37,38 @@ class SAObj(Base):
     name = sa.Column(sa.String(50))
     data = sa.Column(sa.PickleType)
 
-saotbl = SAObj.__table__
+#saotbl = SAObj.__table__
+#
+#saotbl.drop(engine, checkfirst=True)
+#saotbl.create(engine)
 
-saotbl.drop(engine, checkfirst=True)
-saotbl.create(engine)
-
+@test_server_required
 class TestSA(unittest.TestCase):
+
+    def setUp(self):
+        self.sess = Session()
+        self.saotbl = SAObj.__table__
+        self.saotbl.drop(engine, checkfirst=True)
+        self.saotbl.create(engine)
 
     def tearDown(self):
         # issue rollback first, otherwise clearing the table might give us
         # an error that the session is in a bad state
-        sess.rollback()
-        sess.execute(SAObj.__table__.delete())
-        sess.commit()
+        self.sess.rollback()
+        self.sess.execute(SAObj.__table__.delete())
+        self.sess.commit()
 
     def test_basic_usage(self):
         s = SAObj(name='foobar')
-        sess.add(s)
-        sess.commit()
+        self.sess.add(s)
+        self.sess.commit()
         assert s.id
-        assert sess.query(SAObj).count() == 1
+        assert self.sess.query(SAObj).count() == 1
 
     def test_pickle_type(self):
         s = SAObj(name='foobar', data=['one'])
-        sess.add(s)
-        sess.commit()
-        res = sess.execute(sa.select([saotbl.c.data]))
+        self.sess.add(s)
+        self.sess.commit()
+        res = self.sess.execute(sa.select([self.saotbl.c.data]))
         row = res.fetchone()
         eq_(row['data'], ['one'])

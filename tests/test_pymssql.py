@@ -10,12 +10,13 @@ import pytest
 import pymssql as pym
 
 from .helpers import (pymssqlconn, PyTableBase, CursorBase, eq_, config,
-                      skip_test)
+                      skip_test, test_server_required)
 
 class TestDBAPI2(object):
     def test_version(self):
         assert pym.__version__
 
+@test_server_required
 class TestTransaction(unittest.TestCase, PyTableBase):
     tname = 'users'
     cols = (
@@ -92,6 +93,7 @@ class TestTransaction(unittest.TestCase, PyTableBase):
         eq_(self.row_count(), 0)
 
 
+@test_server_required
 class TestCursor(CursorBase):
     dbmod = pym
 
@@ -100,6 +102,7 @@ class TestCursor(CursorBase):
         cls.conn = pymssqlconn()
 
 
+@test_server_required
 class TestBasicConnection(unittest.TestCase):
 
     def connect(self, conn_props=None):
@@ -142,6 +145,7 @@ class TestBasicConnection(unittest.TestCase):
         conn.close()
 
 
+@test_server_required
 class TestAutocommit(unittest.TestCase, PyTableBase):
     tname = 'test'
     cols = (

@@ -14,7 +14,7 @@ from pymssql import _mssql
 
 import pytest
 
-from .helpers import mssqlconn, pymssqlconn, eq_, skip_test, get_sql_server_version
+from .helpers import mssqlconn, pymssqlconn, eq_, skip_test, get_sql_server_version, test_server_required
 
 FIXED_TYPES = (
     'BigInt',
@@ -38,6 +38,7 @@ VARIABLE_TYPES = (
     ('Text', None)  # Leave this one in the last position in case it fails (see https://code.google.com/p/pymssql/issues/detail?id=113#c2)
 )
 
+@test_server_required
 class TestFixedTypeConversion(unittest.TestCase):
 
     def setUp(self):
@@ -237,6 +238,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         assert abs(input - proc.parameters['@ofloat']) < 0.00001
 
 
+@test_server_required
 class TestCallProcFancy(unittest.TestCase):
     # "Fancy" because we test some exotic cases like passing None or Unicode
     # strings to a called procedure
@@ -377,6 +379,7 @@ class TestCallProcFancy(unittest.TestCase):
 
 
 
+@test_server_required
 class TestStringTypeConversion(unittest.TestCase):
 
     def setUp(self):
@@ -458,6 +461,7 @@ class TestStringTypeConversion(unittest.TestCase):
                 assert 'value can only be str or bytearray' == str(exc_info.value)
 
 
+@test_server_required
 class TestFloatTypeConversion(unittest.TestCase):
     def setUp(self):
         self.mssql = mssqlconn()
@@ -510,6 +514,7 @@ class TestFloatTypeConversion(unittest.TestCase):
         a = next(cursor)
         assert abs(a[0] - 5.44451787074e+39) < 0.000001
 
+@test_server_required
 class TestErrorInSP(unittest.TestCase):
 
     def setUp(self):
@@ -552,6 +557,7 @@ class TestErrorInSP(unittest.TestCase):
             self.assertTrue(isinstance(e,  pymssql.DatabaseError))
 
 
+@test_server_required
 class TestSPWithQueryResult(unittest.TestCase):
 
     SP_NAME = 'SPWithAQuery'

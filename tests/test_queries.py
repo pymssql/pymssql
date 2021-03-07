@@ -8,8 +8,9 @@ import unittest
 
 from pymssql import _mssql
 
-from .helpers import mssqlconn, drop_table
+from .helpers import mssqlconn, drop_table, test_server_required
 
+@test_server_required
 class QueryTests(unittest.TestCase):
 
     @classmethod

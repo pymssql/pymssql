@@ -7,7 +7,7 @@ import unittest
 import datetime
 
 from pymssql import _mssql
-from tests.helpers import drop_table, pymssqlconn
+from tests.helpers import drop_table, pymssqlconn, test_server_required
 
 
 tablename = "pymssql"
@@ -25,6 +25,7 @@ complex_table = """
 """ % tablename
 
 
+@test_server_required
 class TestTypes(unittest.TestCase):
     def setUp(self):
         self.conn = pymssqlconn()

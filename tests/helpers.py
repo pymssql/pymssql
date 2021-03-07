@@ -18,12 +18,16 @@ def skip_test(reason='No reason given to skip_test'):
 def mark_slow(f):
     return f
 
+test_server_required = pytest.mark.test_server_required
+
 from pymssql import _mssql
 import pymssql
 
 
 class Config(object):
-    pass
+    def __str__(self):
+        return f"server={self.server}, port={self.port}, database={self.database}, " \
+               f"user={self.user}, password={self.password}"
 
 config = Config()
 
@@ -31,7 +35,6 @@ cdir = path.dirname(__file__)
 tmpdir = path.join(cdir, 'tmp')
 cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
-
 
 def mssqlconn(conn_properties=None):
     return _mssql.connect(
@@ -59,7 +62,11 @@ def get_app_lock():
     global global_mssqlconn
 
     if global_mssqlconn is None:
-        global_mssqlconn = mssqlconn()
+        try:
+            global_mssqlconn = mssqlconn()
+        except Exception as exc:
+            print(f"Could not connect to {config}:\n{exc}")
+            return False
 
     t1 = time.time()
 
@@ -83,6 +90,7 @@ def get_app_lock():
         "*** %d: sp_getapplock for 'pymssql_tests' returned %d - "
         "it took %d seconds"
         % (t2, result, t2 - t1))
+    return True
 
 
 def release_app_lock():
