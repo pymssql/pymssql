@@ -277,7 +277,7 @@ Shared object "libsybdb.so.3" not found
 
 On Linux/\*nix you may encounter the following behaviour::
 
-    >>> import _mssql
+    >>> from pymssql import _mssql
     Traceback (most recent call last):
     File "<stdin>", line 1, in ?
     ImportError: Shared object "libsybdb.so.3" not found
@@ -297,7 +297,7 @@ FreeTDS.
 
 On Linux/\*nix you may encounter the following behaviour::
 
-    >>> import _mssql
+    >>> from pymssql import _mssql
     >>> c=_mssql.connect('hostname:portnumber','user','pass')
     Traceback (most recent call last):
     File "<stdin>", line 1, in <module>

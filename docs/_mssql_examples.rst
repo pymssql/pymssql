@@ -9,7 +9,7 @@ Quickstart usage of various features
 
 ::
 
-    import _mssql
+    from pymssql import _mssql
     conn = _mssql.connect(server='SQL01', user='user', password='password', \
         database='mydatabase')
     conn.execute_non_query('CREATE TABLE persons(id INT, name VARCHAR(100))')
@@ -89,7 +89,7 @@ An example of exception handling
 
 .. code-block:: python
 
-    import _mssql
+    from pymssql import _mssql
 
     conn = _mssql.connect(server='SQL01', user='user', password='password',
                           database='mydatabase')
@@ -115,7 +115,7 @@ by the stack with informative messages sent by the server. Set it on a per
 
 .. code-block:: python
 
-    import _mssql
+    from pymssql import _mssql
 
     def my_msg_handler(msgstate, severity, srvname, procname, line, msgtext):
         """
