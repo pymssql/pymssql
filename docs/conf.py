@@ -21,7 +21,7 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 
 def extract_version():
-    with open(os.path.join(os.pardir, 'src', 'version.h')) as f:
+    with open(os.path.join(os.pardir, 'src', 'pymssql', 'version.h')) as f:
         content = f.read()
 
     # Parse file content that looks like this:
@@ -53,8 +53,11 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pymssql'
-copyright = u'2001-2016, pymssql developers'
+project = 'pymssql'
+copyright = '2001-2021, pymssql developers'
+
+# uncomment this if you don't want to verify at all
+tls_verify = False
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -227,8 +230,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'pymssql.tex', u'pymssql Documentation',
-   u'pymssql developers', 'manual', True),
+  ('index', 'pymssql.tex', 'pymssql Documentation',
+   'pymssql developers', 'manual', True),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -257,8 +260,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pymssql', u'pymssql Documentation',
-     [u'pymssql developers'], 1)
+    ('index', 'pymssql', 'pymssql Documentation',
+     ['pymssql developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -271,8 +274,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pymssql', u'pymssql Documentation',
-   u'pymssql developers', 'pymssql', 'One line description of project.',
+  ('index', 'pymssql', 'pymssql Documentation',
+   'pymssql developers', 'pymssql', 'One line description of project.',
    'Miscellaneous'),
 ]
 
