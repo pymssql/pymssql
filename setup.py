@@ -43,8 +43,17 @@ else:
     Distribution(dict(setup_requires='Cython>=0.29.21'))
     from Cython.Distutils import build_ext as _build_ext
 
-LINK_FREETDS_STATICALLY = True
-LINK_OPENSSL = True
+def check_env(env_name, default):
+    val = os.getenv(env_name, default)
+    if val.upper() in ('1', 'YES', 'TRUE'):
+       return True
+    elif val.upper() in ('0', 'NO', 'FALSE'):
+       return False
+    else:
+       raise Exception(f"Unsupported environment value {env_name}={val}")
+
+LINK_FREETDS_STATICALLY = check_env('LINK_FREETDS_STATICALLY', 'YES')
+LINK_OPENSSL = check_env('LINK_OPENSSL', 'YES')
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
