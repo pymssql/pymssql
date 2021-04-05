@@ -76,10 +76,10 @@ Most of the times this should be all what's needed.
 
 * Anaconda / Miniconda
 
-  A conda install of pymssql will mitigate the need to edit config files 
+  A conda install of pymssql will mitigate the need to edit config files
   outside of the user's home directory on some unix-like systems.
   This is especially useful when root access is restricted and/or Homebrew
-  can't be installed.  This method requires no additional compilation or 
+  can't be installed.  This method requires no additional compilation or
   configuration.
 
   .. code-block:: bash
@@ -191,6 +191,7 @@ development.
     `Google Code documentation Wiki`_.
 
 .. _Google Code documentation Wiki: https://code.google.com/p/pymssql/wiki/Documentation
+
 
 Current Development
 ===================

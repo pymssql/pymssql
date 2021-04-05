@@ -2,209 +2,155 @@
 Building and developing pymssql
 ===============================
 
-Building
-========
+Required software
+_________________
 
-To build pymssql you should have:
+To build ``pymssql`` you should have:
 
-* Python >= 2.7 including development files. Please research your OS usual
-  software distribution channels, e.g, ``python-dev`` or ``python-devel``
-  packages.
-* Cython >= 0.19.1
-* FreeTDS >= 0.91 including development files. Please research your OS usual
-  software distribution channels, e.g, ``freetds-dev`` or ``freetds-devel``
-  packages.
-* Microsoft SQL Server
+* `Python <https://python.org>`_ >= 3.6 including development files.
+  Please research your OS usual software distribution channels,
+  e.g, ``python-dev`` or ``python-devel`` packages on Linux.
+* `Cython <https://cython.org>`_ -
+  to compile ``pymssql`` source files to ``C``.
+* `setuptools <https://pypi.org/project/setuptools>`_ -
+  for ``setup.py`` support.
+* `setuptools_scm <https://pypi.org/project/setuptools_scm>`_ -
+  for extracting version information from ``git``.
+* `wheel <https://pypi.org/project/wheel/>`_ -
+  for building python wheels.
+* `FreeTDS <https://freetds.org>`_ >= 1.2 including development files.
+  Please research your OS usual software distribution channels,
+  e.g, ``freetds-dev`` or ``freetds-devel`` packages on Linux.
+* `GNU gperf <https://www.gnu.org/software/gperf/>`_ -
+  a perfect hash function generator, needed for FreeTDS.
+  On Windows prebuild version is available from
+  `Chocolatey <https://chocolatey.org/packages/gperf>`_.
+* `win-iconv <https://github.com/win-iconv/win-iconv>`_
+  (Windows only) - developing ``pymssql`` on Windows also requires this library
+  to build FreeTDS.
+* `OpenSSL <https://openssl.org>`_ - If you need to connect to Azure make sure
+  FreeTDS is built with SSL support.
+  Please research your OS usual software distribution channels.
+  On Windows one easy way is to get prebuild libraries from
+  `Chocolatey <https://chocolatey.org/packages/openssl>`_.
 
-.. note::
-    If developing on Windows you will want to make sure you install debug symbols.
-    For more information see https://docs.python.org/3/using/windows.html#installation-steps
-.. note::
-    If you need to connect to Azure make sure FreeTDS is built with SSL support.
-    Instructions on how to do this are out of the scope of this document.
+For testing the follwing is required:
+
+* Microsoft SQL Server.
+  One possibility is to use official docker images for Microsoft SQL Server
+  on Linux available `here <https://hub.docker.com/_/microsoft-mssql-server>`_.
+* `pytest <https://pypi.org/project/pytest/>`_ -
+  to run the tests.
+* `pytest-timeout <https://pypi.org/project/pytest-timeout/>`_ -
+  for limiting long running tests.
+* `psutil <https://pypi.org/project/psutil/>`_ -
+  for memory monitoring.
+* `gevent <https://pypi.org/project/gevent/>`_
+  (optional) - for async tests.
+* `Sqlalchemy <https://pypi.org/project/SQLAlchemy/>`_ -
+  (optional) - for basic Sqlalchemy testing.
+
+To build documentation `Sphinx <https://pypi.org/project/Sphinx/>`_ and
+`sphinx-rtd-theme <https://pypi.org/project/sphinx-rtd-theme/>`_ are also needed.
+
 
 Windows
--------
+_______
 
-
-Required Tools
-______________
 In addition to the requirements above when developing ``pymssql`` on the Windows
 platform you will need these additional tools installed:
 
-* Visual Studio C++ Compiler Tools
-* Developer Command Prompt for Visual Studio
+* Visual Studio C++ Compiler Tools, see
+  `Python documentation <https://devguide.python.org/setup/#windows>`_
+  for instructions on what components to install.
 * `Cmake <https://cmake.org/download/>`_
-* `7Zip <https://www.7-zip.org/download.html>`_
-
-For C++ and the Developer Command Prompt the easiest path is installing Visual Studio.
-When installing make sure you select the C++ libraries and components. Also make sure that
-Visual Studio installs nmake with the C++ library installs.
-
-* https://visualstudio.microsoft.com/vs/community/
+  for building FreeTDS and win-iconv.
+* `curl <https://chocolatey.org/packages/curl>`_ -
+  for downloading FreeTDS and win-iconv.
 
 .. note::
-    One thing to be aware of is which version of Python you are using relative to which
-    C++ compilers you have installed. When building on Windows you should make sure you
-    have the required compiler, pip and setuptools versions installed. For more 
-    information see https://wiki.python.org/moin/WindowsCompilers
+    If Windows computer is not readily available then
+    `virtual machine <https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/>`_
+    from Microsoft could be used.
 
 
-Required Libraries
-__________________
+Building ``pymssql`` wheel
+__________________________
 
-Developing ``pymssql`` on Windows also requires the following libraries:
+It is recommended to use python virtual environment for building ``pymssql``::
 
-* `FreeTDS <http://www.freetds.org/>`_
-* `iconv <https://www.gnu.org/software/libiconv/>`_
+    python3 -m venv <path_to_pve>
 
-For development you will want ``freetds`` to be available in your project path.
-You can find prebuilt artifacts at the `FreeTDS Appveyor project <https://ci.appveyor.com/project/FreeTDS/freetds?branch=master>`_
+if using ``bash``::
 
-To download select the job name that matches your environment (platform, version and tds
-version) and then click the artifacts tag. You can download the zip file with or without
-ssl depending on your needs.
+    source <path_to_pve>/bin/activate
 
+or if on Windows::
 
-.. note::
-    Remove the existing ``freetds0.95`` directory in the ``pymssql`` project directory
+    <path_to_pve>/scripts/activate.bat
 
-Extract the .zip artifact into your project path into a directory named ``freetds``
+then install required python packages::
 
-    ``C:\\%USERPATH%\\pymssql\\freetds``
+    pip intall -U pip
+    pip install dev/requirements-dev.txt
 
-You will also need to remove the branch tag from the artifact directory (for instance
-``master`` from ``vs2015_64-master``) or update the ``INCLUDE`` and ``LIB`` environment
-variables so that the compiler and linker are able to find the path to
-``%PROJECTROOT%\\freetds\\<artifact folder>\\include`` and
-``%PROJECTROOT%\\freetds\\<artifact folder>\\lib``
-in the build step.
+If and now build wheel::
+
+    python3 setup.py bdist_wheel
+
+or::
+
+    pip wheel .
 
 
-.. note::
-    If you decide to add the directories to ``INCLUDE`` and ``LIB`` the below provide example
-    commands
+Environment Variables
+_____________________
 
-    .. code-block::
+By default ``setup.py`` links against OpenSSL if it is available,
+links FreeTDS statically and looks for FreeTDS headers and libraries
+in places standard for the OS, but
+there are several environment variables for build customization:
 
-        set INCLUDE=%INCLUDE%;%USERPROJECTS%\\pymssql\\freetds\\vs2015_64-master\\include
+LINK_FREETDS_STATICALLY = [YES|NO|1|0|TRUE|FALSE]
+    default - YES,
+    defines if FreeTDS is linked statically or not.
 
-        set LIB=%LIB%;%USERPROJECTS%\\pymssql\\freetds\\vs2015_64-master\\lib
+LINK_OPENSSL = [YES|NO|1|0|TRUE|FALSE]
+    default - YES,
+    defines if ``pymssql`` is linked against OpenSSL.
 
-In addition to ``freetds`` you will want ``iconv`` available on your project path. For iconv
-on Windows we recommend https://github.com/win-iconv/win-iconv.git. We will retrieve this in
-an upcoming build step.
+PYMSSQL_FREETDS
+    if defined, determines prefix of the FreeTDS installation.
 
-If you prefer to build FreeTDS on your own please refer to the FreeTDS `config <http://www.freetds.org/>`_ and
-`os issues <http://www.freetds.org/userguide/osissues.htm>`_ build pages.
+PYMSSQL_FREETDS_INCLUDEDIR
+    if defined, alows to fine tune where to search for FreeTDS headers.
 
-
-Required Environment Variables
-______________________________
-
-You will need to set the following environment variables in
-Visual Studio Developer Command Prompt before installing iconv.
-
-* set PYTHON_VERSION=<Python Version>
-* set PYTHON_ARCH=<Python Architecture>
-* set VS_VER=<MSVC Compiler Version>
+PYMSSQL_FREETDS_LIBDIR
+    if defined, alows to fine tune where to search for FreeTDS libraries.
 
 Example:
 
-    .. code-block::
+    .. code-block:: console
 
-        set PYTHON_VERSION=3.6.6
-        set PYTHON_ARCH=64
-        set VS_VER=2015
+        PYMSSQL_FREETDS=/tmp/freetds python3 setup.py bdist_wheel
 
 
-Installing iconv
-________________
 
-``pymssql`` expects ``iconv`` header and lib objects and to be available in the ``build\\include``
-and ``build\\bin`` directories
+Building FreeTDS and ``pymssql`` from scratch
+_____________________________________________
 
-From the root of your project (pymssql directory) run:
+If one wants to use some specific FreeTDS version then there is a script
+``dev/build.py`` that downloads and builds required FreeTDS version sources
+(and win-conv on Windows) and builds ``pymssql`` wheel.
+Run::
 
-.. code-block::
+    python dev/build.py --help
 
-    powershell dev\appveyor\install-win-iconv.ps1
+for supported options.
 
-This is a powershell script that will download `win-iconv <https://github.com/win-iconv/win-iconv/>`_
-from the previously mentioned GitHub repository, build and move the artifacts to the
-directory that ``pymssql`` will use with ``Cython``.
-
-.. note::
-
-    If you receive the following TLS error that is probably due to a mismatch between powershells
-    TLS version and GitHub.
-
-    .. code-block::
-
-        Exception calling "DownloadFile" with "2" argument(s): "The request was aborted: Could not create SSL/TLS secure channel."
-
-    You can add this line to ``%PROJECTROOT%\\dev\\appveyor\\install-win-iconv.ps1``
-
-    .. code-block:: PowerShell
-
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    On line 3 and the powershell script should run with TLS1.2. See issue `547 <https://github.com/pymssql/pymssql/issues/547>`_
-    for more information
-
-
-Required Python Packages
-________________________
-For Python you will need the following packages installed into your virtual environment:
-
-* Cython
-* pytest == 3.2.5
-* SQLAlchemy
-* wheel
-
-
-Running the build
-_________________
-
-With the above libraries, pacakges and potential environment variables in place we are ready to
-build.
-
-At the root of the project with your virtual environment activated run
-
-.. code-block::
-
-    python setup.py build
-
-If there are no errors you are then ready to run
-
-.. code-block::
-
-    python setup.py install
-
-or continue on to the `Testing`_ documentation which advises using
-
-.. code-block::
-
-    python setup.py develop.
-
-To report any issues with building on Windows please use the `mailing list <https://groups.google.com/forum/#!forum/pymssql>`_
-
-
-Unix
-----
-
-To build on Unix you must also have:
-
-* gcc
-
-Then you can simply run::
-
-  python setup.py build
-
-or other ``setup.py`` commands as needed.
 
 Testing
-=======
+_______
 
 .. danger::
 
