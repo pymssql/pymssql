@@ -168,11 +168,11 @@ def parse_args(argv):
     a('-v', '--freetds-version', default='latest',
             help="FreeTDS version to build")
     if platform.system() != 'Windows':
-        a('-t', '--with-tdsver', choices=['5.0', '7.1', '7.2', '7.3', '7.4', 'auto'], default='auto', 
+        a('-t', '--with-tdsver', choices=['5.0', '7.1', '7.2', '7.3', '7.4', 'auto'], default='auto',
                 help="TDS protocol version")
-        a('-o', '--with-openssl', choices=['yes', 'no'], default='yes',  
+        a('-o', '--with-openssl', choices=['yes', 'no'], default='yes',
                 help="Build FreeTDS with or without OpenSSL support, default is 'yes'")
-        a('-S', '--static-freetds', action='store_true', 
+        a('-S', '--static-freetds', action='store_true',
                 help="build FreeTDS staticly")
 
     base = Path('~/freetds').expanduser()
@@ -182,7 +182,7 @@ def parse_args(argv):
             help="prefix for installing FreeTDS, default is WS_DIR/prefix")
     a('-d', '--dist-dir', default=Path('./dist'), type=Path,
             help="where to put pymssql wheel, default is './dist'")
-    a('-s', '--sdist', action='store_true', 
+    a('-s', '--sdist', action='store_true',
             help="build sdist archive")
 
     if platform.system() == 'Windows':
@@ -217,7 +217,7 @@ def main(argv):
     args.dist_dir = args.dist_dir.absolute()
     env = os.environ.copy()
     env.update(PYMSSQL_FREETDS=f"{args.prefix}")
-    run(f"{sys.executable} -m pip wheel . -w {args.dist_dir}", shell=True, env=env)
+    run(f"{sys.executable} -m pip -v wheel . -w {args.dist_dir}", shell=True, env=env)
     if args.sdist:
         fmt = 'zip' if platform.system() == 'Windows' else 'gztar'
         run(f"{sys.executable} setup.py sdist --formats={fmt} -d {args.dist_dir}", shell=True, env=env)
