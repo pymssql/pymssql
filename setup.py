@@ -296,7 +296,11 @@ setup(
     license = 'LGPL',
     platforms = 'any',
     keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
-    url = 'http://pymssql.readthedocs.io',
+    project_urls={
+        "Documentation": "http://pymssql.readthedocs.io",
+        "Source": "https://github.com/pymssql/pymssql",
+        "Changelog": "https://github.com/pymssql/pymssql/blob/master/ChangeLog_highlights.rst",
+    },
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
