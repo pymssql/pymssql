@@ -1,7 +1,7 @@
 Recent Changes
 ==============
 
-Version 2.2.0 - 2021-03-00 - Mikhail Terekhov
+Version 2.2.0 - 2021-04-00 - Mikhail Terekhov
 =============================================
 
 General
@@ -14,7 +14,8 @@ Features
 --------
 
 - Support bulk copy (#279). Thanks to Simon.StJG (PR-689).
-- Wheels on PyPI link FreeTDS statically. Windows wheels build against OpenSSL.
+- Wheels on PyPI link FreeTDS statically.
+- Wheels on PyPI linked against OpenSSL.
 - Convert pymssql to a package. **Potential compatibility issue:** projects using
   low level *_mssql* module need to import it from *pymssql* first.
 
