@@ -9,6 +9,7 @@ General
 
 - Add Python-3.9 to the build and test matrix.
 - Drop support for Python2 and Python3 < 3.6.
+- Use FreeTDS-1.2.18 for official wheels on PyPi.
 
 Features
 --------
