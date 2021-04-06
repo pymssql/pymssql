@@ -37,3 +37,22 @@ There is a Google Group for discussion at:
 
 `groups.google.com <https://groups.google.com/forum/?fromgroups#!forum/pymssql>`_
 
+
+Getting started
+===============
+
+Generally, you will want to install pymssql with:
+
+.. code-block:: bash
+
+    pip install pymssql
+
+Most of the times this should be all what's needed.
+
+  .. note::
+
+    The official pymssql wheel packages for Linux, Mac OS and Windows
+    bundle a static copy of FreeTDS so no additional dependency download or
+    compilation steps are necessary
+    and have SSL support so they can be used to connect to Azure.
+
