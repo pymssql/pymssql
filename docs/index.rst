@@ -10,7 +10,7 @@ pymssql
 A simple database interface for `Python`_ that builds on top of `FreeTDS`_ to
 provide a Python DB-API (`PEP-249`_) interface to `Microsoft SQL Server`_.
 
-The wheels of pymssql are built against the latest release of FreeTDS and could be 
+The wheels of pymssql are built against the latest release of FreeTDS and could be
 found on `PyPI Project`_.
 
 
@@ -48,7 +48,7 @@ License
 
 pymssql is licensed under the terms of the GNU LGPL license.
 
-.. _Project Home: http://pymssql.org
+.. _Project Home: https://github.com/pymssql/pymssql
 .. _Python: http://www.python.org/
 .. _FreeTDS: http://www.freetds.org/
 .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
