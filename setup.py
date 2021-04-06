@@ -23,6 +23,7 @@
 
 import os
 from os.path import exists, join, splitext
+from pathlib import Path
 import platform
 import struct
 import sys
@@ -261,6 +262,24 @@ def ext_modules():
     return ext_modules
 
 
+def mk_long_description():
+
+    readme = (Path('__file__').parent / 'README.rst').read_text()
+    chlog = Path('__file__').parent / 'ChangeLog_highlights.rst'
+    lines = []
+    with chlog.open('r') as f:
+        count = 0
+        l = f.readline()
+        while l:
+            if l.startswith('Version 2'):
+                count += 1
+            if count > 1:
+                break
+            lines.append(l)
+            l = f.readline()
+    return readme + "\n\n" + ''.join(lines).strip()
+
+
 setup(
     name  = 'pymssql',
     use_scm_version = {
@@ -269,7 +288,7 @@ setup(
         "local_scheme": "no-local-version",
     },
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
-    long_description = open('README.rst').read() +"\n\n" + open('ChangeLog_highlights.rst').read(),
+    long_description = mk_long_description(),
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
     maintainer = 'pymssql development team',
