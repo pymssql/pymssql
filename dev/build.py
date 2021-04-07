@@ -217,7 +217,7 @@ def main(argv):
     args.dist_dir = args.dist_dir.absolute()
     env = os.environ.copy()
     env.update(PYMSSQL_FREETDS=f"{args.prefix}")
-    run(f"{sys.executable} -m pip -v wheel . -w {args.dist_dir}", shell=True, env=env)
+    run(f"{sys.executable} -m pip wheel . -w {args.dist_dir}", shell=True, env=env)
     if args.sdist:
         fmt = 'zip' if platform.system() == 'Windows' else 'gztar'
         run(f"{sys.executable} setup.py sdist --formats={fmt} -d {args.dist_dir}", shell=True, env=env)

@@ -46,7 +46,7 @@ PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install --upgrade pip==19.3.1 setuptools Cython wheel
-    "${PYBIN}/pip" -v wheel . -w .
+    "${PYBIN}/pip" wheel . -w .
 done
 
 # Verify the wheels and move from *-linux_* to -manylinux_*
