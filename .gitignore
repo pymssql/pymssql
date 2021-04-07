@@ -22,4 +22,6 @@ venv/
 .eric?project
 *.e4p
 cython_debug/*
+src/pymssql/version.h
+
 
