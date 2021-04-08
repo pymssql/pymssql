@@ -7,9 +7,14 @@ import pymssql
 import pytest
 
 
-@pytest.mark.xfail(sys.platform == "win32", reason="Memory test is not stable on Windows")
+@pytest.mark.xfail(reason="Memory test is not stable")
 def test_memory_leak_on_unsuccessful_connect():
-
+    """
+    This test checks python process memory usage and not just unsuccessful
+    connect path. Many other factors (i.e. garbage collection) affect memory
+    usage pattern. So this is an indirect test which is somewhat flaky and
+    because of that is marked 'xfail'.
+    """
     p = psutil.Process()
     m0 = p.memory_full_info()
     for i in range(10):
