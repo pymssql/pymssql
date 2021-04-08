@@ -18,7 +18,7 @@ def skip_test(reason='No reason given to skip_test'):
 def mark_slow(f):
     return f
 
-test_server_required = pytest.mark.test_server_required
+mssql_server_required = pytest.mark.mssql_server_required
 
 from pymssql import _mssql
 import pymssql

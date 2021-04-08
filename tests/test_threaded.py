@@ -10,7 +10,7 @@ import unittest
 
 from pymssql._mssql import MSSQLDatabaseException
 
-from .helpers import mssqlconn, StoredProc, mark_slow, test_server_required
+from .helpers import mssqlconn, StoredProc, mark_slow, mssql_server_required
 
 
 error_sproc = StoredProc(
@@ -36,7 +36,7 @@ class _TestingThread(threading.Thread):
             self.exc = exc
 
 
-@test_server_required
+@mssql_server_required
 class _TestingErrorThread(_TestingThread):
     def run(self):
         try:
@@ -46,7 +46,7 @@ class _TestingErrorThread(_TestingThread):
             self.exc = exc
 
 
-@test_server_required
+@mssql_server_required
 class _SprocTestingErrorThread(_TestingThread):
     def run(self):
         try:
@@ -56,7 +56,7 @@ class _SprocTestingErrorThread(_TestingThread):
             self.exc = exc
 
 
-@test_server_required
+@mssql_server_required
 class ThreadedTests(unittest.TestCase):
     def run_threads(self, num, thread_class):
         threads = [thread_class() for _ in range(num)]

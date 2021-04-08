@@ -11,7 +11,7 @@ import pytest
 
 from pymssql import _mssql
 
-from .helpers import config, skip_test, mssqlconn, test_server_required
+from .helpers import config, skip_test, mssqlconn, mssql_server_required
 server = config.server
 username = config.user
 password = config.password
@@ -29,7 +29,7 @@ def setup_module():
     if not path.isdir(tmpdir):
         makedirs(tmpdir)
 
-@test_server_required
+@mssql_server_required
 class TestCons(unittest.TestCase):
     def connect(self, **kwargs):
         environ['TDSDUMPCONFIG'] = config_dump_path

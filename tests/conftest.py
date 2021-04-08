@@ -70,5 +70,5 @@ def pytest_collection_modifyitems(config, items):
     if th.global_mssqlconn is None:
         skip = pytest.mark.skip(reason="Need test server to run")
         for item in items:
-            if "test_server_required" in item.keywords:
+            if "mssql_server_required" in item.keywords:
                 item.add_marker(skip)

@@ -9,14 +9,14 @@ import shutil
 
 from pymssql import _mssql
 
-from .helpers import tmpdir, skip_test, test_server_required
+from .helpers import tmpdir, skip_test, mssql_server_required
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
 
 def setup_module():
     if not path.isdir(tmpdir):
         makedirs(tmpdir)
 
-@test_server_required
+@mssql_server_required
 class TestConfig(object):
     def connect(self, **kwargs):
         environ['TDSDUMPCONFIG'] = config_dump_path

@@ -7,7 +7,7 @@ import unittest
 
 import pymssql
 
-from .helpers import config, test_server_required
+from .helpers import config, mssql_server_required
 
 def pymssqlconn(**kwargs):
     return pymssql.connect(
@@ -20,7 +20,7 @@ def pymssqlconn(**kwargs):
         )
 
 
-@test_server_required
+@mssql_server_required
 class TestConnectionAsDict(unittest.TestCase):
 
     def setUp(self):

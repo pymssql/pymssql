@@ -8,13 +8,13 @@ import pytest
 import unittest
 
 import pymssql
-from .helpers import mssqlconn, pymssqlconn, mark_slow, test_server_required
+from .helpers import mssqlconn, pymssqlconn, mark_slow, mssql_server_required
 
 gevent = pytest.importorskip("gevent")
 import gevent.socket
 
 
-@test_server_required
+@mssql_server_required
 class GreenletTests(unittest.TestCase):
 
     def greenlet_run_pymssql_execute(self, num):

@@ -7,10 +7,10 @@ from datetime import datetime
 import unittest
 
 from pymssql import _mssql
-from .helpers import test_server_required
+from .helpers import mssql_server_required
 
 
-@test_server_required
+@mssql_server_required
 class ErrHandleTests(unittest.TestCase):
 
     def test01DBError(self):

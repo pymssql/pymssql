@@ -5,7 +5,7 @@ Basic SQLAlchemy tests.
 
 import unittest
 
-from .helpers import config, eq_, skip_test, test_server_required
+from .helpers import config, eq_, skip_test, mssql_server_required
 
 try:
     import sqlalchemy as sa
@@ -42,7 +42,7 @@ class SAObj(Base):
 #saotbl.drop(engine, checkfirst=True)
 #saotbl.create(engine)
 
-@test_server_required
+@mssql_server_required
 class TestSA(unittest.TestCase):
 
     def setUp(self):
