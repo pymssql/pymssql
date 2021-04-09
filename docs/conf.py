@@ -14,6 +14,7 @@
 
 import sys
 import os
+from setuptools_scm import get_version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -21,13 +22,7 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 
 def extract_version():
-    with open(os.path.join(os.pardir, 'src', 'pymssql', 'version.h')) as f:
-        content = f.read()
-
-    # Parse file content that looks like this:
-    # #define PYMSSQL_VERSION "2.0.1"
-    version = content.split()[2].replace('"', '')
-
+    version = get_version(root='..', relative_to=__file__)
     return version
 
 # -- General configuration ------------------------------------------------
