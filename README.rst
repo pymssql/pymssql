@@ -41,18 +41,27 @@ There is a Google Group for discussion at:
 Getting started
 ===============
 
-Generally, you will want to install pymssql with:
+pymssql wheels are available from PyPi. To install it run:
 
 .. code-block:: bash
 
     pip install pymssql
 
 Most of the times this should be all what's needed.
+The official pymssql wheels bundle a static copy of FreeTDS  
+and have SSL support so they can be used to connect to Azure.
 
-  .. note::
 
-    The official pymssql wheel packages for Linux, Mac OS and Windows
-    bundle a static copy of FreeTDS so no additional dependency download or
-    compilation steps are necessary
-    and have SSL support so they can be used to connect to Azure.
+Basic example
+=============
 
+.. code-block:: python
+
+    conn = pymssql.connect(server, user, password, "tempdb")
+    cursor = conn.cursor(as_dict=True)
+
+    cursor.execute('SELECT * FROM persons WHERE salesrep=%s', 'John Doe')
+    for row in cursor:
+        print("ID=%d, Name=%s" % (row['id'], row['name']))
+
+    conn.close()

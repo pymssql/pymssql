@@ -1,7 +1,7 @@
 Recent Changes
 ==============
 
-Version 2.2.0 - 2021-04-00 - Mikhail Terekhov
+Version 2.2.0 - 2021-04-08 - Mikhail Terekhov
 =============================================
 
 General
