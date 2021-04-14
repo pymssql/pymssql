@@ -80,6 +80,7 @@ jobs:
     strategy:
       matrix:
         arch: [i686, x86_64]
+        manylinux: [manylinux1, manylinux2010, manylinux2014, manylinux_2_24]
 
     steps:
 
@@ -92,7 +93,7 @@ jobs:
 
     - name: Build and test wheels
       env:
-        DOCKER_IMAGE: quay.io/pypa/manylinux1_${{ matrix.arch }}
+        DOCKER_IMAGE: quay.io/pypa/${{ matrix.manylinux }}_${{ matrix.arch }}
       run: |
         docker pull $DOCKER_IMAGE
         docker run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
@@ -101,7 +102,7 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v2
       with:
-        name: pymssql-${{ runner.os }}-manylinux1_${{ matrix.arch }}-${{ github.sha }}
+        name: pymssql-${{ runner.os }}-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
         path: dist
 
     - name: Publish wheels and sdist

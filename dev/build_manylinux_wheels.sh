@@ -31,7 +31,13 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
-yum install -y openssl-devel
+if which yum; then
+    yum install -y openssl-devel
+else
+    apt-get update
+    apt-get install -y libssl1.1
+    apt-get install -y libssl-dev
+fi
 
 /opt/python/cp38-cp38/bin/python dev/build.py \
     --ws-dir=./freetds \
