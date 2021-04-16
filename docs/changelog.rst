@@ -2,7 +2,7 @@
 Change log
 ==========
 
-.. literalinclude:: ../ChangeLog
+.. include:: ../ChangeLog.rst
 
-.. Please see the `ChangeLog` file located in the root of the pymssql source
+.. Please see the `ChangeLog.rst` file located in the root of the pymssql source
    code tree.

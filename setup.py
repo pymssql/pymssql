@@ -265,7 +265,7 @@ def ext_modules():
 def mk_long_description():
 
     readme = (Path('__file__').parent / 'README.rst').read_text()
-    chlog = Path('__file__').parent / 'ChangeLog_highlights.rst'
+    chlog = Path('__file__').parent / 'ChangeLog.rst'
     lines = []
     with chlog.open('r') as f:
         count = 0
@@ -299,7 +299,7 @@ setup(
     project_urls={
         "Documentation": "http://pymssql.readthedocs.io",
         "Source": "https://github.com/pymssql/pymssql",
-        "Changelog": "https://github.com/pymssql/pymssql/blob/master/ChangeLog_highlights.rst",
+        "Changelog": "https://github.com/pymssql/pymssql/blob/master/ChangeLog.rst",
     },
     cmdclass = {
         'build_ext': build_ext,

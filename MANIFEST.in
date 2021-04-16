@@ -1,1 +1,2 @@
 include src/pymssql/version.h
+include ChangeLog.rst
