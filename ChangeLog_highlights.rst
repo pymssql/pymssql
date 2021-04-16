@@ -1,6 +1,17 @@
 Recent Changes
 ==============
 
+Version 2.2.1 - 2021-04-15 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Publish Linux wheels for the all supported platforms.
+  manylinux1 wheels are not compatible with modern glibc and OpenSSL.
+- Add readthedocs configuration file.
+
+
 Version 2.2.0 - 2021-04-08 - Mikhail Terekhov
 =============================================
 
