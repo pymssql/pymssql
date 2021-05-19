@@ -15,20 +15,17 @@ Generally, you will want to install pymssql with:
 Most of the times this should be all what's needed.
 
   .. note::
-
-  On some Linux distributions `pip` version is too old to support all
-  the flavors of manylinux wheels, so upgrading `pip` is necessary.
-  An example of such distributions would be Ubuntu 18.04 or
-  Python3.6 module in RHEL8 and CentOS8.
+    On some Linux distributions `pip` version is too old to support all
+    the flavors of manylinux wheels, so upgrading `pip` is necessary.
+    An example of such distributions would be Ubuntu 18.04 or
+    Python3.6 module in RHEL8 and CentOS8.
 
   .. note::
-
     Starting with pymssql version 2.1.3 we provide such wheel packages
     that bundle a static copy of FreeTDS so no additional dependency download or
     compilation steps are necessary.
 
   .. note::
-
     Starting with pymssql version 2.2.0 official pymssql wheel packages for
     Linux, Mac OS and Windows have SSL support so they can be used to
     connect to :doc:`Azure <azure>`.

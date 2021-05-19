@@ -38,7 +38,6 @@ following:
         (1 row affected)
 
     .. note::
-
         Note that I use the ``-H`` option rather than the ``-S`` option to
         ``tsql``. This is because with ``-H``, it will bypass reading settings
         from the ``freetds.conf`` file like ``port`` and ``tds version``, and
@@ -100,7 +99,6 @@ following:
         ...
 
     .. note::
-
         Note that pymssql will use a default port of 1433, despite any ports
         you may have specified in your ``freetds.conf`` file.  So if you have
         SQL Server running on a port other than 1433, you must explicitly

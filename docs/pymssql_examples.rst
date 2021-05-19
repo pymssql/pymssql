@@ -145,7 +145,6 @@ columns by name instead of index. Note the ``as_dict`` argument.
     conn.close()
 
 .. note::
-
     The ``as_dict`` parameter to ``cursor()`` is a pymssql extension to the
     DB-API.
 
@@ -164,7 +163,6 @@ frees you from having to explicitly close cursors and connections.
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
 
 .. note::
-
     The context manager personality of connections and cursor is a pymssql
     extension to the DB-API.
 
