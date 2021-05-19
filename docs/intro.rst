@@ -9,9 +9,17 @@ Generally, you will want to install pymssql with:
 
 .. code-block:: bash
 
+    pip install -U pip
     pip install pymssql
 
 Most of the times this should be all what's needed.
+
+  .. note::
+
+  On some Linux distributions `pip` version is too old to support all
+  the flavors of manylinux wheels, so upgrading `pip` is necessary.
+  An example of such distributions would be Ubuntu 18.04 or
+  Python3.6 module in RHEL8 and CentOS8.
 
   .. note::
 
