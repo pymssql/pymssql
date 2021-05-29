@@ -54,7 +54,7 @@ jobs:
         python dev/build.py \
             --ws-dir=./freetds \
             --dist-dir=./dist \
-            --freetds-version="1.2.18" \
+            --freetds-version="1.2.21" \
             --with-openssl=yes \
             --sdist \
             --static-freetds

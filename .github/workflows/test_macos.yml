@@ -47,10 +47,11 @@ jobs:
             pip install -r dev/requirements-dev.txt
             python setup.py sdist
             brew install openssl@1.1
+            brew install libiconv
             python dev/build.py \
                 --ws-dir=./freetds \
                 --dist-dir=./dist \
-                --freetds-version="1.2.18" \
+                --freetds-version="1.2.21" \
                 --with-openssl=yes \
                 --sdist \
                 --static-freetds
