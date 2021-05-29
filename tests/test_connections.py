@@ -127,18 +127,20 @@ class TestCons(unittest.TestCase):
 
 class TestFailedConnection(unittest.TestCase):
 
-    @pytest.mark.timeout(60)
+    @pytest.mark.xfail(strict=False, reason="Could timeout, or fail with different error messages")
+    @pytest.mark.timeout(600)
     def test_repeated_failed_connections(self):
         # This is a test for https://github.com/pymssql/pymssql/issues/145
         # (Repeated failed connections result in error string getting longer
         # and longer)
 
+        _mssql.login_timeout = 5
         last_exc_message = None
         for i in range(5):
             try:
                 _mssql.connect(
-                    server='agithub.com',
-                    port=80,
+                    server='www.google.com',
+                    port=81,
                     user='joe',
                     password='secret',
                     database='tempdb')
