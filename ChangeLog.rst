@@ -1,6 +1,16 @@
 Recent Changes
 ==============
 
+Version 2.2.2 - 2021-07-24 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Use FreeTDS-1.3 for official wheels on PyPi.
+- On macOS use delocate to bundle dependencies when building wheels.
+- Some documentation changes.
+
 Version 2.2.1 - 2021-04-15 - Mikhail Terekhov
 =============================================
 
