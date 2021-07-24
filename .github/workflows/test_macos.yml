@@ -45,6 +45,7 @@ jobs:
       run: |
             pip install --upgrade pip
             pip install -r dev/requirements-dev.txt
+            pip install delocate
             python setup.py sdist
             brew install openssl@1.1
             brew install libiconv
@@ -55,6 +56,9 @@ jobs:
                 --with-openssl=yes \
                 --sdist \
                 --static-freetds
+            delocate-listdeps --all dist/*.whl
+            delocate-wheel -v dist/*.whl
+            delocate-listdeps --all dist/*.whl
             pip install pymssql --no-index -f dist
             python -c "import pymssql; print(pymssql.version_info())"
 
