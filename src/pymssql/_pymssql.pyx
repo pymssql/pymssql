@@ -449,12 +449,12 @@ cdef class Cursor:
         self.conn = None
         self.description = None
 
-    def execute(self, operation, params=()):
+    def execute(self, operation, params=None):
         self.description = None
         self._rownumber = 0
 
         try:
-            if not params:
+            if params is None:
                 self._source._conn.execute_query(operation)
             else:
                 self._source._conn.execute_query(operation, params)
