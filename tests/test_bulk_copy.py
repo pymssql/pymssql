@@ -91,25 +91,13 @@ class TestTypes(unittest.TestCase):
 
     def test_too_many_columns(self):
         self.conn._conn.execute_non_query(simple_table)
-        caught_exception = False
-
-        try:
+        with self.assertRaises(_mssql.MSSQLDatabaseException):
             self.conn.bulk_copy(tablename, [(7, 7, 7, 7)])
-        except _mssql.MSSQLDatabaseException:
-            caught_exception = True
-
-        assert caught_exception
 
     def test_bad_value(self):
         self.conn._conn.execute_non_query(simple_table)
-        caught_exception = False
-
-        try:
+        with self.assertRaises(_mssql.MSSQLDatabaseException):
             self.conn.bulk_copy(tablename, [("Hello", 7, 7)])
-        except _mssql.MSSQLDatabaseException:
-            caught_exception = True
-
-        assert caught_exception
 
     def test_too_few_column_ids(self):
         self.conn._conn.execute_non_query(simple_table)
@@ -124,14 +112,8 @@ class TestTypes(unittest.TestCase):
 
     def test_invalid_column_ids(self):
         self.conn._conn.execute_non_query(simple_table)
-        caught_exception = False
-
-        try:
+        with self.assertRaises(_mssql.MSSQLDatabaseException):
             self.conn.bulk_copy(tablename, [(1, 2, 3)], column_ids=[1, 2, 9])
-        except _mssql.MSSQLDatabaseException:
-            caught_exception = True
-
-        assert caught_exception
 
     def test_complex_table(self):
         self.conn._conn.execute_non_query(complex_table)
@@ -145,15 +127,10 @@ class TestTypes(unittest.TestCase):
 
     def test_uniqueness_failure(self):
         self.conn._conn.execute_non_query(complex_table)
-        caught_exception = False
 
         rows = [
             (1.2000000476837158, 3.4, datetime.datetime(year=2020, month=1, day=2, hour=3, minute=4, second=5), True, "Hello World"),
             (1.2000000476837158, 7.8, datetime.datetime(year=2021, month=2, day=3, hour=4, minute=5, second=6), False, "Hello World!"),
         ]
-        try:
+        with self.assertRaises(_mssql.MSSQLDatabaseException):
             self.conn.bulk_copy(tablename, rows, [3, 4, 5, 6, 7])
-        except _mssql.MSSQLDatabaseException:
-            caught_exception = True
-
-        assert caught_exception
