@@ -1114,16 +1114,16 @@ cdef class MSSQLConnection:
         You can use Python formatting here and all values get properly
         quoted:
             conn.execute_query('SELECT * FROM empl WHERE id=%d', 13)
-            conn.execute_query('SELECT * FROM empl WHERE id IN (%s)', ((5,6),))
+            conn.execute_query('SELECT * FROM empl WHERE id IN %s', ((5,6),))
             conn.execute_query('SELECT * FROM empl WHERE name=%s', 'John Doe')
             conn.execute_query('SELECT * FROM empl WHERE name LIKE %s', 'J%')
             conn.execute_query('SELECT * FROM empl WHERE name=%(name)s AND \
                 city=%(city)s', { 'name': 'John Doe', 'city': 'Nowhere' } )
             conn.execute_query('SELECT * FROM cust WHERE salesrep=%s \
                 AND id IN (%s)', ('John Doe', (1,2,3)))
-            conn.execute_query('SELECT * FROM empl WHERE id IN (%s)',\
+            conn.execute_query('SELECT * FROM empl WHERE id IN %s',\
                 (tuple(xrange(4)),))
-            conn.execute_query('SELECT * FROM empl WHERE id IN (%s)',\
+            conn.execute_query('SELECT * FROM empl WHERE id IN %s',\
                 (tuple([3,5,7,11]),))
 
         This method is intented to be used on queries that return results,
