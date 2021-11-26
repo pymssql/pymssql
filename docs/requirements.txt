@@ -1,1 +1,5 @@
 setuptools_scm
+sphinx
+sphinx_rtd_theme
+sphinx-copybutton
+sphinx_toggleprompt
