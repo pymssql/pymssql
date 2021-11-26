@@ -237,7 +237,7 @@ handle high concurrency.
 .. _Gunicorn: http://gunicorn.org
 
 Bulk copy
-===============
+=========
 
 .. versionadded:: 2.2.0
 
@@ -254,6 +254,8 @@ The fastest way to insert data to a SQL Server table is often to use the bulk co
     cursor.close()
 
     conn.bulk_copy("example", [(1, 2)] * 1000000)
+
+.. note:: ``bulk_copy`` does not verify columns data type.
 
 For more detail on fast data loading in SQL Server, including on bulk copy, read
 `The data loading performance guide`_ from Microsoft.
