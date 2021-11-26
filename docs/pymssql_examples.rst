@@ -148,6 +148,23 @@ columns by name instead of index. Note the ``as_dict`` argument.
     The ``as_dict`` parameter to ``cursor()`` is a pymssql extension to the
     DB-API.
 
+In some cases columns in a result set do not have a name.
+In such a case if you specify ``as_dict=True`` an exception will be raised::
+
+    >>> cursor.execute("SELECT MAX(x) FROM (VALUES (1), (2), (3)) AS foo(x)")
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "pymssql.pyx", line 426, in pymssql.Cursor.execute (pymssql.c:5828)
+        raise ColumnsWithoutNamesError(columns_without_names)
+    pymssql.ColumnsWithoutNamesError: Specified as_dict=True and there are columns with no names: [0]
+
+To avoid this exception supply a name for all such columns -- e.g.::
+
+    >>> cursor.execute("SELECT MAX(x) AS [MAX(x)] FROM (VALUES (1), (2), (3)) AS foo(x)")
+    >>> cursor.fetchall()
+    [{'MAX(x)': 3}]
+
+
 Using the ``with`` statement (context managers)
 ===============================================
 
