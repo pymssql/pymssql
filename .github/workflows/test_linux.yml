@@ -56,6 +56,7 @@ jobs:
             --dist-dir=./dist \
             --freetds-version="1.3.3" \
             --with-openssl=yes \
+            --enable-krb5 \
             --sdist \
             --static-freetds
         pip install pymssql --no-index -f dist

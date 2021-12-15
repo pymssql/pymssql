@@ -77,6 +77,8 @@ def build(args, freetds_archive):
                   f"--with-openssl={args.with_openssl}",
                   "--with-gnutls=no",
                   ]
+    if args.enable_krb5:
+        configure.append("--enable-krb5")
     if args.static_freetds:
         configure.extend(["--enable-static", "--disable-shared"])
     else:
@@ -148,8 +150,9 @@ def build_windows(args, freetds_archive, iconv_archive):
     shutil.copy(wiconv / "iconv.h", blddir)
     shutil.copy(wiconv / "iconv.lib", blddir / "lib")
 
+    krb5 = "ON" if args.enable_krb5 else "OFF"
     cmd = f'"{args.cmake}" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release " \
-            "-DWITH_OPENSSL=ON -DCMAKE_INSTALL_PREFIX="{args.prefix}" "{srcdir}"'
+            "-DWITH_OPENSSL=ON -DENABLE_KRB5={krb5} -DCMAKE_INSTALL_PREFIX="{args.prefix}" "{srcdir}"'
     env["PATH"] += f";{args.msys}"
     run(cmd, cwd=blddir, env=env)
 
@@ -174,6 +177,8 @@ def parse_args(argv):
                 help="Build FreeTDS with or without OpenSSL support, default is 'yes'")
         a('-S', '--static-freetds', action='store_true',
                 help="build FreeTDS staticly")
+    a('-k', '--enable-krb5', dest="enable_krb5", action='store_true',
+            help="enable krb5 support")
 
     base = Path('~/freetds').expanduser()
     a('-w', '--ws-dir', default=base, type=Path,
