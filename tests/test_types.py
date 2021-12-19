@@ -11,6 +11,7 @@ import sys
 import unittest
 import uuid
 
+import pymssql
 from .helpers import get_sql_server_version, mssql_server_required
 
 import pytest
@@ -128,6 +129,15 @@ class TestTypes(unittest.TestCase):
     def test_binary_bytearray(self):
         bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
         colval = self.insert_and_select('data_binary', bytearray(bindata), 's')
+        typeeq(bindata, colval)
+        eq_(bindata, colval)
+
+    def test_binary_Binary(self):
+        """
+        See https://github.com/pymssql/pymssql/issues/504
+        """
+        bindata = '{z\n\x03\x07\x194;\x034lE4ISo'.encode('ascii')
+        colval = self.insert_and_select('data_binary', pymssql.Binary(bindata), 's')
         typeeq(bindata, colval)
         eq_(bindata, colval)
 

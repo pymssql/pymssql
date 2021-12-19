@@ -97,7 +97,7 @@ Timestamp = datetime.datetime
 DateFromTicks = lambda ticks: Date(*time.localtime(ticks)[:3])
 TimeFromTicks = lambda ticks: Time(*time.localtime(ticks)[3:6])
 TimestampFromTicks = lambda ticks: Timestamp(*time.localtime(ticks)[:6])
-Binary = bytes
+Binary = bytearray
 
 
 # Bulk copy hints
