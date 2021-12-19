@@ -13,6 +13,14 @@ Generally, you will want to install pymssql with:
     pip install pymssql
 
 Most of the times this should be all what's needed.
+If you want to build pymssql module against locally installed libraries then
+install required software (see :doc:`building_and_developing` for more details)
+and run:
+
+  .. code-block:: bash
+
+    pip install --no-binary=pymssql pymssql
+
 
   .. note::
     On some Linux distributions `pip` version is too old to support all
