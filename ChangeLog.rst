@@ -1,6 +1,21 @@
 Recent Changes
 ==============
 
+Version 2.2.3 - 2021-12-21 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Build wheels for Python-3.10.
+- Use FreeTDS-1.3.4 for official wheels on PyPi.
+- Enable krb5 in Linux wheels (#734).
+- Fix UnicodeEncodeError for non-ascii database name (#484).
+- Fix pymssql.Binary (#504).
+- On macOS check for FreeTDS in homebrew prefix when building.
+- Some documentation changes.
+
+
 Version 2.2.2 - 2021-07-24 - Mikhail Terekhov
 =============================================
 
@@ -10,7 +25,6 @@ General
 - Use FreeTDS-1.3 for official wheels on PyPi.
 - On macOS use delocate to bundle dependencies when building wheels.
 - Some documentation changes.
-
 Version 2.2.1 - 2021-04-15 - Mikhail Terekhov
 =============================================
 
