@@ -43,8 +43,6 @@ ROW_FORMAT_DICT = 2
 cdef int _ROW_FORMAT_TUPLE = ROW_FORMAT_TUPLE
 cdef int _ROW_FORMAT_DICT = ROW_FORMAT_DICT
 
-from cpython cimport PY_MAJOR_VERSION, PY_MINOR_VERSION
-
 from collections.abc import Iterable
 
 import os
@@ -161,16 +159,10 @@ cpdef int py2db_type(py_type, value) except -1:
     try:
         type_name = py_type.__name__
 
-        if PY_MAJOR_VERSION == 3:
-            if type_name == 'int':
-                if value is not None and value >= -2147483648 and value <= 2147483647:  # -2^31 - 2^31-1
-                    return SQLINTN
-                else:
-                    return SQLINT8
-        else:
-            if type_name == 'int':
+        if type_name == 'int':
+            if value is not None and value >= -2147483648 and value <= 2147483647:  # -2^31 - 2^31-1
                 return SQLINTN
-            if type_name == 'long':
+            else:
                 return SQLINT8
 
         return DBTYPES[type_name]
@@ -246,10 +238,6 @@ cdef void log(char * message, ...):
     if PYMSSQL_DEBUG == 1:
         fprintf(stderr, "+++ %s\n", message)
 
-if PY_MAJOR_VERSION == 3:
-    string_types = str,
-else:
-    string_types = basestring,
 
 ###################
 ## Error Handler ##
@@ -491,7 +479,7 @@ cdef class MSSQLConnection:
 
         def __get__(self):
             if strlen(self._charset):
-                return self._charset.decode('ascii') if PY_MAJOR_VERSION == 3 else self._charset
+                return self._charset.decode('ascii')
             return None
 
     property connected:
@@ -724,7 +712,7 @@ cdef class MSSQLConnection:
                 "SET CURSOR_CLOSE_ON_COMMIT ON;"    \
                 "SET QUOTED_IDENTIFIER ON;"         \
                 "SET TEXTSIZE 2147483647;"  # http://msdn.microsoft.com/en-us/library/aa259190%28v=sql.80%29.aspx
-        elif isinstance(conn_properties, Iterable) and not isinstance(conn_properties, string_types):
+        elif isinstance(conn_properties, Iterable) and not isinstance(conn_properties, str):
             conn_properties = ' '.join(conn_properties)
         cdef bytes conn_props_bytes
         cdef char *conn_props_cstr
@@ -1043,10 +1031,8 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
-            if PY_MAJOR_VERSION == 3 and type(value) not in (bytes, bytearray):
+            if not isinstance(value, (bytes,bytearray)):
                 raise TypeError('value can only be bytes or bytearray')
-            elif PY_MAJOR_VERSION == 2 and type(value) not in (str, bytearray):
-                raise TypeError('value can only be str or bytearray')
 
             binValue = <BYTE *>PyMem_Malloc(len(value))
             memcpy(binValue, <char *>value, len(value))

@@ -25,7 +25,7 @@ import time
 
 from pymssql import _mssql
 from pymssql cimport _mssql
-from cpython cimport bool, PY_MAJOR_VERSION
+from cpython cimport bool
 from libc.string cimport strlen
 from .sqlfront cimport BYTE
 
