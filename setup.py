@@ -69,9 +69,9 @@ if os.getenv('PYMSSQL_FREETDS'):
     prefix = os.path.abspath(os.getenv('PYMSSQL_FREETDS').strip())
 elif exists("/usr/local/includes/sqlfront.h"):
     prefix = "/usr/local"
-elif exists("/usr/local/opt/freetds/includes/sqlfront.h"): # brew macOS on Intel
+elif exists("/usr/local/opt/freetds/include/sqlfront.h"): # brew macOS on Intel
     prefix = "/usr/local/opt/freetds"
-elif exists("/opt/homebrew/opt/freetds/includes/sqlfront.h"): # brew macOS on Apple Silicon/ARM
+elif exists("/opt/homebrew/opt/freetds/include/sqlfront.h"): # brew macOS on Apple Silicon/ARM
     prefix = "/opt/homebrew/opt/freetds"
 elif exists("/opt/local/includes/sqlfront.h"): # MacPorts
     prefix = "/opt/local"
