@@ -48,7 +48,7 @@ fi
     --static-freetds
 
 # Install Python dependencies and compile wheels
-PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
