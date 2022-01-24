@@ -51,8 +51,10 @@ fi
 PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
-    "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
-    "${PYBIN}/pip" wheel . -w .
+    if  [ -d ${PYBIN} ] ; then
+        "${PYBIN}/pip" install --upgrade pip setuptools Cython wheel
+        "${PYBIN}/pip" wheel . -w .
+    fi
 done
 
 # Verify the wheels and move from *-linux_* to -manylinux_*
@@ -70,10 +72,12 @@ done
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
-    "${PYBIN}/pip" install pymssql --no-index -f dist
-    "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
-    "${PYBIN}/pytest" -s .
-    "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
+    if  [ -d ${PYBIN} ] ; then
+        "${PYBIN}/pip" install pymssql --no-index -f dist
+        "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
+        "${PYBIN}/pytest" -s .
+        "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
+    fi
 done
 
 # Remove wheel and egg directory for next container build (i686 vs x86_x64)

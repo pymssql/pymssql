@@ -1,6 +1,15 @@
 Recent Changes
 ==============
 
+Version 2.2.4 - 2022-01-23 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Build wheels for Python-3.10 on Linux.
+- Fix include paths in setup.py.
+
 Version 2.2.3 - 2021-12-21 - Mikhail Terekhov
 =============================================
 
