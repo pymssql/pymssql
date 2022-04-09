@@ -43,7 +43,7 @@ fi
     --ws-dir=./freetds \
     --dist-dir=. \
     --prefix=/usr/local \
-    --freetds-version="1.3.4" \
+    --freetds-version="1.3.9" \
     --with-openssl=yes \
     --static-freetds
 
