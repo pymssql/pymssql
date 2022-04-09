@@ -45,6 +45,7 @@ fi
     --prefix=/usr/local \
     --freetds-version="1.3.9" \
     --with-openssl=yes \
+    --enable-krb5 \
     --static-freetds
 
 # Install Python dependencies and compile wheels
