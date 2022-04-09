@@ -1,6 +1,16 @@
 Recent Changes
 ==============
 
+Version 2.2.4 - 2022-04-  - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Added bytes and bytearray to support bulk_copy types, thanks to steve-strickland (#756).
+- Use FreeTDS-1.3.9 for official wheels on PyPi.
+- Enable krb5 in Linux wheels, this time for real (#754).
+
 Version 2.2.4 - 2022-01-23 - Mikhail Terekhov
 =============================================
 
@@ -34,6 +44,8 @@ General
 - Use FreeTDS-1.3 for official wheels on PyPi.
 - On macOS use delocate to bundle dependencies when building wheels.
 - Some documentation changes.
+
+
 Version 2.2.1 - 2021-04-15 - Mikhail Terekhov
 =============================================
 
