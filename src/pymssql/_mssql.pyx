@@ -151,6 +151,8 @@ cdef dict DBTYPES = {
     'datetime': SQLDATETIME,
     'date': SQLDATETIME,
     'float': SQLFLT8,
+    'bytes': SQLVARBINARY,
+    'bytearray': SQLVARBINARY,
     #Dump type for work vith None
     'NoneType': SQLVARCHAR,
 }

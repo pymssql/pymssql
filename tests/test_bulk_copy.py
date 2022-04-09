@@ -20,7 +20,8 @@ complex_table = """
         col_float float,
         col_datetime datetime,
         col_bit bit,
-        col_varchar varchar(50)
+        col_varchar varchar(50),
+        col_varbinary varbinary(50)
     )
 """ % tablename
 
@@ -118,12 +119,12 @@ class TestTypes(unittest.TestCase):
     def test_complex_table(self):
         self.conn._conn.execute_non_query(complex_table)
         rows = [
-            (1.2000000476837158, 3.4, datetime.datetime(year=2020, month=1, day=2, hour=3, minute=4, second=5), True, "Hello World"),
-            (5.599999904632568, 7.8, datetime.datetime(year=2021, month=2, day=3, hour=4, minute=5, second=6), False, "Hello World!"),
+            (1.2000000476837158, 3.4, datetime.datetime(year=2020, month=1, day=2, hour=3, minute=4, second=5), True, "Hello World", b'\x02\x03\x05\x07'),
+            (5.599999904632568, 7.8, datetime.datetime(year=2021, month=2, day=3, hour=4, minute=5, second=6), False, "Hello World!", bytearray([2, 3, 5, 7])),
         ]
-        self.conn.bulk_copy(tablename, rows, [3, 4, 5, 6, 7])
+        self.conn.bulk_copy(tablename, rows, [3, 4, 5, 6, 7, 8])
         self.conn._conn.execute_query('select * from pymssql')
-        assert [tuple(row[i] for i in range(2, 7)) for row in self.conn._conn] == rows
+        assert [tuple(row[i] for i in range(2, 8)) for row in self.conn._conn] == rows
 
     def test_uniqueness_failure(self):
         self.conn._conn.execute_non_query(complex_table)
