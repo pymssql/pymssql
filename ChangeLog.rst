@@ -1,7 +1,7 @@
 Recent Changes
 ==============
 
-Version 2.2.4 - 2022-04-  - Mikhail Terekhov
+Version 2.2.4 - 2022-04-12  - Mikhail Terekhov
 =============================================
 
 General
