@@ -293,6 +293,7 @@ setup(
     },
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = mk_long_description(),
+    long_description_content_type = 'text/x-rst',
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
     maintainer = 'pymssql development team',
