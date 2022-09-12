@@ -231,4 +231,4 @@ If the above hasn't covered the problem you can send a message describing it to
 the pymssql mailing list. You can also consult FreeTDS troubleshooting `page for
 issues related to the TDS protocol`_.
 
-.. _page for issues related to the TDS protocol: http://www.freetds.org/userguide/troubleshooting.htm
+.. _page for issues related to the TDS protocol: https://www.freetds.org/userguide/troubleshooting.html
