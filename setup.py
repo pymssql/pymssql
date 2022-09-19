@@ -55,6 +55,7 @@ def check_env(env_name, default):
 
 LINK_FREETDS_STATICALLY = check_env('LINK_FREETDS_STATICALLY', 'YES')
 LINK_OPENSSL = check_env('LINK_OPENSSL', 'YES')
+LINK_KRB5 = check_env('LINK_KRB5', 'YES')
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
@@ -170,6 +171,8 @@ class build_ext(_build_ext):
                         e.library_dirs.append("c:/Program Files/OpenSSL-Win64/lib")
 
         else:
+            if LINK_KRB5:
+                libraries.extend([ 'gssapi_krb5', 'krb5'] )
             if LINK_OPENSSL and LINK_FREETDS_STATICALLY:
                 libraries.extend([ 'ssl', 'crypto' ])
 
@@ -330,7 +333,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_scm', 'Cython'],
-    tests_require=['psutil', 'pytest', 'pytest-timeout'],
+    tests_require=['psutil<5.9.2', 'pytest', 'pytest-timeout'],
     ext_modules = ext_modules(),
     packages = [ 'pymssql'],
     package_dir = {'': 'src'},
