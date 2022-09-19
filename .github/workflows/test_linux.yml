@@ -48,7 +48,7 @@ jobs:
 
     - name: build & install
       run: |
-        sudo apt-get install libssl-dev
+        sudo apt-get install libssl-dev libkrb5-dev
         python -m pip install --upgrade pip
         pip install -r dev/requirements-dev.txt
         python dev/build.py \

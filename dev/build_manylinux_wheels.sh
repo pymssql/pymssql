@@ -31,12 +31,17 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
 
+if ! git status ; then
+  git config --global --add safe.directory "$(pwd)"
+fi
+git status
+
 if which yum; then
-    yum install -y openssl-devel
+    yum install -y openssl-devel krb5-devel
 else
     apt-get update
     apt-get install -y libssl1.1
-    apt-get install -y libssl-dev
+    apt-get install -y libssl-dev libkrb5-dev
 fi
 
 /opt/python/cp38-cp38/bin/python dev/build.py \
@@ -71,11 +76,13 @@ done
 /opt/python/cp38-cp38/bin/python setup.py sdist
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
+# psutil 5.9.2 had a bug preventing it from being imported on some platforms.
+# https://github.com/giampaolo/psutil/issues/2138
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     if  [ -d ${PYBIN} ] ; then
         "${PYBIN}/pip" install pymssql --no-index -f dist
-        "${PYBIN}/pip" install psutil pytest pytest-timeout SQLAlchemy
+        "${PYBIN}/pip" install 'psutil<5.9.2' pytest pytest-timeout SQLAlchemy
         "${PYBIN}/pytest" -s .
         "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
     fi
