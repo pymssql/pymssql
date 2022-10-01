@@ -21,7 +21,7 @@ def test_single_param():
 
     res = substitute_params(
         'SELECT * FROM empl WHERE name = %s',
-        u'John Doe')
+        'John Doe')
     eq_(res, b"SELECT * FROM empl WHERE name = N'John Doe'")
 
 
@@ -33,18 +33,18 @@ def test_param_quote():
 
     res = substitute_params(
         'SELECT * FROM empl WHERE name = %s',
-        u"John's Doe")
+        "John's Doe")
     eq_(res, b"SELECT * FROM empl WHERE name = N'John''s Doe'")
 
 
 def test_unicode_params():
     res = substitute_params(
-        u'SELECT * FROM \u0394 WHERE name = %s',
-        u'\u03A8'
+        'SELECT * FROM \u0394 WHERE name = %s',
+        '\u03A8'
     )
     eq_(res, b"SELECT * FROM \xce\x94 WHERE name = N'\xce\xa8'")
 
-    res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, u'str'))
+    res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, 'str'))
     eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'str'")
 
 
@@ -81,7 +81,7 @@ def test_tuple_with_in():
 
     res = substitute_params(
         'SELECT * FROM empl WHERE id IN %s',
-        ((u'foo', u'bar'),))
+        (('foo', 'bar'),))
     eq_(res, b"SELECT * FROM empl WHERE id IN (N'foo',N'bar')")
 
     # single item
@@ -92,7 +92,7 @@ def test_tuple_with_in():
 
     res = substitute_params(
         'SELECT * FROM empl WHERE id IN %s',
-        ((u'foo',),))
+        (('foo',),))
     eq_(res, b"SELECT * FROM empl WHERE id IN (N'foo')")
 
 
@@ -104,7 +104,7 @@ def test_percent_in_param():
 
     res = substitute_params(
         'SELECT * FROM empl WHERE name LIKE %s',
-        u'J%')
+        'J%')
     eq_(res, b"SELECT * FROM empl WHERE name LIKE N'J%'")
 
 
@@ -116,7 +116,7 @@ def test_single_dict_params():
 
     res = substitute_params(
         'SELECT * FROM cust WHERE salesrep = %(name)s',
-        {'name': u'John Doe'})
+        {'name': 'John Doe'})
     eq_(res, b"SELECT * FROM cust WHERE salesrep = N'John Doe'")
 
 
@@ -128,7 +128,7 @@ def test_weird_key_names_dict_params():
 
     res = substitute_params(
         'SELECT * FROM cust WHERE salesrep = %(n %s ##ame)s',
-        {'n %s ##ame': u'John Doe'})
+        {'n %s ##ame': 'John Doe'})
     eq_(res, b"SELECT * FROM cust WHERE salesrep = N'John Doe'")
 
 
@@ -146,7 +146,7 @@ def test_multi_dict_params():
         'SELECT * FROM empl '
         'WHERE (name = %(name)s AND city = %(city)s) '
         'OR supervisor = %(name)s',
-        {'name': u'John Doe', 'city': u'Nowhere'})
+        {'name': 'John Doe', 'city': 'Nowhere'})
     eq_(res, b"SELECT * FROM empl "
              b"WHERE (name = N'John Doe' AND city = N'Nowhere') "
              b"OR supervisor = N'John Doe'")
@@ -163,7 +163,7 @@ def test_single_and_tuple():
     res = substitute_params(
         'SELECT * FROM cust '
         'WHERE salesrep = %s AND id IN %s',
-        (u'John Doe', (1, 2, 3)))
+        ('John Doe', (1, 2, 3)))
     eq_(res, b"SELECT * FROM cust "
              b"WHERE salesrep = N'John Doe' AND id IN (1,2,3)")
 

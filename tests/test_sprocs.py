@@ -256,8 +256,8 @@ class TestCallProcFancy(unittest.TestCase):
                    N'%(str1)s ' + @some_arg + N' %(str2)s'
         END
         """ % {
-            'str1': u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',
-            'str2': u'\u041c\u0438\u0440',
+            'str1': 'Здравствуй',
+            'str2': 'Мир',
         }
         sql = sql.encode('utf-8')
 
@@ -294,21 +294,21 @@ class TestCallProcFancy(unittest.TestCase):
 
         for a, b in cursor:
             eq_(a, 'hello!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+            eq_(b, 'Здравствуй hello Мир')
 
     def testCallProcWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
         cursor.callproc(
             'someProcWithOneParam',
-            (u'hello',))
+            ('hello',))
 
         # For some reason, fetchone doesn't work
         # It raises "OperationalError: Statement not executed or executed statement has no resultset"
         # a, b = cursor.fetchone()
 
         for a, b in cursor:
-            eq_(a, u'hello!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+            eq_(a, 'hello!')
+            eq_(b, 'Здравствуй hello Мир')
 
     # This is failing for me - the Unicode params somehow gets rendered to a
     # blank string. I am not sure if this is another bug or a user error on my
@@ -318,20 +318,20 @@ class TestCallProcFancy(unittest.TestCase):
         cursor = self.pymssql.cursor()
         cursor.callproc(
             'someProcWithOneParam',
-            (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',))  # Russian string
+            ('Здравствуй',))  # Russian string
 
         # For some reason, fetchone doesn't work
         # It raises "OperationalError: Statement not executed or executed statement has no resultset"
         # a, b = cursor.fetchone()
 
         for a, b in cursor:
-            eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
-            eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
+            eq_(a, 'Здравствуй!')
+            eq_(b, 'Здравствуй Здравствуй Мир')
 
     def testExecuteWithNone(self):
         cursor = self.pymssql.cursor()
         cursor.execute(
-            u'someProcWithOneParam %s',
+            'someProcWithOneParam %s',
             (None,))
 
         a, b = cursor.fetchone()
@@ -342,35 +342,35 @@ class TestCallProcFancy(unittest.TestCase):
     def testExecuteWithAsciiString(self):
         cursor = self.pymssql.cursor()
         cursor.execute(
-            u'someProcWithOneParam %s',
+            'someProcWithOneParam %s',
             ('hello',))
 
         a, b = cursor.fetchone()
 
         eq_(a, 'hello!')
-        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+        eq_(b, 'Здравствуй hello Мир')
 
     def testExecuteWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
         cursor.execute(
-            u'someProcWithOneParam %s',
-            (u'hello',))
+            'someProcWithOneParam %s',
+            ('hello',))
 
         a, b = cursor.fetchone()
 
-        eq_(a, u'hello!')
-        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 hello \u041c\u0438\u0440')
+        eq_(a, 'hello!')
+        eq_(b, 'Здравствуй hello Мир')
 
     def testExecuteWithUnicodeWithRussianCharacters(self):
         cursor = self.pymssql.cursor()
         cursor.execute(
-            u'someProcWithOneParam %s',
-            (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',))  # Russian string
+            'someProcWithOneParam %s',
+            ('Здравствуй',))  # Russian string
 
         a, b = cursor.fetchone()
 
-        eq_(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439!')
-        eq_(b, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439 \u041c\u0438\u0440')
+        eq_(a, 'Здравствуй!')
+        eq_(b, 'Здравствуй Здравствуй Мир')
 
 
 
