@@ -83,7 +83,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLINT8, '@ibigint')
         proc.bind(None, _mssql.SQLINT8, '@obigint', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@obigint'])
+        self.assertEqual(input, proc.parameters['@obigint'])
 
     def testBigIntPymssql(self):
         """Same as testBigInt above but from pymssql. Uses pymssql.output class."""
@@ -96,11 +96,11 @@ class TestFixedTypeConversion(unittest.TestCase):
         in_val = 123456789
         cursor = self.pymssql.cursor()
         retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
-        eq_(in_val, retval[1])
+        self.assertEqual(in_val, retval[1])
 
         in_val = 2147483647
         retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
-        eq_(in_val, retval[1])
+        self.assertEqual(in_val, retval[1])
 
     def testBit(self):
         input = True
@@ -108,7 +108,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLBITN, '@ibit')
         proc.bind(False, _mssql.SQLBITN, '@obit', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@obit'])
+        self.assertEqual(input, proc.parameters['@obit'])
 
     def testDateTime(self):
         input = datetime.datetime(2009, 8, 27, 15, 28, 38)
@@ -116,7 +116,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDATETIME, '@idatetime')
         proc.bind(None, _mssql.SQLDATETIME, '@odatetime', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@odatetime'])
+        self.assertEqual(input, proc.parameters['@odatetime'])
 
     def testDecimal(self):
         input = decimal.Decimal('5.12345')
@@ -125,8 +125,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
-        eq_(input, proc.parameters['@odecimal'])
-        eq_(str(input), str(proc.parameters['@odecimal']))
+        self.assertEqual(input, proc.parameters['@odecimal'])
+        self.assertEqual(str(input), str(proc.parameters['@odecimal']))
 
     def testDecimal2(self):
         input = decimal.Decimal('6.23456')
@@ -135,8 +135,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
-        eq_(input, proc.parameters['@odecimal'])
-        eq_(str(input), str(proc.parameters['@odecimal']))
+        self.assertEqual(input, proc.parameters['@odecimal'])
+        self.assertEqual(str(input), str(proc.parameters['@odecimal']))
 
     def testDecimal3(self):
         output = decimal.Decimal('0.00000')
@@ -145,8 +145,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=6)
         proc.execute()
-        eq_(input, proc.parameters['@odecimal'])
-        eq_(str(input), str(proc.parameters['@odecimal']))
+        self.assertEqual(input, proc.parameters['@odecimal'])
+        self.assertEqual(str(input), str(proc.parameters['@odecimal']))
 
     def testDecimal4(self):
         output = decimal.Decimal('1.0000000')
@@ -155,8 +155,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=15)
         proc.execute()
-        eq_(input, proc.parameters['@odecimal'])
-        eq_(str(input), str(proc.parameters['@odecimal']))
+        self.assertEqual(input, proc.parameters['@odecimal'])
+        self.assertEqual(str(input), str(proc.parameters['@odecimal']))
 
     def testDecimal5(self):
         output = decimal.Decimal('1.000000000')
@@ -165,8 +165,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLDECIMAL, '@idecimal')
         proc.bind(output, _mssql.SQLDECIMAL, '@odecimal', output=True, max_length=15)
         proc.execute()
-        eq_(input, proc.parameters['@odecimal'])
-        eq_(str(input), str(proc.parameters['@odecimal']))
+        self.assertEqual(input, proc.parameters['@odecimal'])
+        self.assertEqual(str(input), str(proc.parameters['@odecimal']))
 
     def testInt(self):
         input = 10056
@@ -174,7 +174,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLINT4, '@iint')
         proc.bind(None, _mssql.SQLINT4, '@oint', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@oint'])
+        self.assertEqual(input, proc.parameters['@oint'])
 
     def testMoney(self):
         input = decimal.Decimal('5.12')
@@ -182,7 +182,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLMONEY, '@imoney')
         proc.bind(None, _mssql.SQLMONEY, '@omoney', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@omoney'])
+        self.assertEqual(input, proc.parameters['@omoney'])
 
     def testNumeric(self):
         input = decimal.Decimal('5.12345')
@@ -191,8 +191,8 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLNUMERIC, '@inumeric')
         proc.bind(output, _mssql.SQLNUMERIC, '@onumeric', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@onumeric'])
-        eq_(str(input), str(proc.parameters['@onumeric']))
+        self.assertEqual(input, proc.parameters['@onumeric'])
+        self.assertEqual(str(input), str(proc.parameters['@onumeric']))
 
     def testSmallInt(self):
         input = 10056
@@ -200,7 +200,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLINT2, '@ismallint')
         proc.bind(None, _mssql.SQLINT2, '@osmallint', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@osmallint'])
+        self.assertEqual(input, proc.parameters['@osmallint'])
 
     def testTinyInt(self):
         input = 101
@@ -208,7 +208,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLINT1, '@itinyint')
         proc.bind(None, _mssql.SQLINT1, '@otinyint', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@otinyint'])
+        self.assertEqual(input, proc.parameters['@otinyint'])
 
     def testUuid(self):
         if os.environ.get('FREETDS_VERSION') != '0.91':
@@ -219,7 +219,7 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLUUID, '@iuniqueidentifier')
         proc.bind(None, _mssql.SQLUUID, '@ouniqueidentifier', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@ouniqueidentifier'])
+        self.assertEqual(input, proc.parameters['@ouniqueidentifier'])
 
     def testReal(self):
         input = 3.14
@@ -275,8 +275,8 @@ class TestCallProcFancy(unittest.TestCase):
             (None,))
 
         a, b = cursor.fetchone()
-        eq_(a, None)
-        eq_(b, None)
+        self.assertEqual(a, None)
+        self.assertEqual(b, None)
 
     def testCallProcWithAsciiString(self):
         cursor = self.pymssql.cursor()
@@ -285,8 +285,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-        eq_(a, 'hello!')
-        eq_(b, 'Здравствуй hello Мир')
+        self.assertEqual(a, 'hello!')
+        self.assertEqual(b, 'Здравствуй hello Мир')
 
     def testCallProcWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
@@ -295,8 +295,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-        eq_(a, 'hello!')
-        eq_(b, 'Здравствуй hello Мир')
+        self.assertEqual(a, 'hello!')
+        self.assertEqual(b, 'Здравствуй hello Мир')
 
     # This is failing for me - the Unicode params somehow gets rendered to a
     # blank string. I am not sure if this is another bug or a user error on my
@@ -309,8 +309,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('Здравствуй',))  # Russian string
 
         a, b = cursor.fetchone()
-        eq_(a, 'Здравствуй!')
-        eq_(b, 'Здравствуй Здравствуй Мир')
+        self.assertEqual(a, 'Здравствуй!')
+        self.assertEqual(b, 'Здравствуй Здравствуй Мир')
 
     def testExecuteWithNone(self):
         cursor = self.pymssql.cursor()
@@ -319,8 +319,8 @@ class TestCallProcFancy(unittest.TestCase):
             (None,))
 
         a, b = cursor.fetchone()
-        eq_(a, None)
-        eq_(b, None)
+        self.assertEqual(a, None)
+        self.assertEqual(b, None)
 
     def testExecuteWithAsciiString(self):
         cursor = self.pymssql.cursor()
@@ -329,8 +329,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-        eq_(a, 'hello!')
-        eq_(b, 'Здравствуй hello Мир')
+        self.assertEqual(a, 'hello!')
+        self.assertEqual(b, 'Здравствуй hello Мир')
 
     def testExecuteWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
@@ -339,8 +339,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-        eq_(a, 'hello!')
-        eq_(b, 'Здравствуй hello Мир')
+        self.assertEqual(a, 'hello!')
+        self.assertEqual(b, 'Здравствуй hello Мир')
 
     def testExecuteWithUnicodeWithRussianCharacters(self):
         cursor = self.pymssql.cursor()
@@ -349,8 +349,8 @@ class TestCallProcFancy(unittest.TestCase):
             ('Здравствуй',))  # Russian string
 
         a, b = cursor.fetchone()
-        eq_(a, 'Здравствуй!')
-        eq_(b, 'Здравствуй Здравствуй Мир')
+        self.assertEqual(a, 'Здравствуй!')
+        self.assertEqual(b, 'Здравствуй Здравствуй Мир')
 
 
 
@@ -394,7 +394,7 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLCHAR, '@ichar')
         proc.bind(None, _mssql.SQLCHAR, '@ochar', output=True, max_length=4)
         proc.execute()
-        eq_(input, proc.parameters['@ochar'])
+        self.assertEqual(input, proc.parameters['@ochar'])
 
     def testText(self):
         input = 'test'
@@ -402,7 +402,7 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLTEXT, '@itext')
         proc.bind(None, _mssql.SQLVARCHAR, '@otext', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@otext'])
+        self.assertEqual(input, proc.parameters['@otext'])
 
     def testVarChar(self):
         input = 'test'
@@ -410,7 +410,7 @@ class TestStringTypeConversion(unittest.TestCase):
         proc.bind(input, _mssql.SQLVARCHAR, '@ivarchar')
         proc.bind(None, _mssql.SQLVARCHAR, '@ovarchar', output=True)
         proc.execute()
-        eq_(input, proc.parameters['@ovarchar'])
+        self.assertEqual(input, proc.parameters['@ovarchar'])
 
     def testVarBinary(self):
         def check_conversion(input, output_type):
@@ -418,8 +418,8 @@ class TestStringTypeConversion(unittest.TestCase):
             proc.bind(input, _mssql.SQLVARBINARY, '@ivarbinary')
             proc.bind(None, _mssql.SQLVARBINARY, '@ovarbinary', output=True)
             proc.execute()
-            eq_(input, proc.parameters['@ovarbinary'])
-            eq_(output_type, type(proc.parameters['@ovarbinary']))
+            self.assertEqual(input, proc.parameters['@ovarbinary'])
+            self.assertEqual(output_type, type(proc.parameters['@ovarbinary']))
 
         if sys.version_info[0] == 3:
             check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), bytes)
@@ -562,8 +562,8 @@ class TestSPWithQueryResult(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-        eq_(a, 'hello!')
-        eq_(b, 'hello!!')
+        self.assertEqual(a, 'hello!')
+        self.assertEqual(b, 'hello!!')
 
     def test_mssql(self):
         proc = self.mssql.init_procedure(self.SP_NAME)
@@ -571,4 +571,4 @@ class TestSPWithQueryResult(unittest.TestCase):
         proc.execute()
 
         for row_dict in self.mssql:
-            eq_(row_dict, {0: 'hello!', 1: 'hello!!'})
+            self.assertEqual(row_dict, {0: 'hello!', 1: 'hello!!'})
