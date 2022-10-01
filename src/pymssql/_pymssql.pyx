@@ -438,6 +438,7 @@ cdef class Cursor:
             proc.bind(param_value, db_type, output=param_output)
         try:
             self._returnvalue = proc.execute()
+            self.description = self._source._conn.get_header()
         except _mssql.MSSQLDatabaseException, e:
             raise DatabaseError, e.args[0]
         return tuple([proc.parameters[p] for p in proc.parameters])
