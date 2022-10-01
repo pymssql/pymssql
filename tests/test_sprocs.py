@@ -274,13 +274,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             (None,))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, None)
-            eq_(b, None)
+        a, b = cursor.fetchone()
+        eq_(a, None)
+        eq_(b, None)
 
     def testCallProcWithAsciiString(self):
         cursor = self.pymssql.cursor()
@@ -288,13 +284,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             ('hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'hello!')
-            eq_(b, 'Здравствуй hello Мир')
+        a, b = cursor.fetchone()
+        eq_(a, 'hello!')
+        eq_(b, 'Здравствуй hello Мир')
 
     def testCallProcWithUnicodeStringWithNoFunnyCharacters(self):
         cursor = self.pymssql.cursor()
@@ -302,13 +294,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             ('hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'hello!')
-            eq_(b, 'Здравствуй hello Мир')
+        a, b = cursor.fetchone()
+        eq_(a, 'hello!')
+        eq_(b, 'Здравствуй hello Мир')
 
     # This is failing for me - the Unicode params somehow gets rendered to a
     # blank string. I am not sure if this is another bug or a user error on my
@@ -320,13 +308,9 @@ class TestCallProcFancy(unittest.TestCase):
             'someProcWithOneParam',
             ('Здравствуй',))  # Russian string
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        # a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'Здравствуй!')
-            eq_(b, 'Здравствуй Здравствуй Мир')
+        a, b = cursor.fetchone()
+        eq_(a, 'Здравствуй!')
+        eq_(b, 'Здравствуй Здравствуй Мир')
 
     def testExecuteWithNone(self):
         cursor = self.pymssql.cursor()
@@ -335,7 +319,6 @@ class TestCallProcFancy(unittest.TestCase):
             (None,))
 
         a, b = cursor.fetchone()
-
         eq_(a, None)
         eq_(b, None)
 
@@ -346,7 +329,6 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-
         eq_(a, 'hello!')
         eq_(b, 'Здравствуй hello Мир')
 
@@ -357,7 +339,6 @@ class TestCallProcFancy(unittest.TestCase):
             ('hello',))
 
         a, b = cursor.fetchone()
-
         eq_(a, 'hello!')
         eq_(b, 'Здравствуй hello Мир')
 
@@ -368,7 +349,6 @@ class TestCallProcFancy(unittest.TestCase):
             ('Здравствуй',))  # Russian string
 
         a, b = cursor.fetchone()
-
         eq_(a, 'Здравствуй!')
         eq_(b, 'Здравствуй Здравствуй Мир')
 
@@ -581,13 +561,9 @@ class TestSPWithQueryResult(unittest.TestCase):
             self.SP_NAME,
             ('hello',))
 
-        # For some reason, fetchone doesn't work
-        # It raises "OperationalError: Statement not executed or executed statement has no resultset"
-        #a, b = cursor.fetchone()
-
-        for a, b in cursor:
-            eq_(a, 'hello!')
-            eq_(b, 'hello!!')
+        a, b = cursor.fetchone()
+        eq_(a, 'hello!')
+        eq_(b, 'hello!!')
 
     def test_mssql(self):
         proc = self.mssql.init_procedure(self.SP_NAME)
