@@ -322,7 +322,7 @@ class CursorBase(DBAPIBase):
         # test for http://code.google.com/p/pymssql/issues/detail?id=92
         cur = self.conn.cursor(as_dict=True)
         cur.execute("SELECT 'foo' AS first_name, 'bar' AS last_name")
-        eq_(cur.fetchall(), [{'first_name': u'foo', 'last_name': u'bar'}])
+        eq_(cur.fetchall(), [{'first_name': 'foo', 'last_name': 'bar'}])
 
     def test_as_dict_no_column_name(self):
         cur = self.conn.cursor(as_dict=True)

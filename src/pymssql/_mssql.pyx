@@ -1895,17 +1895,17 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
     """
         http://www.freetds.org/userguide/choosingtdsprotocol.htm
     """
-    if verstr == u'4.2':
+    if verstr == '4.2':
         return DBVERSION_42
-    if verstr == u'7.0':
+    if verstr == '7.0':
         return DBVERSION_70
-    if verstr in (u'7.1', u'8.0'):
+    if verstr in ('7.1', '8.0'):
         return DBVERSION_71
-    if verstr == u'7.2':
+    if verstr == '7.2':
         return DBVERSION_72
-    if verstr == u'7.3':
+    if verstr == '7.3':
         return DBVERSION_73
-    if verstr == u'8.0':
+    if verstr == '8.0':
         return DBVERSION_71
     raise MSSQLException('unrecognized tds version: %s' % verstr)
 

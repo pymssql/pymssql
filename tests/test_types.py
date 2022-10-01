@@ -105,23 +105,23 @@ class TestTypes(unittest.TestCase):
     def test_varchar(self):
         testval = 'foobar'
         colval = self.insert_and_select('comment_vch', testval, 's')
-        typeeq(u'foobar', colval)
-        self.hasheq(u'foobar', colval)
+        typeeq('foobar', colval)
+        self.hasheq('foobar', colval)
 
     def test_varchar_hex(self):
         testval = '0xf00'
         colval = self.insert_and_select('comment_vch', testval, 's')
-        typeeq(u'0xf00', colval)
-        self.hasheq(u'0xf00', colval)
+        typeeq('0xf00', colval)
+        self.hasheq('0xf00', colval)
 
     def test_varchar_unicode(self):
-        testval = u'foobär'
+        testval = 'foobär'
         colval = self.insert_and_select('comment_vch', testval, 's')
-        typeeq(u'foobär', colval)
-        eq_(u'foobär', colval)
+        typeeq('foobär', colval)
+        eq_('foobär', colval)
 
     def test_nvarchar_unicode(self):
-        testval = u'foobär'
+        testval = 'foobär'
         colval = self.insert_and_select('comment_nvch', testval, 's')
         typeeq(testval, colval)
         eq_(testval, colval)

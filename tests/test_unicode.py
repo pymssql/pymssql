@@ -20,11 +20,11 @@ class TestUnicode(unittest.TestCase):
 
         cursor = self.conn.cursor()
         cursor.execute(
-            u'select %s, %s',
-            (u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439',
-             u'\u041c\u0438\u0440'))  # Russian strings
+            'select %s, %s',
+            ('Здравствуй',
+             'Мир'))  # Russian strings
 
         a, b = cursor.fetchone()
 
-        self.assertEqual(a, u'\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439')
-        self.assertEqual(b, u'\u041c\u0438\u0440')
+        self.assertEqual(a, 'Здравствуй')
+        self.assertEqual(b, 'Мир')
