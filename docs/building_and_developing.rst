@@ -199,6 +199,14 @@ to avoid slow tests::
 
   py.test -m "not slow"
 
+or::
+
+  py.test --skip-slow
+
+to skip tests that require MSSQL server::
+
+  py.test --skip-mssql-server-required
+
 to select specific tests to run::
 
   py.test tests/test_types.py

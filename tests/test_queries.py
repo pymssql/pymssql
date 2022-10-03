@@ -6,11 +6,13 @@ Test queries.
 from datetime import datetime
 import unittest
 
+import pytest
+
 from pymssql import _mssql
 
-from .helpers import mssqlconn, drop_table, mssql_server_required
+from .helpers import mssqlconn, drop_table
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class QueryTests(unittest.TestCase):
 
     @classmethod

@@ -6,8 +6,10 @@ Test bulk copy.
 import unittest
 import datetime
 
+import pytest
+
 from pymssql import _mssql
-from tests.helpers import drop_table, pymssqlconn, mssql_server_required
+from tests.helpers import drop_table, pymssqlconn
 
 
 tablename = "pymssql"
@@ -26,7 +28,7 @@ complex_table = """
 """ % tablename
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestTypes(unittest.TestCase):
     def setUp(self):
         self.conn = pymssqlconn()

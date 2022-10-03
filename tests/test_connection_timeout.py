@@ -5,6 +5,8 @@ import pytest
 import pymssql
 
 
+@pytest.mark.slow
+@pytest.mark.mssql_server_required
 @pytest.mark.timeout(120)
 @pytest.mark.xfail(strict=False)
 @pytest.mark.parametrize('to', [2])

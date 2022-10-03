@@ -5,18 +5,19 @@ Test connection config.
 
 from __future__ import with_statement
 from os import path, makedirs, environ
-import shutil
+
+import pytest
 
 from pymssql import _mssql
 
-from .helpers import tmpdir, skip_test, mssql_server_required
+from .helpers import tmpdir
 config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
 
 def setup_module():
     if not path.isdir(tmpdir):
         makedirs(tmpdir)
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestConfig(object):
     def connect(self, **kwargs):
         environ['TDSDUMPCONFIG'] = config_dump_path
@@ -35,6 +36,7 @@ class TestConfig(object):
         with open(config_dump_path, 'r') as fh:
             return fh.read()
 
+    @pytest.mark.slow
     def test_config_values(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
@@ -51,6 +53,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
+    @pytest.mark.slow
     def test_tds_protocol_version_42(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
@@ -59,6 +62,7 @@ class TestConfig(object):
         assert 'major_version = 4' in config_dump
         assert 'minor_version = 2' in config_dump
 
+    @pytest.mark.slow
     def test_tds_protocol_version_70(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
@@ -67,6 +71,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 0' in config_dump
 
+    @pytest.mark.slow
     def test_tds_protocol_version_71(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',
@@ -75,6 +80,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
+    @pytest.mark.slow
     def test_tds_protocol_version_80(self):
         # follow-up: turns out 8.0 was erroneous.  MS named the new protocol
         # 7.1 instead of 8.0, so FreeTDS will accept 8.0 but shows as 7.1.
@@ -89,6 +95,7 @@ class TestConfig(object):
         assert 'major_version = 7' in config_dump
         assert 'minor_version = 1' in config_dump
 
+    @pytest.mark.slow
     def test_tds_protocol_version_72(self):
         config_dump = self.connect(
             server='dontnameyourserverthis',

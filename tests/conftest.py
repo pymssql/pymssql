@@ -33,6 +33,16 @@ _parser = ConfigParser({
     'instance': '',
 })
 
+optional_markers = {
+    "slow": {"help": "Skip long tests",
+             "marker-descr": "Mark tests that run longer than ~3 seconds",
+             "skip-reason": "Test runs too long."},
+    "mssql_server_required": {"help": "Skip tests that require MSSQL server",
+             "marker-descr": "Mark tests that require MSSQL server",
+             "skip-reason": "Test only runs if MSSQL server is available."},
+    # add further markers here
+}
+
 def pytest_addoption(parser):
     parser.addoption(
         "--pymssql-section",
@@ -40,6 +50,9 @@ def pytest_addoption(parser):
         default=os.environ.get('PYMSSQL_TEST_CONFIG', 'DEFAULT'),
         help="The name of the section to use from tests.cfg"
     )
+    for marker, info in optional_markers.items():
+        parser.addoption("--skip-{}".format(marker.replace('_','-')), action="store_true",
+                         default=False, help=info['help'])
 
 def pytest_configure(config):
     _parser.read(cfgpath)
@@ -56,8 +69,10 @@ def pytest_configure(config):
     th.config.ipaddress = os.getenv('PYMSSQL_TEST_IPADDRESS') or _parser.get(section, 'ipaddress')
     th.config.instance = os.getenv('PYMSSQL_TEST_INSTANCE') or _parser.get(section, 'instance')
     th.config.orig_decimal_prec = decimal.getcontext().prec
-    th.mark_slow = pytest.mark.slow
-    th.skip_test = pytest.skip
+
+    for marker, info in optional_markers.items():
+        config.addinivalue_line("markers",
+                                "{}: {}".format(marker, info['marker-descr']))
 
     if get_app_lock():
         clear_db()
@@ -67,8 +82,18 @@ def pytest_unconfigure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    if th.global_mssqlconn is None:
-        skip = pytest.mark.skip(reason="Need test server to run")
+
+    marker = "mssql_server_required"
+    info = optional_markers[marker]
+    if th.global_mssqlconn is None or config.getoption("--skip-{}".format(marker.replace('_','-'))):
+        skip = pytest.mark.skip(reason=info['skip-reason'])
         for item in items:
-            if "mssql_server_required" in item.keywords:
+            if marker in item.keywords:
+                item.add_marker(skip)
+    marker = "slow"
+    info = optional_markers[marker]
+    if th.global_mssqlconn is None or config.getoption("--skip-{}".format(marker)):
+        skip = pytest.mark.skip(reason=info['skip-reason'])
+        for item in items:
+            if marker in item.keywords:
                 item.add_marker(skip)

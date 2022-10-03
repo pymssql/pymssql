@@ -5,9 +5,11 @@ Test unicode usage in queries.
 
 import unittest
 
-from .helpers import pymssqlconn, mssql_server_required
+import pytest
 
-@mssql_server_required
+from .helpers import pymssqlconn
+
+@pytest.mark.mssql_server_required
 class TestUnicode(unittest.TestCase):
 
     def setUp(self):

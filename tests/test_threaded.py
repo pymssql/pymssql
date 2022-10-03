@@ -8,9 +8,11 @@ import threading
 import time
 import unittest
 
+import pytest
+
 from pymssql._mssql import MSSQLDatabaseException
 
-from .helpers import mssqlconn, StoredProc, mark_slow, mssql_server_required
+from .helpers import mssqlconn, StoredProc
 
 
 error_sproc = StoredProc(
@@ -36,7 +38,7 @@ class _TestingThread(threading.Thread):
             self.exc = exc
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class _TestingErrorThread(_TestingThread):
     def run(self):
         try:
@@ -46,7 +48,7 @@ class _TestingErrorThread(_TestingThread):
             self.exc = exc
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class _SprocTestingErrorThread(_TestingThread):
     def run(self):
         try:
@@ -56,7 +58,7 @@ class _SprocTestingErrorThread(_TestingThread):
             self.exc = exc
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class ThreadedTests(unittest.TestCase):
     def run_threads(self, num, thread_class):
         threads = [thread_class() for _ in range(num)]
@@ -83,7 +85,7 @@ class ThreadedTests(unittest.TestCase):
 
         return results, exceptions
 
-    @mark_slow
+    @pytest.mark.slow
     def testThreadedUse(self):
         results, exceptions = self.run_threads(
             num=50,
@@ -92,7 +94,7 @@ class ThreadedTests(unittest.TestCase):
         for result in results:
             self.assertEqual(result, list(range(0, 1000)))
 
-    @mark_slow
+    @pytest.mark.slow
     def testErrorThreadedUse(self):
         results, exceptions = self.run_threads(
             num=2,
@@ -101,7 +103,7 @@ class ThreadedTests(unittest.TestCase):
         for exc in exceptions:
             self.assertEqual(type(exc), MSSQLDatabaseException)
 
-    @mark_slow
+    @pytest.mark.slow
     def testErrorSprocThreadedUse(self):
         with error_sproc.create():
             results, exceptions = self.run_threads(

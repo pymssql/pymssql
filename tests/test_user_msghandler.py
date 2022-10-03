@@ -5,7 +5,9 @@ Test user message hanler.
 
 import unittest
 
-from .helpers import config, mssqlconn, mssql_server_required
+import pytest
+
+from .helpers import config, mssqlconn
 
 msgs = []
 
@@ -32,7 +34,7 @@ def wrong_signature_msg_handler():
     pass
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestUserMsgHandler(unittest.TestCase):
 
     def test_basic_functionality(self):

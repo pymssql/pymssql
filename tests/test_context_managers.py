@@ -5,11 +5,13 @@ Test context managers -- i.e.: the `with` statement
 
 import unittest
 
+import pytest
+
 from pymssql import InterfaceError
-from .helpers import pymssqlconn, mssqlconn, mssql_server_required
+from .helpers import pymssqlconn, mssqlconn
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestContextManagers(unittest.TestCase):
     def test_pymssql_Connection_with(self):
         with pymssqlconn() as conn:

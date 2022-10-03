@@ -11,7 +11,7 @@ import pytest
 
 from pymssql import _mssql
 
-from .helpers import config, skip_test, mssqlconn, mssql_server_required
+from .helpers import config, mssqlconn
 server = config.server
 username = config.user
 password = config.password
@@ -29,7 +29,7 @@ def setup_module():
     if not path.isdir(tmpdir):
         makedirs(tmpdir)
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestCons(unittest.TestCase):
     def connect(self, **kwargs):
         environ['TDSDUMPCONFIG'] = config_dump_path
@@ -78,7 +78,7 @@ class TestCons(unittest.TestCase):
 
     def test_instance(self):
         if not instance:
-            skip_test()
+            pytest.skip()
         server_join = r'%s\%s' % (server, instance)
         cdump = self.connect(server=server_join, user=username, password=password)
         dump_server_name = re.search('server_name = (\\S+)', cdump).groups()[0]
@@ -125,6 +125,7 @@ class TestCons(unittest.TestCase):
         conn.close()
 
 
+@pytest.mark.slow
 class TestFailedConnection(unittest.TestCase):
 
     @pytest.mark.xfail(strict=False, reason="Could timeout, or fail with different error messages")

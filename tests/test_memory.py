@@ -7,6 +7,7 @@ import pymssql
 import pytest
 
 
+@pytest.mark.slow
 @pytest.mark.xfail(reason="Memory test is not stable")
 def test_memory_leak_on_unsuccessful_connect():
     """

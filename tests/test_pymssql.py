@@ -9,14 +9,13 @@ import pytest
 
 import pymssql as pym
 
-from .helpers import (pymssqlconn, PyTableBase, CursorBase, eq_, config,
-                      skip_test, mssql_server_required)
+from .helpers import pymssqlconn, PyTableBase, CursorBase, eq_, config
 
 class TestDBAPI2(object):
     def test_version(self):
         assert pym.__version__
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestTransaction(unittest.TestCase, PyTableBase):
     tname = 'users'
     cols = (
@@ -93,7 +92,7 @@ class TestTransaction(unittest.TestCase, PyTableBase):
         eq_(self.row_count(), 0)
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestCursor(CursorBase):
     dbmod = pym
 
@@ -102,7 +101,7 @@ class TestCursor(CursorBase):
         cls.conn = pymssqlconn()
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestBasicConnection(unittest.TestCase):
 
     def connect(self, conn_props=None):
@@ -145,7 +144,7 @@ class TestBasicConnection(unittest.TestCase):
         conn.close()
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestAutocommit(unittest.TestCase, PyTableBase):
     tname = 'test'
     cols = (
@@ -173,7 +172,7 @@ class TestAutocommit(unittest.TestCase, PyTableBase):
         except pym.OperationalError as e:
             expected_msg = "CREATE DATABASE permission denied in database 'master'"
             if expected_msg in str(e.args[1]):
-                skip_test('We have no CREATE DATABASE permission on test database')
+                pytest.skip('We have no CREATE DATABASE permission on test database')
             else:
                 pytest.fail()
         else:

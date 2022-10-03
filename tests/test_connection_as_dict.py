@@ -5,9 +5,11 @@ Test connection with as_dict=True.
 
 import unittest
 
+import pytest
+
 import pymssql
 
-from .helpers import config, mssql_server_required
+from .helpers import config
 
 def pymssqlconn(**kwargs):
     return pymssql.connect(
@@ -20,7 +22,7 @@ def pymssqlconn(**kwargs):
         )
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestConnectionAsDict(unittest.TestCase):
 
     def setUp(self):

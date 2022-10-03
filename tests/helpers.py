@@ -8,6 +8,9 @@ from os import path
 import time
 
 import pytest
+from pymssql import _mssql
+import pymssql
+
 
 def eq_(a, b):
     assert a == b
@@ -20,8 +23,6 @@ def mark_slow(f):
 
 mssql_server_required = pytest.mark.mssql_server_required
 
-from pymssql import _mssql
-import pymssql
 
 
 class Config(object):

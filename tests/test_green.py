@@ -4,20 +4,21 @@ Some async tests with gevent.
 """
 
 import datetime
-import pytest
 import unittest
 
+import pytest
+
 import pymssql
-from .helpers import mssqlconn, pymssqlconn, mark_slow, mssql_server_required, skip_test
+from .helpers import mssqlconn, pymssqlconn
 
 gevent = pytest.importorskip("gevent")
 try:
     import gevent.socket
 except ImportError:
-    skip_test('gevent is not available', allow_module_level=True)
+    pytest.skip('gevent is not available', allow_module_level=True)
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class GreenletTests(unittest.TestCase):
 
     def greenlet_run_pymssql_execute(self, num):
@@ -79,7 +80,7 @@ class GreenletTests(unittest.TestCase):
 
         return dt2 - dt1
 
-    @mark_slow
+    @pytest.mark.slow
     def test_gevent_socket_pymssql_execute_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)
@@ -93,7 +94,7 @@ class GreenletTests(unittest.TestCase):
             elapsed_time < datetime.timedelta(seconds=20),
             'elapsed_time < 20 seconds')
 
-    @mark_slow
+    @pytest.mark.slow
     def test_gevent_socket_pymssql_callproc_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)
@@ -121,7 +122,7 @@ class GreenletTests(unittest.TestCase):
             elapsed_time < datetime.timedelta(seconds=20),
             'elapsed_time < 20 seconds')
 
-    @mark_slow
+    @pytest.mark.slow
     def test_gevent_socket_mssql_execute_wait_read_concurrency(self):
         def wait_callback(read_fileno):
             gevent.socket.wait_read(read_fileno)

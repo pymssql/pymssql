@@ -5,12 +5,14 @@ Basic SQLAlchemy tests.
 
 import unittest
 
-from .helpers import config, eq_, skip_test, mssql_server_required
+import pytest
+
+from .helpers import config, eq_
 
 try:
     import sqlalchemy as sa
 except ImportError:
-    skip_test('SQLAlchemy is not available', allow_module_level=True)
+    pytest.skip('SQLAlchemy is not available', allow_module_level=True)
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -42,7 +44,7 @@ class SAObj(Base):
 #saotbl.drop(engine, checkfirst=True)
 #saotbl.create(engine)
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestSA(unittest.TestCase):
 
     def setUp(self):

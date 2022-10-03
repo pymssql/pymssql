@@ -8,7 +8,9 @@ from io import StringIO
 import sys
 import unittest
 
-from .helpers import mssqlconn, mssql_server_required
+import pytest
+
+from .helpers import mssqlconn
 
 
 @contextmanager
@@ -18,7 +20,7 @@ def redirect_stderr():
     sys.stderr = sys.__stderr__
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestMSSQLConnectionWithDebugQueries(unittest.TestCase):
 
     def setUp(self):

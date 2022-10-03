@@ -11,10 +11,10 @@ import sys
 import unittest
 import uuid
 
-import pymssql
-from .helpers import get_sql_server_version, mssql_server_required
-
 import pytest
+
+import pymssql
+from .helpers import get_sql_server_version
 
 
 def get_bytes_buffer():
@@ -64,7 +64,7 @@ def build_create_table_query(conn):
     return create_sql
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestTypes(unittest.TestCase):
     tname = 'pymssql'
 
@@ -295,7 +295,7 @@ class TestTypes(unittest.TestCase):
         eq_(origval, colval)
 
 
-@mssql_server_required
+@pytest.mark.mssql_server_required
 class TestTypesPymssql(unittest.TestCase):
     tname = 'pymssql'
 
