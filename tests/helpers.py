@@ -33,7 +33,6 @@ class Config(object):
 config = Config()
 
 cdir = path.dirname(__file__)
-tmpdir = path.join(cdir, 'tmp')
 cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
 

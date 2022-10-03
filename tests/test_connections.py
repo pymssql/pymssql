@@ -7,6 +7,8 @@ from __future__ import with_statement
 from os import path, makedirs, environ
 import re
 import unittest
+import tempfile
+
 import pytest
 
 from pymssql import _mssql
@@ -20,23 +22,18 @@ port = config.port
 ipaddress = config.ipaddress
 instance = config.instance
 
-cdir = path.dirname(__file__)
-tmpdir = path.join(cdir, 'tmp')
-config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
-dump_path = path.join(tmpdir, 'freetds-dump.txt')
-
-def setup_module():
-    if not path.isdir(tmpdir):
-        makedirs(tmpdir)
 
 @pytest.mark.mssql_server_required
 class TestCons(unittest.TestCase):
     def connect(self, **kwargs):
-        environ['TDSDUMPCONFIG'] = config_dump_path
-        environ['TDSDUMP'] = dump_path
-        _mssql.connect(**kwargs)
-        with open(config_dump_path, 'r') as fh:
-            return fh.read()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
+            dump_path = path.join(tmpdir, 'freetds-dump.txt')
+            environ['TDSDUMPCONFIG'] = config_dump_path
+            environ['TDSDUMP'] = dump_path
+            _mssql.connect(**kwargs)
+            with open(config_dump_path, 'r') as fh:
+                return fh.read()
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)

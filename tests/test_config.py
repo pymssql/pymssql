@@ -4,37 +4,33 @@ Test connection config.
 """
 
 from __future__ import with_statement
-from os import path, makedirs, environ
+from os import path, environ
+import tempfile
 
 import pytest
 
 from pymssql import _mssql
 
-from .helpers import tmpdir
-config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
-
-def setup_module():
-    if not path.isdir(tmpdir):
-        makedirs(tmpdir)
-
 @pytest.mark.mssql_server_required
 class TestConfig(object):
     def connect(self, **kwargs):
-        environ['TDSDUMPCONFIG'] = config_dump_path
-        try:
-            _mssql.connect(**kwargs)
-            assert False
-        except _mssql.MSSQLDriverException as e:
-            # we get this when the name of the server is not valid
-            if 'Connection to the database failed' not in str(e):
-                raise
-        except _mssql.MSSQLDatabaseException as e:
-            # we get this when the name or IP can be obtained but the connection
-            # can not be made
-            if e.args[0][0] != 20009:
-                raise
-        with open(config_dump_path, 'r') as fh:
-            return fh.read()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
+            environ['TDSDUMPCONFIG'] = config_dump_path
+            try:
+                _mssql.connect(**kwargs)
+                assert False
+            except _mssql.MSSQLDriverException as e:
+                # we get this when the name of the server is not valid
+                if 'Connection to the database failed' not in str(e):
+                    raise
+            except _mssql.MSSQLDatabaseException as e:
+                # we get this when the name or IP can be obtained but the connection
+                # can not be made
+                if e.args[0][0] != 20009:
+                    raise
+            with open(config_dump_path, 'r') as fh:
+                return fh.read()
 
     @pytest.mark.slow
     def test_config_values(self):
