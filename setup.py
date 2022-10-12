@@ -100,7 +100,7 @@ if not WINDOWS:
 print("setup.py: include_dirs =>", include_dirs)
 print("setup.py: library_dirs =>", library_dirs)
 
-if not WINDOWS:
+if LINK_FREETDS_STATICALLY and not WINDOWS:
     # check for clock_gettime, link with librt for glibc<2.17
     from dev import ccompiler
     compiler = ccompiler.new_compiler()
