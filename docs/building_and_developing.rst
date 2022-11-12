@@ -74,6 +74,15 @@ platform you will need these additional tools installed:
     from Microsoft could be used.
 
 
+Linux
+_____
+
+For example on Alpine Linux the following command will install all necessary
+packages for building pymssql::
+
+    apk add git gcc musl-dev krb5-dev openssl-dev freetds-dev
+
+
 Building ``pymssql`` wheel
 __________________________
 

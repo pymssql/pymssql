@@ -100,7 +100,7 @@ if not WINDOWS:
 print("setup.py: include_dirs =>", include_dirs)
 print("setup.py: library_dirs =>", library_dirs)
 
-if not WINDOWS:
+if not WINDOWS and platform.libc_ver()[0] == 'glibc':
     # check for clock_gettime, link with librt for glibc<2.17
     from dev import ccompiler
     compiler = ccompiler.new_compiler()
@@ -110,7 +110,6 @@ if not WINDOWS:
         else:
             print("setup.py: could not locate 'clock_gettime' function required by FreeTDS.")
             sys.exit(1)
-
 
 class build_ext(_build_ext):
     """
