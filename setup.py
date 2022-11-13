@@ -268,7 +268,7 @@ def ext_modules():
     return ext_modules
 
 
-def mk_long_description():
+def mk_long_description(numrev=1):
 
     readme = (Path('__file__').parent / 'README.rst').read_text()
     chlog = Path('__file__').parent / 'ChangeLog.rst'
@@ -279,7 +279,7 @@ def mk_long_description():
         while l:
             if l.startswith('Version 2'):
                 count += 1
-            if count > 1:
+            if count > numrev:
                 break
             lines.append(l)
             l = f.readline()
@@ -294,7 +294,7 @@ setup(
         "local_scheme": "no-local-version",
     },
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
-    long_description = mk_long_description(),
+    long_description = mk_long_description(2),
     long_description_content_type = 'text/x-rst',
     author = 'Damien Churchill',
     author_email = 'damoxc@gmail.com',
