@@ -1,6 +1,19 @@
 Recent Changes
 ==============
 
+Version 2.2.6 - 2022-04-12  - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Build wheels for Python-3.11.
+- Use FreeTDS-1.3.13 for official wheels on PyPi.
+- Fix build on Alpine Linux (fix #762).
+- Fill in result description in cursor.callproc (fix #772).
+- Add explicit link to krb5 (fix #776), thanks to James Coder.
+- Some small doc fixes, thanks to guillaumep and Logan Elandt.
+
 Version 2.2.5 - 2022-04-12  - Mikhail Terekhov
 ==============================================
 
