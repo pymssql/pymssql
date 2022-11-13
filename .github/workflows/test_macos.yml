@@ -67,7 +67,7 @@ jobs:
         pytest -sv
 
     - name: Archive wheels and sdist
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: pymssql-${{ runner.os }}-${{ github.sha }}
         path: dist

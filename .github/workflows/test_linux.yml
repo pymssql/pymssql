@@ -101,7 +101,7 @@ jobs:
         ls -la dist
 
     - name: Archive wheels and sdist
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: pymssql-${{ runner.os }}-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
         path: dist
