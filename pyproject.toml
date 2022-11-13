@@ -1,5 +1,10 @@
 [build-system]
-requires = ["setuptools>=54.0", "setuptools_scm[toml]>=5.0", "wheel>=0.36.2", "Cython>=0.29.22"]
+requires = [
+    "setuptools>=54.0", 
+    "setuptools_scm[toml]>=5.0", 
+    "wheel>=0.36.2", 
+    "Cython>=0.29.22"
+    ]
 
 [tool.setuptools_scm]
 write_to = "src/pymssql/version.h"
