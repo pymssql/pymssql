@@ -696,7 +696,8 @@ cdef class MSSQLConnection:
 
         if self.dbproc == NULL:
             log("_mssql.MSSQLConnection.__init__() -> dbopen() returned NULL")
-            connection_object_list.remove(self)
+            if self in connection_object_list:
+                connection_object_list.remove(self)
             maybe_raise_MSSQLDatabaseException(None)
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
 
