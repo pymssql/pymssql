@@ -10,7 +10,7 @@ from .helpers import config, eq_, skip_test, mssql_server_required
 try:
     import sqlalchemy as sa
 except ImportError:
-    skip_test('SQLAlchemy is not available')
+    skip_test('SQLAlchemy is not available', allow_module_level=True)
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 

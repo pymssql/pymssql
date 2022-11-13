@@ -8,10 +8,13 @@ import pytest
 import unittest
 
 import pymssql
-from .helpers import mssqlconn, pymssqlconn, mark_slow, mssql_server_required
+from .helpers import mssqlconn, pymssqlconn, mark_slow, mssql_server_required, skip_test
 
 gevent = pytest.importorskip("gevent")
-import gevent.socket
+try:
+    import gevent.socket
+except ImportError:
+    skip_test('gevent is not available', allow_module_level=True)
 
 
 @mssql_server_required

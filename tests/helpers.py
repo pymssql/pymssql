@@ -12,8 +12,8 @@ import pytest
 def eq_(a, b):
     assert a == b
 
-def skip_test(reason='No reason given to skip_test'):
-    pytest.skip(reason)
+def skip_test(reason='No reason given to skip_test', **kw):
+    pytest.skip(reason, **kw)
 
 def mark_slow(f):
     return f
