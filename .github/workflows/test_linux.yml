@@ -97,7 +97,7 @@ jobs:
         DOCKER_IMAGE: quay.io/pypa/${{ matrix.manylinux }}_${{ matrix.arch }}
       run: |
         docker pull $DOCKER_IMAGE
-        docker run --rm --net="host" -w=/io -v `pwd`:/io $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
+        docker run --rm --net="host" -w=/io -v `pwd`:/io -e MANYLINUX=${{ matrix.manylinux }} $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
         ls -la dist
 
     - name: Archive wheels and sdist
