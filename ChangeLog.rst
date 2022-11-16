@@ -1,7 +1,15 @@
 Recent Changes
 ==============
 
-Version 2.2.6 - 2022-04-12  - Mikhail Terekhov
+Version 2.2.7 - 2022-11-15  - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Build wheels for Python-3.6 (fix 787).
+
+Version 2.2.6 - 2022-11-12  - Mikhail Terekhov
 ==============================================
 
 General
