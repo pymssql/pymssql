@@ -4,7 +4,7 @@ psutil<5.9.5
 pytest
 pytest-timeout
 setuptools>=54.0
-setuptools_scm[toml]>=5.0,<7.0
+setuptools_scm[toml]>=5.0,<8.0
 sphinx-rtd-theme
 sphinx
 sqlalchemy
