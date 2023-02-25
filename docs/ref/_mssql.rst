@@ -224,9 +224,6 @@ Functions
    ``(5, 0)``, ``(7, 0)``, ``(7, 1)``, ``(7, 2)``, ``(7, 3)`` or ``None`` if no
    TDS version could be detected.
 
-   .. versionchanged:: 2.1.3
-      ``7.3`` was added as a possible value.
-
 ``MSSQLConnection`` object methods
 ----------------------------------
 
