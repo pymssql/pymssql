@@ -412,7 +412,8 @@ def clear_db():
             'from sys.objects where type in (\'%s\')' % '", "'.join(type)
         conn.execute_query(sql)
         for row in conn:
-            delete_sql.append(drop_sql % dict(row))
+            if row['name'][0] not in ('#','@'):
+                delete_sql.append(drop_sql % dict(row))
     for sql in delete_sql:
         conn.execute_non_query(sql)
 
