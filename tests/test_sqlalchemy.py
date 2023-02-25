@@ -13,8 +13,7 @@ try:
     import sqlalchemy as sa
 except ImportError:
     pytest.skip('SQLAlchemy is not available', allow_module_level=True)
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 engine = sa.create_engine(
         'mssql+pymssql://%s:%s@%s:%s/%s' % (
@@ -71,6 +70,6 @@ class TestSA(unittest.TestCase):
         s = SAObj(name='foobar', data=['one'])
         self.sess.add(s)
         self.sess.commit()
-        res = self.sess.execute(sa.select([self.saotbl.c.data]))
+        res = self.sess.execute(sa.select(self.saotbl.c.data))
         row = res.fetchone()
-        eq_(row['data'], ['one'])
+        eq_(row[0], ['one'])
