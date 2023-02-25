@@ -139,6 +139,17 @@ SQLDATE = 40
 SQLTIME = 41
 SQLDATETIME2 = 42
 
+####################
+## TDS_ENCRYPTION_LEVEL ##
+####################
+
+cdef dict TDS_ENCRYPTION_LEVEL = {
+    'default': 0,  # TDS_ENCRYPTION_DEFAULT,
+    'off':     1,  # TDS_ENCRYPTION_OFF,
+    'request': 2,  # TDS_ENCRYPTION_REQUEST,
+    'require': 3   # TDS_ENCRYPTION_REQUIRE
+}
+
 ###################
 ## Type mappings ##
 ###################
@@ -597,7 +608,8 @@ cdef class MSSQLConnection:
         self.column_types = None
 
     def __init__(self, server="localhost", user=None, password=None,
-            charset='UTF-8', database='', appname=None, port='1433', tds_version=None, conn_properties=None):
+                        charset='UTF-8', database='', appname=None, port='1433',
+                        tds_version=None, encryption=None,  conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -641,6 +653,12 @@ cdef class MSSQLConnection:
         DBSETLAPP(login, appname_cstr)
         if tds_version is not None:
             DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
+
+        if encryption is not None:
+            if encryption in TDS_ENCRYPTION_LEVEL:
+                DBSETLENCRYPT(login, TDS_ENCRYPTION_LEVEL[encryption])
+            else:
+                raise ValueError(f"'encryption' option should be {TDS_ENCRYPTION_LEVEL.keys())} or None.")
 
         # add the port to the server string if it doesn't have one already and
         # if we are not using an instance

@@ -79,6 +79,15 @@ Functions
                        * ``'SQLHOST,5000'`` -- If you have set up an instance to listen on port 5000
                        * ``'SQLHOST:5000'`` -- The same as above
 
+    :param str encryption: Specify if encryption is desired. Supported for
+                           Microsoft servers. Possible values are:
+
+                           * ``'off'`` -- disables encryption
+                           * ``'request'`` -- means use if available
+                           * ``'require'`` -- means create and allow encrypted connections only
+
+                        .. versionadded:: 2.2.8
+
     :param str user: Database user to connect as
 
     :param str password: User's password
