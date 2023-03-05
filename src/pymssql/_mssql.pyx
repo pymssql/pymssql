@@ -614,7 +614,6 @@ cdef class MSSQLConnection:
 
         cdef LOGINREC *login
         cdef RETCODE rtc
-        cdef char *_charset
 
         # support MS methods of connecting locally
         instance = ""
@@ -639,26 +638,24 @@ cdef class MSSQLConnection:
             raise MSSQLDriverException("dblogin() failed")
 
         appname = appname or "pymssql=%s" % __full_version__
+        cdef bytes appname_bytes = appname.encode('utf-8')
+        cdef char *appname_cstr = appname_bytes
+        DBSETLAPP(login, appname_cstr)
 
-        # For Python 3, we need to convert unicode to byte strings
         cdef bytes user_bytes
         cdef char *user_cstr = NULL
         if user is not None:
             user_bytes = user.encode('utf-8')
             user_cstr = user_bytes
+            DBSETLUSER(login, user_cstr)
+
         cdef bytes password_bytes
         cdef char *password_cstr = NULL
         if password is not None:
             password_bytes = password.encode('utf-8')
             password_cstr = password_bytes
-        cdef bytes appname_bytes = appname.encode('utf-8')
-        cdef char *appname_cstr = appname_bytes
-
-        if user is not None:
-            DBSETLUSER(login, user_cstr)
-        if password is not None:
             DBSETLPWD(login, password_cstr)
-        DBSETLAPP(login, appname_cstr)
+
         if tds_version is not None:
             DBSETLVERSION(login, _tds_ver_str_to_constant(tds_version))
 
@@ -668,11 +665,8 @@ cdef class MSSQLConnection:
             else:
                 raise ValueError(f"'encryption' option should be {TDS_ENCRYPTION_LEVEL.keys())} or None.")
 
-        # Add ourselves to the global connection list
-        connection_object_list.append(self)
-
         cdef bytes charset_bytes
-
+        cdef char *_charset
         # Set the character set name
         if charset:
             charset_bytes = charset.encode('utf-8')
@@ -688,6 +682,9 @@ cdef class MSSQLConnection:
             dbname_bytes = database.encode('utf-8')
             dbname_cstr = dbname_bytes
             DBSETLDBNAME(login, dbname_cstr)
+
+        # Add ourselves to the global connection list
+        connection_object_list.append(self)
 
         # Set the login timeout
         # XXX: Currently this will set it application wide :-(
