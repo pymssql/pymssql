@@ -726,7 +726,7 @@ cdef class MSSQLConnection:
             log("_mssql.MSSQLConnection.__init__() -> dbcmd() setting connection values")
             # Set connection properties, some reasonable values are used by
             # default but they can be customized
-            conn_props_bytes = conn_properties.encode(charset)
+            conn_props_bytes = conn_properties.encode('utf-8')
             conn_props_cstr = conn_props_bytes
             dbcmd(self.dbproc, conn_props_bytes)
 
