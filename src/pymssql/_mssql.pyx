@@ -626,6 +626,14 @@ cdef class MSSQLConnection:
 
         server = server + "\\" + instance if instance else server
 
+        # add the port to the server string if it doesn't have one already and
+        # if we are not using an instance
+        if ':' not in server and not instance:
+            server = '%s:%s' % (server, port)
+
+        cdef bytes server_bytes = server.encode('utf-8')
+        cdef char *server_cstr = server_bytes
+
         login = dblogin()
         if login == NULL:
             raise MSSQLDriverException("dblogin() failed")
@@ -660,11 +668,6 @@ cdef class MSSQLConnection:
             else:
                 raise ValueError(f"'encryption' option should be {TDS_ENCRYPTION_LEVEL.keys())} or None.")
 
-        # add the port to the server string if it doesn't have one already and
-        # if we are not using an instance
-        if ':' not in server and not instance:
-            server = '%s:%s' % (server, port)
-
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 
@@ -689,9 +692,6 @@ cdef class MSSQLConnection:
         # Set the login timeout
         # XXX: Currently this will set it application wide :-(
         dbsetlogintime(login_timeout)
-
-        cdef bytes server_bytes = server.encode('utf-8')
-        cdef char *server_cstr = server_bytes
 
         # Connect to the server
         with nogil:
