@@ -665,18 +665,6 @@ cdef class MSSQLConnection:
         if ':' not in server and not instance:
             server = '%s:%s' % (server, port)
 
-        # override the HOST to be the portion without the server, otherwise
-        # FreeTDS chokes when server still has the port definition.
-        # BUT, a patch on the mailing list fixes the need for this.  I am
-        # leaving it here just to remind us how to fix the problem if the bug
-        # doesn't get fixed for a while.  But if it does get fixed, this code
-        # can be deleted.
-        # patch: http://lists.ibiblio.org/pipermail/freetds/2011q2/026997.html
-        #if ':' in server:
-        #    os.environ['TDSHOST'] = server.split(':', 1)[0]
-        #else:
-        #    os.environ['TDSHOST'] = server
-
         # Add ourselves to the global connection list
         connection_object_list.append(self)
 
