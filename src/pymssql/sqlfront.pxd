@@ -747,5 +747,6 @@ cdef extern from "sqlfront.h":
     RETCODE DBSETLVERSION(LOGINREC *login, BYTE version)
     RETCODE DBSETLDBNAME(LOGINREC *x, char *y)
     RETCODE DBSETLENCRYPT(LOGINREC *login, int x)
+    RETCODE DBSETLREADONLY(LOGINREC *login, int x)
 
 ctypedef int LINE_T

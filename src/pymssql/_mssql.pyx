@@ -609,7 +609,8 @@ cdef class MSSQLConnection:
 
     def __init__(self, server="localhost", user=None, password=None,
                         charset='UTF-8', database='', appname=None, port='1433',
-                        tds_version=None, encryption=None,  conn_properties=None):
+                        tds_version=None, encryption=None, read_only=False,
+                        conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
@@ -682,6 +683,9 @@ cdef class MSSQLConnection:
             dbname_bytes = database.encode('utf-8')
             dbname_cstr = dbname_bytes
             DBSETLDBNAME(login, dbname_cstr)
+
+        if read_only:
+            DBSETLREADONLY(login, 1)
 
         # Add ourselves to the global connection list
         connection_object_list.append(self)

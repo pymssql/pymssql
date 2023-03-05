@@ -76,6 +76,11 @@ Functions
                      * ``'SQLHOST:5000'`` -- the same as above
 
                      ``'.'`` (the local host) is assumed if host is not provided.
+
+   :param bool read_only: Tell server we only intent to do read-only queries.
+                        This is supported from MSSQL 2012.
+
+                        .. versionadded:: 2.2.8
    :keyword str appname: Set the application name to use for the connection
    :keyword str port: the TCP port to use to connect to the server
    :keyword conn_properties: SQL queries to send to the server upon connection

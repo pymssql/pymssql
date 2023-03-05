@@ -98,6 +98,11 @@ Functions
                          default, *SQL Server* selects the database which is set as
                          the default for the specific user
 
+    :param bool read_only: Tell server we only intent to do read-only queries.
+                        This is supported from MSSQL 2012.
+
+                        .. versionadded:: 2.2.8
+
     :param str appname: Set the application name to use for the connection
 
     :param str port: the TCP port to use to connect to the server
