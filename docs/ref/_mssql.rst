@@ -80,11 +80,12 @@ Functions
                        * ``'SQLHOST:5000'`` -- The same as above
 
     :param str encryption: Specify if encryption is desired. Supported for
-                           Microsoft servers. Possible values are:
+                        Microsoft servers. Possible values are:
 
                            * ``'off'`` -- disables encryption
                            * ``'request'`` -- means use if available
                            * ``'require'`` -- means create and allow encrypted connections only
+                        Default: ``'request'`` for tds version > 7.1, otherwise ``'off'``
 
                         .. versionadded:: 2.2.8
 

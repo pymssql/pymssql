@@ -77,6 +77,16 @@ Functions
 
                      ``'.'`` (the local host) is assumed if host is not provided.
 
+   :param str encryption: Specify if encryption is desired. Supported for
+                        Microsoft servers. Possible values are:
+
+                           * ``'off'`` -- disables encryption
+                           * ``'request'`` -- means use if available
+                           * ``'require'`` -- means create and allow encrypted connections only
+                        Default: ``'request'`` for tds version > 7.1, otherwise ``'off'``
+
+                        .. versionadded:: 2.2.8
+
    :param bool read_only: Tell server we only intent to do read-only queries.
                         This is supported from MSSQL 2012.
 
