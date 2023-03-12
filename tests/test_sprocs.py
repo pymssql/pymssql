@@ -110,6 +110,14 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         self.assertEqual(input, proc.parameters['@obit'])
 
+    def testDateMixWithDateTime(self):
+        input = datetime.date(2009, 8, 27)
+        proc = self.mssql.init_procedure('pymssqlTestDateTime')
+        proc.bind(input, _mssql.SQLDATETIME, '@idatetime')
+        proc.bind(None, _mssql.SQLDATETIME, '@odatetime', output=True)
+        proc.execute()
+        self.assertEqual(input, proc.parameters['@odatetime'].date())
+
     def testDateTime(self):
         input = datetime.datetime(2009, 8, 27, 15, 28, 38)
         proc = self.mssql.init_procedure('pymssqlTestDateTime')
