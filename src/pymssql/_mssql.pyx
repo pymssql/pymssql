@@ -974,6 +974,12 @@ cdef class MSSQLConnection:
             dbValue[0] = <BYTE *><DBFLT8 *>dblValue
             return 0
 
+        if dbtype[0] == SQLDATE:
+            if not isinstance(value, datetime.date):
+                raise TypeError('value can only be a datetime.date')
+            value = value.strftime('%Y-%m-%d').encode(self.charset)
+            dbtype[0] = SQLCHAR
+
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
             if type(value) not in (datetime.date, datetime.datetime):
                 raise TypeError('value can only be a date or datetime')
