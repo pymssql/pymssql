@@ -19,6 +19,7 @@ from .helpers import mssqlconn, pymssqlconn
 FIXED_TYPES = (
     'BigInt',
     'Bit',
+    'Date',
     'DateTime',
     'Decimal',
     'Int',
@@ -109,6 +110,14 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(False, _mssql.SQLBITN, '@obit', output=True)
         proc.execute()
         self.assertEqual(input, proc.parameters['@obit'])
+
+    def testDate(self):
+        input = datetime.date(2009, 8, 27)
+        proc = self.mssql.init_procedure('pymssqlTestDate')
+        proc.bind(input, _mssql.SQLDATE, '@idate')
+        proc.bind(None, _mssql.SQLDATE, '@odate', output=True)
+        proc.execute()
+        self.assertEqual(input, proc.parameters['@odate'])
 
     def testDateMixWithDateTime(self):
         input = datetime.date(2009, 8, 27)
