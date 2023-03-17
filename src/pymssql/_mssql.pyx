@@ -258,7 +258,7 @@ cdef void log(char * message, ...):
 ## Error Handler ##
 ###################
 cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
-        char *dberrstr, char *oserrstr) with gil:
+        char *dberrstr, char *oserrstr) noexcept with gil:
     cdef char *mssql_lastmsgstr
     cdef int *mssql_lastmsgno
     cdef int *mssql_lastmsgseverity
@@ -331,7 +331,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
 #####################
 cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
         int severity, char *msgtext, char *srvname, char *procname,
-        LINE_T line) with gil:
+        LINE_T line) noexcept with gil:
 
     cdef int *mssql_lastmsgno
     cdef int *mssql_lastmsgseverity
