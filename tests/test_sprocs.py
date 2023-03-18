@@ -6,7 +6,6 @@ Test stored procedure usage.
 import decimal
 import datetime
 import os
-import sys
 import unittest
 
 import pymssql
@@ -88,19 +87,13 @@ class TestFixedTypeConversion(unittest.TestCase):
 
     def testBigIntPymssql(self):
         """Same as testBigInt above but from pymssql. Uses pymssql.output class."""
-
-        if sys.version_info >= (3, ):
-            py_type = int
-        else:
-            py_type = long
-
         in_val = 123456789
         cursor = self.pymssql.cursor()
-        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(int)])
         self.assertEqual(in_val, retval[1])
 
         in_val = 2147483647
-        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(py_type)])
+        retval = cursor.callproc('pymssqlTestBigInt', [in_val, pymssql.output(int)])
         self.assertEqual(in_val, retval[1])
 
     def testBit(self):
@@ -438,19 +431,11 @@ class TestStringTypeConversion(unittest.TestCase):
             self.assertEqual(input, proc.parameters['@ovarbinary'])
             self.assertEqual(output_type, type(proc.parameters['@ovarbinary']))
 
-        if sys.version_info[0] == 3:
-            check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), bytes)
-            check_conversion(bytearray(b'\xDE\xAD\xBE\xEF'), bytes)
-            with pytest.raises(TypeError) as exc_info:
-                check_conversion('FOO', bytes)
-                assert 'value can only be bytes or bytearray' == str(exc_info.value)
-        else:
-            check_conversion(b'\xDE\xAD\xBE\xEF', str)
-            check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), str)
-            check_conversion(bytearray(b'\xDE\xAD\xBE\xEF'), str)
-            with pytest.raises(TypeError) as exc_info:
-                check_conversion(unicode('Foo'), str)
-                assert 'value can only be str or bytearray' == str(exc_info.value)
+        check_conversion(bytes(b'\xDE\xAD\xBE\xEF'), bytes)
+        check_conversion(bytearray(b'\xDE\xAD\xBE\xEF'), bytes)
+        with pytest.raises(TypeError) as exc_info:
+            check_conversion('FOO', bytes)
+            assert 'value can only be bytes or bytearray' == str(exc_info.value)
 
 
 @pytest.mark.mssql_server_required

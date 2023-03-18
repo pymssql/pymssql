@@ -79,11 +79,10 @@ class TestTypes(unittest.TestCase):
         clear_table(self.conn, self.tname)
 
     def hasheq(self, v1, v2):
-        if sys.version_info >= (3, ):
-            if hasattr(v1, 'encode'):
-                v1 = v1.encode('utf-8')
-            if hasattr(v2, 'encode'):
-                v2 = v2.encode('utf-8')
+        if hasattr(v1, 'encode'):
+            v1 = v1.encode('utf-8')
+        if hasattr(v2, 'encode'):
+            v2 = v2.encode('utf-8')
 
         hd1 = md5(v1).hexdigest()
         hd2 = md5(v2).hexdigest()
