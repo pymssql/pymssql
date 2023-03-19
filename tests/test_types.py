@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import binascii
-from datetime import time
-from datetime import date
-from datetime import datetime
+
 import decimal
 from decimal import Decimal as D
 from hashlib import md5
@@ -14,18 +11,18 @@ import uuid
 import pytest
 
 import pymssql
-from .helpers import get_sql_server_version
+from .helpers import get_sql_server_version, mssql_server_required
+from .helpers import drop_table, mssqlconn, clear_table, config, eq_, pymssqlconn
 
 
 def get_bytes_buffer():
     from io import BytesIO
     return BytesIO()
 
-from .helpers import drop_table, mssqlconn, clear_table, config, eq_, pymssqlconn
-
 
 def typeeq(v1, v2):
     eq_(type(v1), type(v2))
+
 
 create_test_table_sql = [
     'CREATE TABLE pymssql ('
@@ -33,7 +30,6 @@ create_test_table_sql = [
     '    real_no real,',
     '    float_no float,',
     '    money_no money,',
-    '    stamp_datetime datetime,',
     '    data_bit bit,',
     '    comment_vch varchar(50),',
     '    comment_nvch nvarchar(50),',
@@ -44,23 +40,13 @@ create_test_table_sql = [
     '    decimal_no decimal(38,2),',
     '    decimal_no2 decimal(38,10),',
     '    numeric_no numeric(38,8),',
-    '    stamp_timestamp timestamp,',
     '    uuid uniqueidentifier',
     ')',
 ]
 
 
 def build_create_table_query(conn):
-    if get_sql_server_version(conn) < 2008:
-        create_sql = '\n'.join(create_test_table_sql)
-    else:
-        create_sql = '\n'.join(
-            create_test_table_sql[:-1] + [
-                ','
-                'stamp_date date,',
-                'stamp_time time,',
-                'stamp_datetime2 datetime2'] +
-            create_test_table_sql[-1:])
+    create_sql = '\n'.join(create_test_table_sql)
     return create_sql
 
 
@@ -167,60 +153,6 @@ class TestTypes(unittest.TestCase):
         self.hasheq(testval, colval)
         tlist = pickle.loads(colval)
         eq_(tlist, [1, 2, longstr])
-
-    def test_datetime(self):
-        # Test for issue at https://code.google.com/p/pymssql/issues/detail?id=118
-        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
-        colval = self.insert_and_select('stamp_datetime', testval, 's')
-        typeeq(testval, colval)
-        eq_(testval, colval)
-
-    def test_datetime_params_as_dict(self):
-        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
-        colval = self.insert_and_select('stamp_datetime', testval, 's', params_as_dict=True)
-        typeeq(testval, colval)
-        eq_(testval, colval)
-
-    def test_date(self):
-        if get_sql_server_version(self.conn) < 2008:
-            pytest.skip("DATE field type isn't supported by SQL Server versions prior to 2008.")
-        if self.conn.tds_version < 7.3:
-            pytest.skip("DATE field type isn't supported by TDS protocol older than 7.3.")
-        testval = date(2013, 1, 2)
-        colval = self.insert_and_select('stamp_date', testval, 's')
-        typeeq(testval, colval)
-        eq_(testval, colval)
-
-    def test_ancient_date(self):
-        if get_sql_server_version(self.conn) < 2008:
-            pytest.skip("DATE field type isn't supported by SQL Server versions prior to 2008.")
-        if self.conn.tds_version < 7.3:
-            pytest.skip("DATE field type isn't supported by TDS protocol older than 7.3.")
-        testval = date(13, 1, 2)
-        colval = self.insert_and_select('stamp_date', testval, 's')
-        typeeq(testval, colval)
-        eq_(testval, colval)
-
-    def test_time(self):
-        if get_sql_server_version(self.conn) < 2008:
-            pytest.skip("TIME field type isn't supported by SQL Server versions prior to 2008.")
-        if self.conn.tds_version < 7.3:
-            pytest.skip("TIME field type isn't supported by TDS protocol older than 7.3.")
-        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
-        colval = self.insert_and_select('stamp_time', testval, 's')
-        testval_no_date = testval.time()
-        typeeq(testval_no_date, colval)
-        eq_(testval_no_date, colval)
-
-    def test_datetime2(self):
-        if get_sql_server_version(self.conn) < 2008:
-            pytest.skip("DATETIME2 field type isn't supported by SQL Server versions prior to 2008.")
-        if self.conn.tds_version < 7.3:
-            pytest.skip("DATETIME2 field type isn't supported by TDS protocol older than 7.3.")
-        testval = datetime(2013, 1, 2, 3, 4, 5, 3000)
-        colval = self.insert_and_select('stamp_datetime2', testval, 's')
-        typeeq(testval, colval)
-        eq_(testval, colval)
 
     def test_decimal(self):
         # test rounding down

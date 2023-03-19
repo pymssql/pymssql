@@ -15,6 +15,12 @@ import pymssql
 def eq_(a, b):
     assert a == b, f"'{a}' != '{b}'"
 
+def skip_test(reason='No reason given to skip_test'):
+    pytest.skip(reason)
+
+def mark_slow(f):
+    return f
+
 mssql_server_required = pytest.mark.mssql_server_required
 
 
@@ -500,3 +506,42 @@ def get_sql_server_version(mssql_connection):
     else:
         major_version = 2000
     return major_version
+
+
+
+@mssql_server_required
+class TestCaseWithTable:
+
+    table_name = "dbo.test1"
+    ddl_create = f"CREATE TABLE {table_name} (test DATETIME2)"
+
+    @classmethod
+    def setup_class(cls):
+        cls.conn = mssqlconn()
+        cls.create_table()
+
+    @classmethod
+    def create_table(cls):
+        cls.ddl_drop = f"IF OBJECT_ID('{cls.table_name}') IS NOT NULL DROP TABLE {cls.table_name}"
+        cls.conn.execute_non_query(cls.ddl_drop)
+        cls.conn.execute_non_query(cls.ddl_create)
+
+    @classmethod
+    def teardown_class(cls):
+        cls.conn.execute_non_query(cls.ddl_drop)
+
+    def setup_method(self, method):
+        self.conn.execute_non_query(f"DELETE FROM {self.table_name}")
+
+    def insert_and_select(self, cname, value, params_as_dict=False):
+        if params_as_dict:
+            inssql = f'insert into {self.table_name} ({cname}) values (%(value)s)'
+            self.conn.execute_non_query(inssql, dict(value=value))
+        else:
+            inssql = f'insert into {self.table_name} ({cname}) values (%s)'
+            self.conn.execute_non_query(inssql, value)
+        self.conn.execute_query(f'select {cname} from {self.table_name}')
+        rows = tuple(self.conn)
+        eq_(len(rows), 1)
+        cval = rows[0][cname]
+        return cval

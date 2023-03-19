@@ -54,6 +54,8 @@ import datetime
 import re
 import uuid
 
+class datetime2(datetime.datetime): pass
+
 from .sqlfront cimport *
 
 from libc.stdio cimport fprintf, snprintf, stderr, FILE
@@ -831,7 +833,7 @@ cdef class MSSQLConnection:
         cdef int converted_length
         cdef long prevPrecision
         cdef BYTE precision
-        cdef DBDATEREC di
+        cdef DBDATEREC2 di
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
@@ -875,29 +877,23 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype in (SQLDATETIM4, SQLDATETIME2):
-            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
-                <BYTE *>&dt, -1)
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+        elif dbtype == SQLDATETIME2:
+            dbanydatecrack(self.dbproc, &di, dbtype, data)
+            return datetime2(di.year, di.month, di.day,
+                di.hour, di.minute, di.second, di.nanosecond // 1000)
+
+        elif dbtype in (SQLDATETIM4, SQLDATETIME):
+            dbanydatecrack(self.dbproc, &di, dbtype, data)
             return datetime.datetime(di.year, di.month, di.day,
-                di.hour, di.minute, di.second, di.millisecond * 1000)
+                di.hour, di.minute, di.second, di.nanosecond // 1000)
 
         elif dbtype == SQLDATE:
-            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
-                <BYTE *>&dt, -1)
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
+            dbanydatecrack(self.dbproc, &di, dbtype, data)
             return datetime.date(di.year, di.month, di.day)
 
         elif dbtype == SQLTIME:
-            dbconvert(self.dbproc, dbtype, data, -1, SQLDATETIME,
-                <BYTE *>&dt, -1)
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *><BYTE *>&dt)
-            return datetime.time(di.hour, di.minute, di.second, di.millisecond * 1000)
-
-        elif dbtype == SQLDATETIME:
-            dbdatecrack(self.dbproc, &di, <DBDATETIME *>data)
-            return datetime.datetime(di.year, di.month, di.day,
-                di.hour, di.minute, di.second, di.millisecond * 1000)
+            dbanydatecrack(self.dbproc, &di, dbtype, data)
+            return datetime.time(di.hour, di.minute, di.second, di.nanosecond // 1000)
 
         elif dbtype in (SQLVARCHAR, SQLCHAR, SQLTEXT):
             if strlen(self._charset):
@@ -978,6 +974,12 @@ cdef class MSSQLConnection:
             if not isinstance(value, datetime.date):
                 raise TypeError('value can only be a datetime.date')
             value = value.strftime('%4Y-%m-%d').encode(self.charset)
+            dbtype[0] = SQLCHAR
+
+        if dbtype[0] == SQLDATETIME2:
+            if type(value) not in (datetime.date, datetime.datetime):
+                raise TypeError('value can only be a date or datetime')
+            value = value.strftime('%04Y-%m-%d %H:%M:%S.%f').encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] == SQLTIME:
@@ -1977,15 +1979,20 @@ cdef _quote_simple_value(value, charset='utf8'):
         if isinstance(value, str):
             return '0x' + value.encode('hex')
 
+    if isinstance(value, datetime2):
+        return  value.strftime("'%04Y-%m-%d %H:%M:%S.%f'")
+
     if isinstance(value, datetime.datetime):
-        return "'%04d-%02d-%02d %02d:%02d:%02d.%03d'" % (
-            value.year, value.month, value.day,
-            value.hour, value.minute, value.second,
-            value.microsecond / 1000)
+        return value.strftime("'%04Y-%m-%d %H:%M:%S.") + \
+                "%03d'" % (value.microsecond // 1000)
 
     if isinstance(value, datetime.date):
         return "'%04d-%02d-%02d'" % (
         value.year, value.month, value.day)
+
+    if isinstance(value, datetime.time):
+        return value.strftime("'%H:%M:%S.") + \
+                "%06d'" % (value.microsecond)
 
     return None
 
@@ -2039,7 +2046,7 @@ cdef _substitute_params(toformat, params, charset):
 
     if not issubclass(type(params),
             (bool, int, long, float, unicode, str, bytes, bytearray, dict, tuple,
-             datetime.datetime, datetime.date, dict, decimal.Decimal, uuid.UUID)):
+             datetime.datetime, datetime.date, datetime.time, dict, decimal.Decimal, uuid.UUID)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
 
     if charset:
@@ -2108,6 +2115,7 @@ cdef _substitute_params(toformat, params, charset):
             #print(param_val, param_val_len, offset_adjust, match_start, match_end)
             # adjust the offset for the next usage
             offset += offset_adjust
+
     return toformat
 
 # We'll add these methods to the module to allow for unit testing of the
