@@ -23,6 +23,11 @@ import pytest
 import tests.helpers as th
 from .helpers import cfgpath, clear_db, get_app_lock, release_app_lock
 
+
+@pytest.fixture(scope="module")
+def mssql_conn():
+    return th.mssqlconn()
+
 _parser = ConfigParser({
     'server': 'localhost',
     'username': 'sa',
