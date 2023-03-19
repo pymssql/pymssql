@@ -3,6 +3,7 @@
 Test stored procedure usage.
 """
 
+from contextlib import contextmanager
 import decimal
 import datetime
 import os
@@ -14,6 +15,40 @@ from pymssql import _mssql
 import pytest
 
 from .helpers import mssqlconn, pymssqlconn
+
+
+@contextmanager
+def stored_proc(mssqlcon, dbtype):
+
+    dbtype = dbtype.lower()
+    identifier = dbtype
+    if dbtype == 'decimal':
+        identifier = 'decimal(6, 5)'
+    elif dbtype == 'numeric':
+        identifier = 'numeric(6, 5)'
+    elif dbtype == 'time':
+        identifier = 'time(7)'
+
+    name = f"pymssqlTest_{dbtype}"
+
+    cmd = f"""
+        CREATE PROCEDURE [dbo].[{name}]
+            @inp {identifier},
+            @out {identifier} output
+        AS
+        BEGIN
+            SET @out = @inp;
+            RETURN 0;
+        END
+    """
+    mssqlcon.execute_non_query(cmd)
+
+    try:
+        yield name
+    finally:
+        # Code to release resource, e.g.:
+        mssqlcon.execute_non_query(f'DROP PROCEDURE [dbo].[{name}]')
+
 
 FIXED_TYPES = (
     'BigInt',
@@ -103,22 +138,6 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.bind(False, _mssql.SQLBITN, '@obit', output=True)
         proc.execute()
         self.assertEqual(input, proc.parameters['@obit'])
-
-    def testDate(self):
-        input = datetime.date(2009, 8, 27)
-        proc = self.mssql.init_procedure('pymssqlTestDate')
-        proc.bind(input, _mssql.SQLDATE, '@idate')
-        proc.bind(None, _mssql.SQLDATE, '@odate', output=True)
-        proc.execute()
-        self.assertEqual(input, proc.parameters['@odate'])
-
-    def testDateMixWithDateTime(self):
-        input = datetime.date(2009, 8, 27)
-        proc = self.mssql.init_procedure('pymssqlTestDateTime')
-        proc.bind(input, _mssql.SQLDATETIME, '@idatetime')
-        proc.bind(None, _mssql.SQLDATETIME, '@odatetime', output=True)
-        proc.execute()
-        self.assertEqual(input, proc.parameters['@odatetime'].date())
 
     def testDateTime(self):
         input = datetime.datetime(2009, 8, 27, 15, 28, 38)
@@ -247,6 +266,41 @@ class TestFixedTypeConversion(unittest.TestCase):
         proc.execute()
         assert abs(input - proc.parameters['@ofloat']) < 0.00001
 
+
+@pytest.mark.mssql_server_required
+class TestDataTimeConversion:
+
+    def test_date(self, mssql_conn, subtests):
+        with stored_proc(mssql_conn, 'date') as proc_name:
+            for input in (
+                datetime.date(1, 1, 1), # min supported
+                datetime.date(90, 8, 27), # GH #454
+                datetime.date(906, 8, 27), # GH #454
+                datetime.date(2009, 8, 27),
+                datetime.date(9999, 12, 31), # max supported
+                ):
+                with subtests.test(time=input):
+                    proc = mssql_conn.init_procedure(proc_name)
+                    proc.bind(input, _mssql.SQLDATE, '@inp')
+                    proc.bind(None, _mssql.SQLDATE, '@out', output=True)
+                    res = proc.execute()
+                    assert res == 0
+                    assert input == proc.parameters['@out']
+
+    def test_date_in_datetime(self, mssql_conn, subtests):
+        with stored_proc(mssql_conn, 'datetime') as proc_name:
+            for input in (
+                datetime.datetime(1753, 1, 1), # min supported
+                datetime.datetime(2009, 8, 27),
+                datetime.datetime(9999, 12, 31), # max supported
+                ):
+                with subtests.test(time=input):
+                    proc = mssql_conn.init_procedure(proc_name)
+                    proc.bind(input, _mssql.SQLDATETIME2, '@inp')
+                    proc.bind(None, _mssql.SQLDATETIME2, '@out', output=True)
+                    res = proc.execute()
+                    assert res == 0
+                    assert input == proc.parameters['@out']
 
 @pytest.mark.mssql_server_required
 class TestCallProcFancy(unittest.TestCase):
