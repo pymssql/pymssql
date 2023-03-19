@@ -279,7 +279,7 @@ class TestDataTimeConversion:
                 datetime.date(2009, 8, 27),
                 datetime.date(9999, 12, 31), # max supported
                 ):
-                with subtests.test(time=input):
+                with subtests.test(date=input):
                     proc = mssql_conn.init_procedure(proc_name)
                     proc.bind(input, _mssql.SQLDATE, '@inp')
                     proc.bind(None, _mssql.SQLDATE, '@out', output=True)
@@ -287,20 +287,56 @@ class TestDataTimeConversion:
                     assert res == 0
                     assert input == proc.parameters['@out']
 
-    def test_date_in_datetime(self, mssql_conn, subtests):
+    def test_time(self, mssql_conn, subtests):
+        with stored_proc(mssql_conn, 'time') as proc_name:
+            for input in (
+                datetime.time(0, 0, 0), # min supported
+                datetime.time(23, 59, 59, 0),
+                datetime.time(23, 59, 59, 999999), # max supported
+                ):
+                with subtests.test(time=input):
+                    proc = mssql_conn.init_procedure(proc_name)
+                    proc.bind(input, _mssql.SQLTIME, '@inp')
+                    proc.bind(None, _mssql.SQLTIME, '@out', output=True)
+                    res = proc.execute()
+                    assert res == 0
+                    assert input == proc.parameters['@out']
+
+    def test_datetime(self, mssql_conn, subtests):
         with stored_proc(mssql_conn, 'datetime') as proc_name:
             for input in (
                 datetime.datetime(1753, 1, 1), # min supported
                 datetime.datetime(2009, 8, 27),
-                datetime.datetime(9999, 12, 31), # max supported
+                datetime.datetime(2009, 8, 27, 23, 59, 59, 997000),
+                datetime.datetime(9999, 12, 31, 23, 59, 59, 997000), # max supported
                 ):
-                with subtests.test(time=input):
+                with subtests.test(datetime=input):
+                    proc = mssql_conn.init_procedure(proc_name)
+                    proc.bind(input, _mssql.SQLDATETIME, '@inp')
+                    proc.bind(None, _mssql.SQLDATETIME, '@out', output=True)
+                    res = proc.execute()
+                    assert res == 0
+                    assert input == proc.parameters['@out']
+
+    def test_datetime2(self, mssql_conn, subtests):
+        with stored_proc(mssql_conn, 'datetime2') as proc_name:
+            for input in (
+                datetime.datetime(1, 1, 1), # min supported
+                datetime.datetime(90, 8, 27),
+                datetime.datetime(906, 8, 27),
+                datetime.datetime(2009, 8, 27),
+                datetime.datetime(2009, 8, 27, 23, 59, 59, 999999),
+                datetime.datetime(9999, 12, 31, 23, 59, 59, 999999), # max supported
+                ):
+                with subtests.test(datetime=input):
                     proc = mssql_conn.init_procedure(proc_name)
                     proc.bind(input, _mssql.SQLDATETIME2, '@inp')
                     proc.bind(None, _mssql.SQLDATETIME2, '@out', output=True)
                     res = proc.execute()
                     assert res == 0
                     assert input == proc.parameters['@out']
+
+
 
 @pytest.mark.mssql_server_required
 class TestCallProcFancy(unittest.TestCase):
