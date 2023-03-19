@@ -977,7 +977,7 @@ cdef class MSSQLConnection:
         if dbtype[0] == SQLDATE:
             if not isinstance(value, datetime.date):
                 raise TypeError('value can only be a datetime.date')
-            value = value.strftime('%Y-%m-%d').encode(self.charset)
+            value = value.strftime('%4Y-%m-%d').encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
@@ -986,7 +986,7 @@ cdef class MSSQLConnection:
             microseconds=0
             if type(value) in (datetime.datetime,):
                 microseconds=value.microsecond // 1000
-            value = value.strftime('%Y-%m-%d %H:%M:%S.') + \
+            value = value.strftime('%4Y-%m-%d %H:%M:%S.') + \
                 "%03d" % (microseconds)
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
