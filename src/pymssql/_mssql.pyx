@@ -1066,7 +1066,7 @@ cdef class MSSQLConnection:
             return 0
 
         # No conversion was possible so raise an error
-        raise MSSQLDriverException('Unable to convert value')
+        raise MSSQLDriverException(f'Unable to convert value dbtype={dbtype[0]}')
 
     cpdef execute_non_query(self, query_string, params=None):
         """
