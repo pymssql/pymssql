@@ -13,7 +13,7 @@ import pymssql
 
 
 def eq_(a, b):
-    assert a == b
+    assert a == b, f"'{a}' != '{b}'"
 
 mssql_server_required = pytest.mark.mssql_server_required
 
