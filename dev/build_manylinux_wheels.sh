@@ -82,7 +82,7 @@ for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     if  [ -d ${PYBIN} ] ; then
         "${PYBIN}/pip" install pymssql --no-index -f dist
-        "${PYBIN}/pip" install 'psutil<5.9.2' pytest pytest-timeout
+        "${PYBIN}/pip" install 'psutil<5.9.2' pytest pytest-timeout pytest-subtests
         if [ "$MANYLINUX" != "manylinux1" ] ;  then
             "${PYBIN}/pip" install SQLAlchemy
         fi
