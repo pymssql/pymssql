@@ -2082,7 +2082,7 @@ cdef _substitute_params(toformat, params, charset):
             # do the string substitution
             match_start = match.start(1) + offset
             match_end = match.end(1) + offset
-            toformat = toformat[:match_start] + ensure_bytes(param_val) + toformat[match_end:]
+            toformat = toformat[:match_start] + ensure_bytes(param_val, charset) + toformat[match_end:]
 
             # adjust the offset for the next usage
             offset += offset_adjust
@@ -2108,7 +2108,7 @@ cdef _substitute_params(toformat, params, charset):
             # do the string substitution
             match_start = match.start(1) + offset
             match_end = match.end(1) + offset
-            toformat = toformat[:match_start] + ensure_bytes(param_val) + toformat[match_end:]
+            toformat = toformat[:match_start] + ensure_bytes(param_val, charset) + toformat[match_end:]
             #print(param_val, param_val_len, offset_adjust, match_start, match_end)
             # adjust the offset for the next usage
             offset += offset_adjust
