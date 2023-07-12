@@ -6,7 +6,7 @@ Docker
 
 There is a pymssql Docker image on the Docker Registry at:
 
-https://registry.hub.docker.com/u/pymssql/pymssql/
+https://registry.hub.docker.com/r/pymssql/pymssql/
 
 The image bundles:
 
