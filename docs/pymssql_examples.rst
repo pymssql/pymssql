@@ -201,6 +201,8 @@ db-lib.
             END
             """)
             cursor.callproc('FindPerson', ('Jane Doe',))
+            # you must call commit() to persist your data if you don't set autocommit to True
+            conn.commit()
             for row in cursor:
                 print("ID=%d, Name=%s" % (row['id'], row['name']))
 
