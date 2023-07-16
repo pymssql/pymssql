@@ -86,7 +86,10 @@ jobs:
     strategy:
       matrix:
         arch: [i686, x86_64]
-        manylinux: [manylinux1, manylinux2010, manylinux2014, manylinux_2_24]
+        manylinux: [manylinux1, manylinux2010, manylinux2014, manylinux_2_28]
+        exclude:
+            - arch: i686
+              manylinux: manylinux_2_28
 
     steps:
 
