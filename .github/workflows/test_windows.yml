@@ -7,6 +7,9 @@ on:
     paths-ignore:
         - docs/**
         - ChangeLog*
+        - .github/workflows/test_macos.yml
+        - .github/workflows/test_linux.yml
+        - dev/build_manylinux_wheels.sh
     tags:
         - 'v[0-9]+.[0-9]+.[0-9]+'
         - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
@@ -16,6 +19,9 @@ on:
     paths-ignore:
         - docs/**
         - ChangeLog*
+        - .github/workflows/test_macos.yml
+        - .github/workflows/test_linux.yml
+        - dev/build_manylinux_wheels.sh
 
 jobs:
   build:
