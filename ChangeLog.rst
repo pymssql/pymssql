@@ -1,6 +1,14 @@
 Recent Changes
 ==============
 
+Version 2.2.8 - 2023-07-30  - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Compatibility with Cython. Thanks to matusvalo (Matus Valo) (fix #826).
+
 Version 2.2.7 - 2022-11-15  - Mikhail Terekhov
 ==============================================
 
