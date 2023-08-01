@@ -401,7 +401,7 @@ cdef class Cursor:
 
     def __iter__(self):
         """
-        Return self to make cursors compatibile with Python iteration
+        Return self to make cursors compatible with Python iteration
         protocol.
         """
         return self
@@ -621,7 +621,7 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
     :keyword conn_properties: SQL queries to send to the server upon connection
                               establishment. Can be a string or another kind
                               of iterable of strings
-    :keyword autocommit: Whether to use default autocommiting mode or not
+    :keyword autocommit: Whether to use default autocommitting mode or not
     :type autocommit: boolean
     :keyword tds_version: TDS protocol version to use.
     :type tds_version: string
@@ -666,7 +666,7 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
 
 def get_max_connections():
     """
-    Get the maximum number of simulatenous connections pymssql will open
+    Get the maximum number of simultaneous connections pymssql will open
     to the server.
     """
     return _mssql.get_max_connections()

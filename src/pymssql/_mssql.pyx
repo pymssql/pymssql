@@ -1133,7 +1133,7 @@ cdef class MSSQLConnection:
             conn.execute_query('SELECT * FROM empl WHERE id IN %s',\
                 (tuple([3,5,7,11]),))
 
-        This method is intented to be used on queries that return results,
+        This method is intended to be used on queries that return results,
         i.e. SELECT. After calling this method AND reading all rows from,
         result rows_affected property contains number of rows returned by
         last command (this is how MS SQL returns it).
