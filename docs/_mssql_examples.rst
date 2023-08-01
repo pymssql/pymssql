@@ -119,7 +119,7 @@ by the stack with informative messages sent by the server. Set it on a per
 
     def my_msg_handler(msgstate, severity, srvname, procname, line, msgtext):
         """
-        Our custom handler -- It simpy prints a string to stdout assembled from
+        Our custom handler -- It simply prints a string to stdout assembled from
         the pieces of information sent by the server.
         """
         print("my_msg_handler: msgstate = %d, severity = %d, procname = '%s', "

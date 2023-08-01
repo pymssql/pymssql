@@ -166,14 +166,14 @@ Functions
       but version 7.1 was used if not specified.
 
     .. warning::
-      FreeTDS added sopport for TDS protocol version 7.3 in version 0.95. You
-      need to be careful of not asking for TDS 7.3 if you know the undelying
+      FreeTDS added support for TDS protocol version 7.3 in version 0.95. You
+      need to be careful of not asking for TDS 7.3 if you know the underlying
       FreeTDS used by pymssql is version 0.91 as it won't raise any error nor
       keep you from passing such an invalid value.
 
     .. warning::
       FreeTDS added support for TDS protocol version 7.3 in version 0.95. You
-      need to be careful of not asking for TDS 7.3 if you know the undelying
+      need to be careful of not asking for TDS 7.3 if you know the underlying
       FreeTDS used by pymssql is older as it won't raise any error nor keep you
       from passing such an invalid value.
 
@@ -266,7 +266,7 @@ Functions
    You can use Python formatting and all values get properly quoted. Please see
    examples for details.
 
-   This method is intented to be used on queries that return results, i.e.
+   This method is intended to be used on queries that return results, i.e.
    ``SELECT.``
 
 .. method:: MSSQLConnection.execute_non_query(query_string)

@@ -97,7 +97,7 @@ Functions
                              establishment. Can be a string or another kind of
                              iterable of strings.  Default value: See
                              :class:`_mssql.connect() <_mssql.MSSQLConnection>`
-   :keyword bool autocommit: Whether to use default autocommiting mode or not
+   :keyword bool autocommit: Whether to use default autocommitting mode or not
    :keyword str tds_version: TDS protocol version to use
 
    .. warning::
@@ -145,14 +145,14 @@ Functions
      used if not specified.
 
    .. warning::
-     FreeTDS added sopport for TDS protocol version 7.3 in version 0.95. You
-     need to be careful of not asking for TDS 7.3 if you know the undelying
+     FreeTDS added support for TDS protocol version 7.3 in version 0.95. You
+     need to be careful of not asking for TDS 7.3 if you know the underlying
      FreeTDS used by pymssql is version 0.91 as it won't raise any error nor
      keep you from passing such an invalid value.
 
    .. warning::
      FreeTDS added support for TDS protocol version 7.3 in version 0.95. You
-     need to be careful of not asking for TDS 7.3 if you know the undelying
+     need to be careful of not asking for TDS 7.3 if you know the underlying
      FreeTDS used by pymssql is older as it won't raise any error nor keep you
      from passing such an invalid value.
 
@@ -193,7 +193,7 @@ Functions
             #...
             pass
 
-    Its body should invoke the appropiate API of the multi-tasking framework you
+    Its body should invoke the appropriate API of the multi-tasking framework you
     are using use that results in the current greenlet yielding the CPU to its
     siblings whilst there isn't incoming data in the socket.
 
