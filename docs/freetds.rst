@@ -88,7 +88,7 @@ You can:
 
      They provide both static and dynamic library versions of FreeTDS and
      versions built both with and without SSL support via OpenSSL (only
-     dinamically linked).
+     dynamically linked).
 
      To install OpenSSL you'll need the distribution that can be downloaded from
      http://www.npcglib.org/~stathis/blog/precompiled-openssl/. Choose the right
@@ -101,7 +101,7 @@ You can:
     FreeTDS is linked statically again on our official Windows binaries.
 
     pymssql version 2.1.2 included a change in the official Windows Wheels by
-    which FreeTDS was dinamically linked. Read the relevant change log entry for
+    which FreeTDS was dynamically linked. Read the relevant change log entry for
     the rationale behind that decision.
 
     Given the fact this didn't have a good reception from our users, this change

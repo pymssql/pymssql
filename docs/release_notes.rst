@@ -12,7 +12,7 @@ Cython. Our goals for this version were to:
 
 * Provide support for Python 3.0 and newer,
 * Implement support for stored procedures,
-* Rewrite DB-API compilant pymssql module in C (actually in Cython) for
+* Rewrite DB-API compliant pymssql module in C (actually in Cython) for
   increased performance,
 * Clean up the module API and the code.
 
