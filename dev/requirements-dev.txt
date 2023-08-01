@@ -1,12 +1,12 @@
-cython>=0.29.22
+cython>=0.29.32,<4
 gevent
 psutil<5.9.5
 pytest
 pytest-subtests
 pytest-timeout
-setuptools>=54.0
-setuptools_scm[toml]>=5.0,<8.0
+setuptools>=54.0,<69
+setuptools_scm[toml]>=5.0,<7.0
 sphinx-rtd-theme
 sphinx
 sqlalchemy
-wheel>=0.36.2
+wheel>=0.36.2,<0.42
