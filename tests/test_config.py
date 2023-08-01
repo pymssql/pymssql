@@ -80,7 +80,7 @@ class TestConfig(object):
     def test_tds_protocol_version_80(self):
         # follow-up: turns out 8.0 was erroneous.  MS named the new protocol
         # 7.1 instead of 8.0, so FreeTDS will accept 8.0 but shows as 7.1.
-        # got that from the FreeTDS mailling list.  New FreeTDS docs,built from
+        # got that from the FreeTDS mailing list.  New FreeTDS docs,built from
         # source, have a page that describes the protocol and that page lists
         # versions 7.0, 7.1, and 7.2 among others.
 

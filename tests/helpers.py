@@ -333,7 +333,7 @@ class CursorBase(DBAPIBase):
             #   FROM (VALUES (1), (2), (3))
             #   AS foo(x)
             #
-            # SQL Server = 2005 (remove when we drop suport for it):
+            # SQL Server = 2005 (remove when we drop support for it):
             #
             #   SELECT MAX(x), MIN(x) AS [MIN(x)]
             #   FROM (SELECT 1
@@ -362,7 +362,7 @@ class CursorBase(DBAPIBase):
             #   FROM (VALUES (1, 2), (2, 3), (3, 4))
             #   AS foo(x, y)
             #
-            # SQL Server = 2005 (remove when we drop suport for it):
+            # SQL Server = 2005 (remove when we drop support for it):
             #
             #   SELECT MAX(x), MAX(y) AS [MAX(y)], MIN(y)
             #   FROM (SELECT (1, 2)
