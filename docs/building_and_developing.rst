@@ -101,7 +101,7 @@ or if on Windows::
 then install required python packages::
 
     pip install -U pip
-    pip install dev/requirements-dev.txt
+    pip install -r dev/requirements-dev.txt
 
 If and now build wheel::
 
