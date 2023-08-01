@@ -7,7 +7,7 @@ _________________
 
 To build ``pymssql`` you should have:
 
-* `Python <https://python.org>`_ >= 3.6 including development files.
+* `Python <https://python.org>`_ >= 3.8 including development files.
   Please research your OS usual software distribution channels,
   e.g, ``python-dev`` or ``python-devel`` packages on Linux.
 * `Cython <https://cython.org>`_ -

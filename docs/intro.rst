@@ -81,7 +81,7 @@ FreeTDS. See the `relevant FreeTDS documentation`_ for additional details.
 Supported related software
 ==========================
 
-:Python: Python 3.x: 3.6 or newer.
+:Python: Python 3.x: 3.8 or newer.
 :FreeTDS: 1.2.18 or newer.
 :Cython: 0.29 or newer.
 :Microsoft SQL Server: 2005 or newer.

@@ -318,8 +318,6 @@ setup(
       "Intended Audience :: Developers",
       "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
       "Programming Language :: Python",
-      "Programming Language :: Python :: 3.6",
-      "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
