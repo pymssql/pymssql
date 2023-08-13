@@ -396,7 +396,7 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
 
     return 0
 
-cdef int db_sqlexec(DBPROCESS *dbproc):
+cdef int db_sqlexec(DBPROCESS *dbproc) except? 0:
     cdef RETCODE rtc
 
     # The dbsqlsend function sends Transact-SQL statements, stored in the
@@ -419,7 +419,7 @@ cdef int db_sqlexec(DBPROCESS *dbproc):
     # calling wait_callback first...
     return db_sqlok(dbproc)
 
-cdef int db_sqlok(DBPROCESS *dbproc):
+cdef int db_sqlok(DBPROCESS *dbproc) except? 0:
     cdef RETCODE rtc
 
     # If there is a wait callback, call it with the file descriptor we're
