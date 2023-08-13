@@ -136,6 +136,19 @@ class GreenletTests(unittest.TestCase):
             elapsed_time < datetime.timedelta(seconds=20),
             'elapsed_time < 20 seconds')
 
+    def test_timeout(self):
+
+        def wait_callback(read_fileno):
+            gevent.socket.wait_read(read_fileno, timeout=3)
+
+        pymssql.set_wait_callback(wait_callback)
+
+        with self.assertRaises(Exception) as cm:
+            self.greenlet_run_mssql_execute(1)
+
+        exc = cm.exception
+        self.assertTrue(isinstance(exc, gevent.socket.timeout))
+
 
 suite = unittest.TestSuite()
 suite.addTest(unittest.makeSuite(GreenletTests))
