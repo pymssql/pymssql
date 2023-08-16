@@ -167,7 +167,7 @@ class build_ext(_build_ext):
                     if BITNESS == 32:
                         e.library_dirs.append("c:/Program Files (x86)/OpenSSL-Win32/lib")
                     else:
-                        e.library_dirs.append("c:/Program Files/OpenSSL-Win64/lib")
+                        e.library_dirs.append("c:/Program Files/OpenSSL/lib")
 
         else:
             if LINK_KRB5:
