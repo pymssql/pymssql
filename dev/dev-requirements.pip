@@ -1,5 +1,0 @@
-Cython
-setuptools_git
-pytest==3.2.5
-SQLAlchemy
-wheel
