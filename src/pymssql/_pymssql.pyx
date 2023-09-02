@@ -680,36 +680,13 @@ def set_max_connections(int limit):
     """
     _mssql.set_max_connections(limit)
 
-# Only recent versions of FreeTDS have the ct_config function
-# so this can break builds
-# Maybe later we can enable this or make it conditional
-DEF HAS_CT_CONFIG = False
-IF HAS_CT_CONFIG:
-    cdef extern from "ctpublic.h":
-        ctypedef int      CS_INT
-        ctypedef void     CS_VOID
-        struct            _CS_CONTEXT
-        ctypedef _CS_CONTEXT CS_CONTEXT
-        ctypedef CS_INT   CS_RETCODE
-
-        int CS_GET, CS_VERSION
-
-        CS_RETCODE ct_config(CS_CONTEXT * ctx, CS_INT action, CS_INT property,
-                             CS_VOID * buffer, CS_INT buflen, CS_INT * outlen)
-
-    def get_freetds_version():
-        cdef CS_CONTEXT *ctx = NULL
-        cdef char buf[256]
-        cdef int outlen
-
-        ret = ct_config(ctx, CS_GET, CS_VERSION, buf, 256, &outlen)
-        return buf
-
 def get_dbversion():
     """
     Return string representing the version of db-lib.
     """
     return _mssql.get_dbversion()
+
+get_freetds_version = get_dbversion
 
 def version_info():
     """

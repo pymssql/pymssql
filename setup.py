@@ -154,7 +154,7 @@ class build_ext(_build_ext):
                         ])
                 else:
                     libraries = [
-                        'ct', 'sybdb',
+                        'sybdb',
                         'ws2_32', 'wsock32', 'kernel32', 'shell32',
                     ]
                     if LINK_OPENSSL:
