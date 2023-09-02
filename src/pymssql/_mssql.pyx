@@ -1924,6 +1924,8 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
         return DBVERSION_72
     if verstr == '7.3':
         return DBVERSION_73
+    if verstr == '7.4':
+        return DBVERSION_74
     if verstr == '8.0':
         return DBVERSION_71
     raise MSSQLException('unrecognized tds version: %s' % verstr)
