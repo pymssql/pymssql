@@ -1918,7 +1918,7 @@ def remove_locale(bytes value):
 
 cdef int _tds_ver_str_to_constant(verstr) except -1:
     """
-        http://www.freetds.org/userguide/choosingtdsprotocol.htm
+        http://www.freetds.org/userguide/choosingtdsprotocol.html
     """
     if verstr == '4.2':
         return DBVERSION_42
