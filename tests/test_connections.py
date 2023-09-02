@@ -25,6 +25,7 @@ instance = config.instance
 
 @pytest.mark.mssql_server_required
 class TestCons(unittest.TestCase):
+
     def connect(self, **kwargs):
         with tempfile.TemporaryDirectory() as tmpdir:
             config_dump_path = path.join(tmpdir, 'freetds-config-dump.txt')
@@ -34,6 +35,18 @@ class TestCons(unittest.TestCase):
             _mssql.connect(**kwargs)
             with open(config_dump_path, 'r') as fh:
                 return fh.read()
+
+    def test_connection_tds_version(self):
+
+        for tds_version in ('4.2', '7.0', '7.1', '7.2', '7.3', '7.4'):
+            with self.subTest(f"{tds_version}", tds_version=tds_version):
+                cdump = self.connect(server=server, port=port,
+                                    user=username, password=password,
+                                    tds_version=tds_version)
+                major_version = re.search('major_version = (\\S+)', cdump).groups()[0]
+                minor_version = re.search('minor_version = (\\S+)', cdump).groups()[0]
+                actual_version = f"{major_version}.{minor_version}"
+                self.assertEqual(tds_version, actual_version)
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
