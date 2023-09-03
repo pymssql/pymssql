@@ -24,8 +24,8 @@ This is an effort to convert the pymssql low-level C module to Cython.
 # MA  02110-1301  USA
 #
 
-DEF PYMSSQL_DEBUG = 0
-DEF PYMSSQL_DEBUG_ERRORS = 0
+cdef int PYMSSQL_DEBUG = 0
+cdef int PYMSSQL_DEBUG_ERRORS = 0
 cdef enum: PYMSSQL_CHARSETBUFSIZE = 100
 cdef enum: PYMSSQL_MSGSIZE = (1024 * 8)
 
@@ -73,8 +73,8 @@ cdef char *_mssql_last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 _mssql_last_msg_srv[0] = <char>0
 cdef char *_mssql_last_msg_proc = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
 _mssql_last_msg_proc[0] = <char>0
-IF PYMSSQL_DEBUG == 1:
-    cdef int _row_count = 0
+
+cdef int _row_count = 0
 
 cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 
@@ -266,7 +266,7 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     if oserrstr == NULL:
         oserrstr = ''
 
-    IF PYMSSQL_DEBUG == 1 or PYMSSQL_DEBUG_ERRORS == 1:
+    if (PYMSSQL_DEBUG == 1 or PYMSSQL_DEBUG_ERRORS == 1):
         fprintf(stderr, "\n*** err_handler(dbproc = %p, severity = %d,  " \
             "dberr = %d, oserr = %d, dberrstr = '%s',  oserrstr = '%s'); " \
             "DBDEAD(dbproc) = %d\n", <void *>dbproc, severity, dberr,
@@ -335,7 +335,7 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
     cdef int _min_error_severity = min_error_severity
     cdef MSSQLConnection conn = None
 
-    IF PYMSSQL_DEBUG == 1:
+    if (PYMSSQL_DEBUG == 1):
         fprintf(stderr, "\n+++ msg_handler(dbproc = %p, msgno = %d, " \
             "msgstate = %d, severity = %d, msgtext = '%s', " \
             "srvname = '%s', procname = '%s', line = %d)\n",
@@ -829,7 +829,7 @@ cdef class MSSQLConnection:
         cdef DBDATETIME dt
         cdef DBCOL dbcol
 
-        IF PYMSSQL_DEBUG == 1:
+        if (PYMSSQL_DEBUG == 1):
             sys.stderr.write("convert_db_value: dbtype = %d; length = %d\n" % (dbtype, length))
 
         if dbtype == SQLBIT:
@@ -911,7 +911,7 @@ cdef class MSSQLConnection:
         cdef BYTE *binValue
         cdef DBTYPEINFO decimal_type_info
 
-        IF PYMSSQL_DEBUG == 1:
+        if (PYMSSQL_DEBUG == 1):
             sys.stderr.write("convert_python_value: value = %r; dbtype = %d" % (value, dbtype[0]))
 
         if value is None:
@@ -1018,10 +1018,10 @@ cdef class MSSQLConnection:
             )
             dbValue[0] = <BYTE *>decValue
 
-            IF PYMSSQL_DEBUG == 1:
-                fprintf(stderr, "convert_python_value: Converted value to DBDECIMAL with length = %d\n", length[0])
+            if (PYMSSQL_DEBUG == 1):
+                print("convert_python_value: Converted value to DBDECIMAL with length = %d\n", length[0], file=sys.stderr)
                 for i in range(0, 35):
-                    fprintf(stderr, "convert_python_value: dbValue[0][%d] = %d\n", i, dbValue[0][i])
+                    print("convert_python_value: dbValue[0][%d] = %d\n", i, dbValue[0][i], file=sys.stderr)
 
             return 0
 
@@ -1374,7 +1374,7 @@ cdef class MSSQLConnection:
         cdef dict drecord
         log("_mssql.MSSQLConnection.get_row()")
 
-        if PYMSSQL_DEBUG == 1:
+        if (PYMSSQL_DEBUG == 1):
             global _row_count
             _row_count += 1
 
@@ -1392,11 +1392,11 @@ cdef class MSSQLConnection:
             if data == NULL:
                 value = None
             else:
-                IF PYMSSQL_DEBUG == 1:
+                if (PYMSSQL_DEBUG == 1):
                     global _row_count
-                    fprintf(stderr, 'Processing row %d, column %d,' \
+                    print('Processing row %d, column %d,' \
                         'Got data=%x, coltype=%d, len=%d\n', _row_count, col,
-                        data, col_type, len)
+                        data, col_type, len, file=sys.stderr)
                 value = self.convert_db_value(data, col_type, len)
 
             if row_format == _ROW_FORMAT_TUPLE:
@@ -1726,7 +1726,7 @@ cdef class MSSQLStoredProcedure:
             param_name_cstr = ''
             self.had_positional = True
 
-        IF PYMSSQL_DEBUG == 1:
+        if (PYMSSQL_DEBUG == 1):
             sys.stderr.write(
                 "\n--- rpc_bind(name = '%s', status = %d, "
                 "max_length = %d, data_type = %d, data_length = %d\n"
