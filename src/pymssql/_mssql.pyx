@@ -234,7 +234,7 @@ def set_wait_callback(a_callable):
     wait_callback = a_callable
 
 # Buffer size for large numbers
-DEF NUMERIC_BUF_SZ = 45
+cdef enum: NUMERIC_BUF_SZ = 45
 
 cdef bytes ensure_bytes(s, encoding='utf-8'):
     try:
