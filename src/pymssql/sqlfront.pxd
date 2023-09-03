@@ -770,4 +770,11 @@ cdef extern from "sqlfront.h":
     RETCODE DBSETLENCRYPT(LOGINREC *login, int x)
     RETCODE DBSETLREADONLY(LOGINREC *login, int x)
 
+
+cdef extern from "syberror.h":
+
+    # severity levels from syberror.h
+
+    int EXCOMM
+
 ctypedef int LINE_T
