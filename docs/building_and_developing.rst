@@ -82,6 +82,11 @@ packages for building pymssql::
 
     apk add git gcc musl-dev krb5-dev openssl-dev freetds-dev
 
+For Debian-based distributions::
+
+    apt update
+    apt install apt-utils git build-essential freetds-dev libssl-dev libkrb5-dev
+
 
 Building ``pymssql`` wheel
 __________________________
