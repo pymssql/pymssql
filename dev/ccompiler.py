@@ -96,3 +96,19 @@ def new_compiler():
     compiler = ccompiler.new_compiler()
     compiler.has_function = types.MethodType(has_function, compiler)
     return compiler
+
+
+def check_clock_gettime(libraries):
+    """
+        check for clock_gettime, link with librt for glibc<2.17
+    """
+    compiler = new_compiler()
+    try:
+        if not compiler.has_function('clock_gettime(0,NULL)', includes=['time.h']):
+            if compiler.has_function('clock_gettime(0,NULL)', includes=['time.h'], libraries=['rt']):
+                libraries.append('rt')
+            else:
+                print("setup.py: could not locate 'clock_gettime' function required by FreeTDS.", file=sys.stderr)
+    except Exception as exc:
+        print(f"setup.py: ERROR: {exc}", file=sys.stderr)
+        sys.exit(1)
