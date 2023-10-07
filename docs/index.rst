@@ -57,7 +57,7 @@ pymssql is licensed under the terms of the GNU LGPL license.
 .. _PyPI Project: https://pypi.python.org/pypi/pymssql/
 .. _GitHub: https://github.com/pymssql/pymssql
 .. _FreeTDS User Guide:  http://www.freetds.org/userguide/
-.. _Discussion: https://groups.google.com/forum/?fromgroups#!forum/pymssql
+.. _Discussion: https://github.com/pymssql/pymssql/discussions
 
 
 Documentation
