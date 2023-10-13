@@ -1,6 +1,18 @@
 Recent Changes
 ==============
 
+Version 2.2.9 - 2023-10-13  - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Use FreeTDS-1.4.3 for official wheels on PyPi (fix #847).
+- Build wheels for Python-3.12. Thanks to Raphael Jacob (fix #851, #855).
+- Use manylinux_2_28 instead of manylinux_2_24 when building wheels in GitHub actions.
+- Fix build with OpenSSL on Windows. Thanks to PrimozGodec (fix #839).
+
+
 Version 2.2.8 - 2023-07-30  - Mikhail Terekhov
 ==============================================
 
