@@ -109,16 +109,12 @@ cdef int TABLOCK_LEN = strlen(TABLOCK)
 cdef int CHECK_CONSTRAINTS_LEN = strlen(CHECK_CONSTRAINTS)
 cdef int FIRE_TRIGGERS_LEN = strlen(FIRE_TRIGGERS)
 
-try:
-    StandardError
-except NameError:
-    StandardError = Exception
 
 # exception hierarchy
-class Warning(StandardError):
+class Warning(Exception):
     pass
 
-class Error(StandardError):
+class Error(Exception):
     pass
 
 class InterfaceError(Error):
