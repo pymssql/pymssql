@@ -123,7 +123,7 @@ class InterfaceError(Error):
 class DatabaseError(Error):
     pass
 
-class DataError(Error):
+class DataError(DatabaseError):
     pass
 
 class OperationalError(DatabaseError):
