@@ -1,6 +1,6 @@
 cython>=0.29.22
 gevent
-psutil<5.9.6
+psutil<5.9.7
 pytest
 pytest-subtests
 pytest-timeout
