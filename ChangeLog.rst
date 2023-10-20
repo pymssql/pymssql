@@ -1,6 +1,14 @@
 Recent Changes
 ==============
 
+Version 2.2.10 - 2023-10-20  - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Publish Linux wheels for Python-3.12
+
 Version 2.2.9 - 2023-10-13  - Mikhail Terekhov
 ==============================================
 
