@@ -11,22 +11,27 @@
 # Standard manylinux docker containers provided by pypa. For more information see the links above.
 # docker pull quay.io/pypa/manylinux1_x86_64
 # docker pull quay.io/pypa/manylinux1_i686
+# docker pull quay.io/pypa/manylinux2014_aarch64
 #
 # The next set of instructions will let you run the container interactively
 # Provide a container name so it is easier to reference later
 # sudo docker run --name manylinux_x86_x64 -it -d --rm -w=/io -v `pwd`:/io quay.io/pypa/manylinux1_x86_64
+# sudo docker run --name manylinux2014_aarch64 -it -d --rm -w=/io -v `pwd`:/io quay.io/pypa/manylinux2014_aarch64
 # docker ps
 #
 # Use the docker exec command to interact with our container
 # docker exec -it manylinux_x86_x64 ls
 # docker exec -it manylinux_x86_x64 ./io/dev/build_wheels.sh
+# docker exec -it manylinux2014_aarch64 ./io/dev/build_manylinux_wheels.sh
 #
 # Stop the conatiner when done
 # docker stop manylinux_x86_x64
+# docker stop manylinux2014_aarch64
 #
 # These docker commands will run, build the wheel, attempt to install and then finally upload
 # docker run --name manylinux_x86_x64 --rm -w=/io -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/dev/build_wheels.sh
 # docker run --name manylinux_i686 --rm -w=/io -v `pwd`:/io quay.io/pypa/manylinux1_i686 /io/dev/build_wheels.sh
+# docker run --name manylinux2014_aarch64 --rm -w=/io -v `pwd`:/io quay.io/pypa/manylinux2014_aarch64 ./dev/build_manylinux_wheels.sh
 #
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e -x
