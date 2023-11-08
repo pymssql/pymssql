@@ -356,6 +356,8 @@ Cursor object methods
    list). Execute a database operation repeatedly for each element in parameter
    sequence.
 
+   Note: in current pymssql implementation `executemany()` has [no performance](https://github.com/pymssql/pymssql/issues/332) gains over just a `for` loop with `Cursor.execute()`
+
 .. method:: Cursor.fetchone()
 
    Fetch the next row of a query result, returning a tuple, or a dictionary if
