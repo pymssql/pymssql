@@ -45,6 +45,7 @@ import binascii
 import datetime
 import re
 import uuid
+from itertools import zip_longest
 
 class datetime2(datetime.datetime): pass
 
@@ -1271,6 +1272,30 @@ cdef class MSSQLConnection:
     cdef format_sql_command(self, format, params=None):
         log("_mssql.MSSQLConnection.format_sql_command()")
         return _substitute_params(format, params, self.charset)
+
+    def executemany(self, query_string, seq_of_parameters, batch_size):
+        """
+        """
+        cdef RETCODE rtc
+        cdef bytes query_string_bytes
+        cdef char *query_string_cstr
+
+        sentinel = object()
+        batches = ( [ entry for entry in _iterable if entry is not sentinel ]
+                    for _iterable in
+                        zip_longest(*(( iter(seq_of_parameters), ) * batch_size),
+                                    fillvalue=sentinel)
+                   )
+        for params_batch in batches:
+            sqls = ( ensure_bytes(self.format_sql_command(query_string, params),
+                                  self.charset)
+                     for params in params_batch
+                    )
+            query_string_bytes = b";".join(sqls)
+            query_string_cstr = query_string_bytes
+            dbcmd(self.dbproc, query_string_cstr)
+            rtc = db_sqlexec(self.dbproc)
+            check_cancel_and_raise(rtc, self)
 
     def get_header(self):
         """

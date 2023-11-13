@@ -45,7 +45,8 @@ Functions
 .. function:: connect(server='.', user=None, password=None, database='', \
                       timeout=0, login_timeout=60, charset='UTF-8', \
                       as_dict=False, host='', appname=None, port='1433',\
-                      conn_properties=None, autocommit=False, tds_version=None)
+                      conn_properties=None, autocommit=False, tds_version=None,\
+                      arraysize=1)
 
    Constructor for creating a connection to the database. Returns a
    :class:`Connection` object. Note that in most cases you will want to
@@ -99,6 +100,9 @@ Functions
                              :class:`_mssql.connect() <_mssql.MSSQLConnection>`
    :keyword bool autocommit: Whether to use default autocommitting mode or not
    :keyword str tds_version: TDS protocol version to use
+   :keyword int arraysize: This read/write attribute specifies the number of rows to fetch at a time
+        with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
+        Default value: 1.
 
    .. warning::
        Currently, setting *timeout* or *login_timeout* has a process-wide
@@ -350,11 +354,14 @@ Cursor object methods
     behaviour is required by DB-API, if you don't like it, just use the
     :mod:`_mssql` module instead.
 
-.. method:: Cursor.executemany(operation, params_seq)
+.. method:: Cursor.executemany(operation, params_seq, *, batch_size=-1)
 
    *operation* is a string and *params_seq* is a sequence of tuples (e.g. a
    list). Execute a database operation repeatedly for each element in parameter
-   sequence.
+   sequence. *batch_size* is the number of queries sent in one go. If it is left
+   default then cursor attribute *arraysize* will be used instead. If it is set
+   to *1* then *rowcount* cursor attribute will contain the affected row number,
+   otherwise it will contain *-1*.
 
 .. method:: Cursor.fetchone()
 

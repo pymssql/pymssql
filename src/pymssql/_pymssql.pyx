@@ -505,14 +505,20 @@ cdef class Cursor:
         except _mssql.MSSQLDriverException, e:
             raise InterfaceError, e.args[0]
 
-    def executemany(self, operation, params_seq):
+    def executemany(self, operation, seq_of_parameters, *, batch_size=-1):
         self.description = None
-        rownumber = 0
-        for params in params_seq:
-            self.execute(operation, params)
-            # support correct rowcount across multiple executes
-            rownumber += self._rownumber
-        self._rownumber = rownumber
+        self._rownumber = -1
+        if batch_size == -1:
+            batch_size = self.arraysize
+        if batch_size == 1:
+            rownumber = 0
+            for params in seq_of_parameters:
+                self.execute(operation, params)
+                # support correct rowcount across multiple executes
+                rownumber += self._rownumber
+            self._rownumber = rownumber
+        else:
+            self._source._conn.executemany(operation, seq_of_parameters, batch_size)
 
     def nextset(self):
         try:
@@ -652,6 +658,11 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
     :type autocommit: boolean
     :keyword tds_version: TDS protocol version to use.
     :type tds_version: string
+    :keyword arraysize:
+        This read/write attribute specifies the number of rows to fetch at a time
+        with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
+        Default value: 1.
+    :type arraysize: int
     """
 
     # set the login timeout

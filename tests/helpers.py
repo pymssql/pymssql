@@ -206,9 +206,9 @@ class DBAPIBase(object):
         cur.execute(sql)
         return cur
 
-    def executemany(self, sql, params_seq):
+    def executemany(self, sql, params_seq, batch_size=1):
         cur = self.conn.cursor()
-        cur.executemany(sql, params_seq)
+        cur.executemany(sql, params_seq, batch_size=batch_size)
         return cur
 
 
@@ -400,6 +400,26 @@ class CursorBase(DBAPIBase):
         self.conn.commit()
         eq_(self.t1.count(), 3)
         eq_(cur.rowcount, 2)
+
+    def test_executemany_many(self):
+        self.executemany(
+            "delete from test where id = %(id)s",
+            [{'id': 1}, {'id': 2}],
+            batch_size=100)
+        self.conn.commit()
+        eq_(self.t1.count(), 3)
+
+    def test_executemany_insert(self):
+        cur = self.conn.cursor()
+        cur.execute('delete from test')
+        N = 1000
+        self.executemany(
+            "insert into test (id, name) values (%s, %s)",
+            ((i, f"i={i * 10}") for i in range(N)))
+        self.conn.commit()
+        eq_(self.t1.count(), N)
+        cur.execute("select id, name from test order by id")
+        eq_(cur.fetchall(), [(i, f"i={i * 10}") for i in range(N)])
 
 
 def clear_db():
