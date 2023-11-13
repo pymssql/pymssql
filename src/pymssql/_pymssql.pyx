@@ -190,6 +190,7 @@ cdef class Connection:
     cdef bool _as_dict
     cdef bool _autocommit
     cdef _mssql.MSSQLConnection conn
+    cdef int _arraysize
 
     property as_dict:
         """
@@ -219,10 +220,25 @@ cdef class Connection:
                 raise InterfaceError('Connection is closed.')
             return self.conn
 
-    def __init__(self, conn, as_dict, autocommit):
+    property arraysize:
+        """
+        This read/write attribute specifies the number of rows to fetch at a time
+        with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
+        """
+        def __get__(self):
+            return self._arraysize
+
+        def __set__(self, value):
+            cdef int val = int(value)
+            if val < 0:
+                raise ValueError("The 'arraysize' attribute must be >= 0.")
+            self._arraysize = val
+
+    def __init__(self, conn, as_dict, autocommit, arraysize=1):
         self.conn = conn
         self._autocommit = autocommit
         self.as_dict = as_dict
+        self.arraysize = arraysize
 
         if not autocommit:
             try:
@@ -276,14 +292,14 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot commit transaction: ' + str(e.args[0]))
 
-    def cursor(self, as_dict=None):
+    def cursor(self, as_dict=None, arraysize=None):
         """
         Return cursor object that can be used to make queries and fetch
         results from the database.
         """
         if as_dict is None:
             as_dict = self.as_dict
-        return Cursor(self, as_dict)
+        return Cursor(self, as_dict, arraysize or self.arraysize)
 
     def rollback(self):
         """
@@ -355,11 +371,10 @@ cdef class Cursor:
 
     cdef Connection conn
     cdef public tuple description
-    cdef int batchsize
-    cdef int _batchsize
     cdef int _rownumber
     cdef bool as_dict
     cdef object _returnvalue
+    cdef int _arraysize
 
     property connection:
         def __get__(self):
@@ -387,13 +402,27 @@ cdef class Cursor:
                 raise InterfaceError('Cursor is closed.')
             return self.conn
 
-    def __init__(self, conn, as_dict):
+    property arraysize:
+        """
+        This read/write attribute specifies the number of rows to fetch at a time
+        with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
+        """
+        def __get__(self):
+            return self._arraysize
+
+        def __set__(self, value):
+            cdef int val = int(value)
+            if val < 0:
+                raise ValueError("The 'arraysize' attribute must be >= 0.")
+            self._arraysize = val
+
+    def __init__(self, conn, as_dict, arraysize=1):
         self.conn = conn
         self.description = None
-        self._batchsize = 1
         self._rownumber = 0
         self._returnvalue = None
         self.as_dict = as_dict
+        self.arraysize = arraysize
 
     def __iter__(self):
         """
@@ -528,8 +557,9 @@ cdef class Cursor:
             raise OperationalError('Statement not executed or executed statement has no resultset')
 
         if size == None:
-            size = self._batchsize
-        self.batchsize = size
+            size = self.arraysize
+        else:
+            self.arraysize = size
 
         try:
             rows = []
@@ -589,7 +619,8 @@ cdef class Cursor:
 def connect(server='.', user=None, password=None, database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
         host='', appname=None, port='1433', encryption=None, read_only=False,
-        conn_properties=None, autocommit=False, tds_version=None):
+        conn_properties=None, autocommit=False, tds_version=None,
+        arraysize=1):
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
@@ -658,7 +689,7 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
     if timeout != 0:
         conn.query_timeout = timeout
 
-    return Connection(conn, as_dict, autocommit)
+    return Connection(conn, as_dict, autocommit, arraysize=arraysize)
 
 def get_max_connections():
     """
