@@ -1,4 +1,4 @@
-name: Linux
+name: Linux-aarch64
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
         - ChangeLog*
         - .github/workflows/test_macos.yml
         - .github/workflows/test_windows.yml
-        - .github/workflows/test_linux_aarch64.yml
+        - .github/workflows/test_linux.yml
     tags:
         - 'v[0-9]+.[0-9]+.[0-9]+'
         - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
@@ -21,7 +21,7 @@ on:
         - ChangeLog*
         - .github/workflows/test_macos.yml
         - .github/workflows/test_windows.yml
-        - .github/workflows/test_linux_aarch64.yml
+        - .github/workflows/test_linux.yml
 
 jobs:
 
@@ -62,7 +62,7 @@ jobs:
         python dev/build.py \
             --ws-dir=./freetds \
             --dist-dir=./dist \
-            --freetds-version="1.4.3" \
+            --freetds-version="1.4.2" \
             --with-openssl=yes \
             --enable-krb5 \
             --sdist \
@@ -88,11 +88,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [i686, x86_64]
-        manylinux: [manylinux1, manylinux2010, manylinux2014, manylinux_2_28]
-        exclude:
-            - arch: i686
-              manylinux: manylinux_2_28
+        arch: [aarch64]
+        manylinux: [manylinux2014]
 
     steps:
 
@@ -102,6 +99,11 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
 
     - name: Build and test wheels
       env:
