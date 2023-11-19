@@ -50,6 +50,8 @@ jobs:
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
