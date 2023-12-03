@@ -71,6 +71,8 @@ jobs:
 
     - name: Test with pytest
       run: |
+        pip install twine --upgrade
+        twine check dist/*
         pytest -sv
 
   wheels:
@@ -110,7 +112,6 @@ jobs:
       run: |
         docker pull $DOCKER_IMAGE
         docker run --rm --net="host" -w=/io -v `pwd`:/io -e MANYLINUX=${{ matrix.manylinux }} $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
-        ls -la dist
 
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v3
