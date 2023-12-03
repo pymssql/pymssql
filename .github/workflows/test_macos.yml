@@ -60,7 +60,7 @@ jobs:
             python dev/build.py \
                 --ws-dir=./freetds \
                 --dist-dir=./dist \
-                --freetds-version="1.4.3" \
+                --freetds-version="1.4.9" \
                 --with-openssl=yes \
                 --sdist \
                 --static-freetds

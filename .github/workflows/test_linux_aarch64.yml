@@ -61,7 +61,7 @@ jobs:
         python dev/build.py \
             --ws-dir=./freetds \
             --dist-dir=./dist \
-            --freetds-version="1.4.2" \
+            --freetds-version="1.4.9" \
             --with-openssl=yes \
             --enable-krb5 \
             --sdist \
