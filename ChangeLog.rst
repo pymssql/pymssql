@@ -1,6 +1,33 @@
 Recent Changes
 ==============
 
+Version 2.2.11 - 2023-12-03  - Mikhail Terekhov
+===============================================
+
+General
+-------
+
+- Use FreeTDS-1.4.9 for official wheels on PyPi.
+- Add workflow for aarch64 wheel. Thanks to juntangc (fix #692, #759, #791, #819, #826, #858).
+- Add datetime.date to SQLDATE conversion.
+- Add encription parameter to connect (fix  #797).
+
+Bug fixes
+---------
+
+- Fix version parsing in development.
+- Add missing `charset` parameter when formatting query (fix #650).
+- Use four digits for the year in SP args binding (fix #454).
+- Fix convert_python_value to work with datetime.date (fix #811).
+
+Version 2.2.10 - 2023-10-20  - Mikhail Terekhov
+===============================================
+
+General
+-------
+
+- Publish Linux wheels for Python-3.12
+
 Version 2.2.9 - 2023-10-13  - Mikhail Terekhov
 ==============================================
 

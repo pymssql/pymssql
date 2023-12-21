@@ -72,6 +72,8 @@ jobs:
 
     - name: Test with pytest
       run: |
+        pip install twine --upgrade
+        twine check dist/*
         pytest -sv
 
     - name: Archive wheels and sdist
