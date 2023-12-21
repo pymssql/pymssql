@@ -48,6 +48,7 @@ threadsafety = 1
 paramstyle = 'pyformat'
 
 from pymssql._mssql import set_wait_callback
+from pymssql.exceptions import *
 
 # store a tuple of programming error codes
 cdef object prog_errors = (
@@ -109,46 +110,6 @@ cdef int TABLOCK_LEN = strlen(TABLOCK)
 cdef int CHECK_CONSTRAINTS_LEN = strlen(CHECK_CONSTRAINTS)
 cdef int FIRE_TRIGGERS_LEN = strlen(FIRE_TRIGGERS)
 
-
-# exception hierarchy
-class Warning(Exception):
-    pass
-
-class Error(Exception):
-    pass
-
-class InterfaceError(Error):
-    pass
-
-class DatabaseError(Error):
-    pass
-
-class DataError(DatabaseError):
-    pass
-
-class OperationalError(DatabaseError):
-    pass
-
-class IntegrityError(DatabaseError):
-    pass
-
-class InternalError(DatabaseError):
-    pass
-
-class ProgrammingError(DatabaseError):
-    pass
-
-class NotSupportedError(DatabaseError):
-    pass
-
-class ColumnsWithoutNamesError(InterfaceError):
-    def __init__(self, columns_without_names):
-        self.columns_without_names = columns_without_names
-
-    def __str__(self):
-        return 'Specified as_dict=True and ' \
-            'there are columns with no names: %r' \
-            % (self.columns_without_names,)
 
 def row2dict(row):
     """Filter dict so it only has string keys; used when as_dict == True"""

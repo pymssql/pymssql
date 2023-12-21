@@ -285,7 +285,7 @@ setup(
     name  = 'pymssql',
     use_scm_version = {
         "write_to": "src/pymssql/version.h",
-        "write_to_template": '#define PYMSSQL_VERSION "{version}"',
+        "write_to_template": 'const char* PYMSSQL_VERSION = "{version}";',
         "local_scheme": "no-local-version",
     },
     description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',

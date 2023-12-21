@@ -62,6 +62,7 @@ from cpython.tuple cimport PyTuple_New, PyTuple_SetItem
 
 cdef extern from "version.h":
     const char *PYMSSQL_VERSION
+from . import exceptions
 
 # Vars to store messages from the server in
 cdef int _mssql_last_msg_no = 0
