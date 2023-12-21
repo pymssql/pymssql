@@ -159,6 +159,34 @@ def build_windows(args, freetds_archive, iconv_archive):
     run("nmake install", cwd=blddir, env=env)
 
 
+def freetds_version(freetds_version):
+
+    if freetds_version:
+        return freetds_version
+
+    freetds_version = "latest"
+
+    pyproject_toml = Path(__file__).parent.parent / "pyproject.toml"
+    if not pyproject_toml.exists():
+        print("pyproject.toml not found, use latest FreeTDS")
+        return freetds_version
+
+    try:
+        from tomllib import loads
+    except ModuleNotFoundError:
+        from tomli import loads
+    except ModuleNotFoundError:
+        print("Neither tomllib no tomli module found, try latest FreeTDS.")
+        return freetds_version
+
+    pyproject = loads(pyproject_toml.read_text())
+    try:
+        freetds_version = pyproject['tool']['freetds']['version_for_pypi_wheels']
+    except:
+        pass
+    return freetds_version
+
+
 def parse_args(argv):
 
     parser = argparse.ArgumentParser(description=(__doc__))
@@ -168,8 +196,9 @@ def parse_args(argv):
             help="force archive download")
     a('-u', '--freetds-url', default="http://ftp.freetds.org/pub/freetds/stable",
             help="URL to download FreeTDS archive")
-    a('-v', '--freetds-version', default='latest',
-            help="FreeTDS version to build")
+    a('-v', '--freetds-version', default='', type=freetds_version,
+            help="""Specific FreeTDS version to build or 'latest'.
+                    If not set, try to read from pyproject.toml""")
     if platform.system() != 'Windows':
         a('-t', '--with-tdsver', choices=['5.0', '7.1', '7.2', '7.3', '7.4', 'auto'], default='auto',
                 help="TDS protocol version")

@@ -1,12 +1,16 @@
 [build-system]
 requires = [
-    "setuptools>=54.0", 
-    "setuptools_scm[toml]>=5.0,<7.0", 
-    "wheel>=0.36.2", 
-    "Cython>=0.29.32"
+    "setuptools>=54.0",
+    "setuptools_scm[toml]>=5.0,<7.0",
+    "wheel>=0.36.2",
+    "Cython>=0.29.32",
+    "tomli",
     ]
 
 [tool.setuptools_scm]
 write_to = "src/pymssql/version.h"
 write_to_template = '#define PYMSSQL_VERSION "{version}"'
 local_scheme = "no-local-version"
+
+[tool.freetds]
+version_for_pypi_wheels = "1.4.9"

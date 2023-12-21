@@ -48,7 +48,6 @@ fi
     --ws-dir=./freetds \
     --dist-dir=. \
     --prefix=/usr/local \
-    --freetds-version="1.4.9" \
     --with-openssl=yes \
     --enable-krb5 \
     --static-freetds
