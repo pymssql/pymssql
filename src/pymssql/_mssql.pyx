@@ -1248,7 +1248,7 @@ cdef class MSSQLConnection:
             # Cancel any pending results
             self.cancel()
 
-            if params:
+            if params is not None:
                 query_string = self.format_sql_command(query_string, params)
 
             # For Python 3, we need to convert unicode to byte strings
