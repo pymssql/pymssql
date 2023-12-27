@@ -1,6 +1,52 @@
 Recent Changes
 ==============
 
+Version 2.3.0 -
+===============================================
+
+General
+-------
+
+- Add python 3.12 support (fix #851). Thanks to Raphael Jacob.
+- Add read_only parameter for connection.
+- Use utf-8 for connection properties.
+- Add encryption parameter to connect.
+- Some documentation fixes. Thanks to Casey Korver and Quentin LEGAY.
+- Implement batching in executemany based on optional batch_size parameter
+  with default equal arraysize cursor attribute (closes #332, #462).
+- Build aarch64 wheels. Thanks to Jun Tang.
+- Build musllinux wheels.
+
+Bug fixes
+---------
+
+- Use four digits for the year in SP args binding (fix #454).
+- Fix convert_python_value to work with datetime.date. Thanks to Testsr.
+- Check if C compiler is installed if check for clock_gettime fails (fix #825).
+- Add missing `charset` parameter in the `_substitute_params` method when
+  calling `ensure_bytes` (fix #650). Thans to Andrey Yuroshev.
+- Fix empty, zero or None parameter substitution. (fix #609).
+
+Internals
+---------
+
+- Use OpenSSL-1.1.1.2100 for Windows x86 wheels. Thanks to PrimozGodec.
+- Add SQLTIME and SQLDATETIME2 to convert_python_value.
+- Use dbanydatecrack() function instead of dbdatecrack().
+- Replace DEF with cdef enum for buffer array size (compatibility with Cython 3).
+- Use Cython 3 for compilation.
+- Remove references to tox. Thanks to Christoph Wegener.
+- Update readthedocs configuration.
+- Add tests for timeout in wait callback (#305).
+- Clean up some legacy FreeTDS shims.
+- Add tests for tds_version parameter.
+- Move check for clock_gettime to dev/ccompiler.py.
+- Remove some Python2 remnants.
+- Fix DBAPI-2.0 compliance - DataError must be a subclass of DatabaseError.
+- Fix DBAPI-2.0 compliance: rename `batchsize` cursor attribute to `arraysize`.
+- Move FreeTDS version from workflow files to pyproject.toml.
+- Move exceptions into separate module.
+
 Version 2.2.11 - 2023-12-03  - Mikhail Terekhov
 ===============================================
 
