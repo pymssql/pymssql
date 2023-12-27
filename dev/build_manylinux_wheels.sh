@@ -85,7 +85,7 @@ for i in $PYTHONS; do
         if [ "$MANYLINUX" != "manylinux1" ] ;  then
             "${PYBIN}/pip" install SQLAlchemy
         fi
-        "${PYBIN}/pytest" -s .
+        "${PYBIN}/pytest" -sv --durations=0 .
         "${PYBIN}/python" -c "import pymssql; print(pymssql.version_info());"
     fi
 done

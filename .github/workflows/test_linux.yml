@@ -73,7 +73,7 @@ jobs:
       run: |
         pip install twine --upgrade
         twine check dist/*
-        pytest -sv
+        pytest -sv --durations=0
 
   wheels:
 
