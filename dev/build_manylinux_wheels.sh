@@ -39,11 +39,16 @@ git status
 if which yum; then
     yum install -y openssl-devel krb5-devel
 else
-    apt-get update
-    apt-get install -y libssl1.1
-    apt-get install -y libssl-dev libkrb5-dev
+    if which apk; then # Alpinr linux - #864
+        apk update
+        apk add curl gcc g++ git openssl-dev krb5-dev linux-headers make
+    else
+        apt-get update
+        apt-get install -y libssl1.1
+        apt-get install -y libssl-dev libkrb5-dev
+    fi
 fi
-
+git config --global --add safe.directory /pymssql
 /opt/python/cp38-cp38/bin/python dev/build.py \
     --ws-dir=./freetds \
     --dist-dir=. \
