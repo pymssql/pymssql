@@ -47,6 +47,9 @@ threadsafety = 1
 # this module uses extended python format codes
 paramstyle = 'pyformat'
 
+# Singleton for parameterless queries
+NoParams = _mssql.NoParams
+
 from pymssql._mssql import set_wait_callback
 from pymssql.exceptions import *
 
@@ -436,15 +439,12 @@ cdef class Cursor:
         self.conn = None
         self.description = None
 
-    def execute(self, operation, params=()):
+    def execute(self, operation, params=NoParams):
         self.description = None
         self._rownumber = 0
 
         try:
-            if not params:
-                self._source._conn.execute_query(operation)
-            else:
-                self._source._conn.execute_query(operation, params)
+            self._source._conn.execute_query(operation, params)
             self.description = self._source._conn.get_header()
             self._rownumber = self._source._conn.rows_affected
 

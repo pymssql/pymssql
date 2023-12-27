@@ -92,6 +92,9 @@ __full_version__ = PYMSSQL_VERSION.decode('ascii')
 __version__ = '.'.join(__full_version__.split('.')[:3])
 VERSION = tuple(int(c) if c.isdigit() else c for c in __full_version__.split('.')[:3])
 
+# Singleton for parameterless queries
+NoParams = object()
+
 #############################
 ## DB-API type definitions ##
 #############################
@@ -1071,9 +1074,9 @@ cdef class MSSQLConnection:
         # No conversion was possible so raise an error
         raise MSSQLDriverException(f'Unable to convert value dbtype={dbtype[0]}')
 
-    cpdef execute_non_query(self, query_string, params=None):
+    cpdef execute_non_query(self, query_string, params=NoParams):
         """
-        execute_non_query(query_string, params=None)
+        execute_non_query(query_string, params=NoParams)
 
         This method sends a query to the MS SQL Server to which this object
         instance is connected. After completion, its results (if any) are
@@ -1102,9 +1105,9 @@ cdef class MSSQLConnection:
         check_and_raise(rtc, self)
         log("_mssql.MSSQLConnection.execute_non_query() END")
 
-    cpdef execute_query(self, query_string, params=None):
+    cpdef execute_query(self, query_string, params=NoParams):
         """
-        execute_query(query_string, params=None)
+        execute_query(query_string, params=NoParams)
 
         This method sends a query to the MS SQL Server to which this object
         instance is connected. An exception is raised on failure. If there
@@ -1137,9 +1140,9 @@ cdef class MSSQLConnection:
         self.get_result()
         log("_mssql.MSSQLConnection.execute_query() END")
 
-    cpdef execute_row(self, query_string, params=None):
+    cpdef execute_row(self, query_string, params=NoParams):
         """
-        execute_row(query_string, params=None)
+        execute_row(query_string, params=NoParams)
 
         This method sends a query to the MS SQL Server to which this object
         instance is connected, then returns first row of data from result.
@@ -1162,9 +1165,9 @@ cdef class MSSQLConnection:
         self.format_and_run_query(query_string, params)
         return self.fetch_next_row(0, ROW_FORMAT_DICT)
 
-    cpdef execute_scalar(self, query_string, params=None):
+    cpdef execute_scalar(self, query_string, params=NoParams):
         """
-        execute_scalar(query_string, params=None)
+        execute_scalar(query_string, params=NoParams)
 
         This method sends a query to the MS SQL Server to which this object
         instance is connected, then returns first column of first row from
@@ -1232,7 +1235,7 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.fetch_next_row() END")
 
-    cdef format_and_run_query(self, query_string, params=None):
+    cdef format_and_run_query(self, query_string, params=NoParams):
         """
         This is a helper function, which does most of the work needed by any
         execute_*() function. It returns NULL on error, None on success.
@@ -1249,7 +1252,7 @@ cdef class MSSQLConnection:
             # Cancel any pending results
             self.cancel()
 
-            if params:
+            if params is not NoParams:
                 query_string = self.format_sql_command(query_string, params)
 
             # For Python 3, we need to convert unicode to byte strings
@@ -1270,7 +1273,7 @@ cdef class MSSQLConnection:
         finally:
             log("_mssql.MSSQLConnection.format_and_run_query() END")
 
-    cdef format_sql_command(self, format, params=None):
+    cdef format_sql_command(self, format, params=NoParams):
         log("_mssql.MSSQLConnection.format_sql_command()")
         return _substitute_params(format, params, self.charset)
 
@@ -2060,11 +2063,17 @@ cdef _quote_data(data, charset='utf8'):
 
 _re_pos_param = re.compile(br'(%([sd]))')
 _re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
-cdef _substitute_params(toformat, params, charset):
-    if params is None:
+cdef _substitute_params(toformat, params=NoParams, charset='utf-8'):
+
+    if isinstance(toformat, unicode):
+        toformat = toformat.encode(charset)
+    elif not isinstance(toformat, bytes):
+        raise exceptions.ProgrammingError(f"Query should be string or bytes, got { type(toformat)}")
+
+    if params is NoParams:
         return toformat
 
-    if not issubclass(type(params),
+    if params is not None and not issubclass(type(params),
             (bool, int, long, float, unicode, str, bytes, bytearray, dict, tuple,
              datetime.datetime, datetime.date, datetime.time, dict, decimal.Decimal, uuid.UUID)):
         raise ValueError("'params' arg (%r) can be only a tuple or a dictionary." % type(params))
@@ -2077,9 +2086,6 @@ cdef _substitute_params(toformat, params, charset):
     # positional string substitution now requires a tuple
     if hasattr(quoted, 'startswith'):
         quoted = (quoted,)
-
-    if isinstance(toformat, unicode):
-        toformat = toformat.encode(charset)
 
     if isinstance(params, dict):
         """ assume name based substitutions """
@@ -2149,7 +2155,7 @@ def quote_or_flatten(data):
 def quote_data(data):
     return _quote_data(data)
 
-def substitute_params(toformat, params, charset='utf8'):
+def substitute_params(toformat, params=NoParams, charset='utf8'):
     return _substitute_params(toformat, params, charset)
 
 ###########################

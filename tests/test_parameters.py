@@ -3,26 +3,55 @@
 Test parameters substitution.
 """
 
+import pytest
+
 from .helpers import eq_
 
 from pymssql._mssql import substitute_params
 
 
-def test_single_param():
+def test_no_params():
     res = substitute_params(
-        'SELECT * FROM employees WHERE id = %s',
-        13)
-    eq_(res, b'SELECT * FROM employees WHERE id = 13')
+        'SELECT * FROM employees')
+    print(res)
+    eq_(res, b'SELECT * FROM employees')
+
+
+@pytest.mark.parametrize('val', (0, 13))
+def test_single_int(val):
+    res = substitute_params(
+        'SELECT * FROM employees WHERE id = %s', val)
+    print(res)
+    eq_(res, b'SELECT * FROM employees WHERE id = %d' % val)
+
+
+@pytest.mark.parametrize('val', (b'', b'John Doe'))
+def test_single_bytes(val):
+    res = substitute_params(
+        'SELECT * FROM empl WHERE name = %s', val)
+    print("test_single_bytes:", res)
+    eq_(res, b"SELECT * FROM empl WHERE name = '%s'" % val)
+
+
+@pytest.mark.parametrize('val', ('', 'John Doe'))
+def test_single_str(val):
 
     res = substitute_params(
-        'SELECT * FROM empl WHERE name = %s',
-        b'John Doe')
-    eq_(res, b"SELECT * FROM empl WHERE name = 'John Doe'")
+        'SELECT * FROM empl WHERE name = %s', val)
+    print(res)
+    eq_(res, b"SELECT * FROM empl WHERE name = N'%s'" % val.encode('utf-8'))
+
+
+@pytest.mark.parametrize('val', (None, 'John Doe'))
+def test_single_null(val):
 
     res = substitute_params(
-        'SELECT * FROM empl WHERE name = %s',
-        'John Doe')
-    eq_(res, b"SELECT * FROM empl WHERE name = N'John Doe'")
+        'INSERT INTO empl VALUES (%s)', val)
+    print(res)
+    v = b"NULL"
+    if val is not None:
+        v =b"N'%s'" % val.encode('utf-8')
+    eq_(res, b"INSERT INTO empl VALUES (%s)" % v)
 
 
 def test_param_quote():
@@ -64,8 +93,8 @@ def test_keyed_param_with_d():
 
 def test_percent_not_touched_with_no_params():
     sql = "SELECT COUNT(*) FROM employees WHERE name LIKE 'J%'"
-    res = substitute_params(sql, None)
-    eq_(res, sql)
+    res = substitute_params(sql)
+    eq_(res, sql.encode('utf8'))
 
 
 def test_tuple_with_in():
