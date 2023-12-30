@@ -2049,7 +2049,7 @@ cdef _quote_data(data, charset='utf8'):
 
     if issubclass(type(data), dict):
         result = {}
-        for k, v in data.iteritems():
+        for k, v in data.items():
             result[k] = _quote_or_flatten(v, charset)
         return result
 
