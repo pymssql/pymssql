@@ -8,6 +8,7 @@ tests/tests.cfg
 *.pyc
 .tox
 dist
+wheelhouse
 *.egg
 *.egg-info
 docs/_build
