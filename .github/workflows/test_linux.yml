@@ -23,6 +23,9 @@ on:
         - .github/workflows/test_windows.yml
         - .github/workflows/test_linux_aarch64.yml
 
+  workflow_dispatch:
+
+
 jobs:
 
   build:
