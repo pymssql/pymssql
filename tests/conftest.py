@@ -10,8 +10,10 @@ from configparser import ConfigParser
 import pytest
 
 import tests.helpers as th
-from .helpers import cfgpath, clear_db, get_app_lock, release_app_lock
+from .helpers import clear_db, get_app_lock, release_app_lock
 
+cdir = os.path.dirname(__file__)
+cfgpath = os.path.join(cdir, 'tests.cfg')
 
 @pytest.fixture(scope="module")
 def mssql_conn():
@@ -41,7 +43,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--pymssql-section",
         type=str,
-        default=os.environ.get('PYMSSQL_TEST_CONFIG', 'DEFAULT'),
+        default=os.environ.get('PYMSSQL_TEST_CONFIG', None),
         help="The name of the section to use from tests.cfg"
     )
     for marker, info in optional_markers.items():
@@ -49,11 +51,15 @@ def pytest_addoption(parser):
                          default=False, help=info['help'])
 
 def pytest_configure(config):
-    _parser.read(cfgpath)
     section = config.getoption('--pymssql-section')
-
-    if not _parser.has_section(section) and section != 'DEFAULT':
-        raise ValueError('the tests.cfg file does not have section: %s' % section)
+    if section is not None:
+        if not os.path.exists(cfgpath):
+            raise ValueError(f"Config file '{cfgpath}' dos not exist.")
+        _parser.read(cfgpath)
+        if not _parser.has_section(section):
+            raise ValueError('the tests.cfg file does not have section: %s' % section)
+    else:
+        section = 'DEFAULT'
 
     th.config.server = os.getenv('PYMSSQL_TEST_SERVER') or _parser.get(section, 'server')
     th.config.user = os.getenv('PYMSSQL_TEST_USERNAME') or _parser.get(section, 'username')

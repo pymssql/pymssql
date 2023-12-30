@@ -4,7 +4,6 @@ Various test helper functions.
 """
 
 import logging
-from os import path
 import time
 
 import pytest
@@ -32,8 +31,6 @@ class Config(object):
 
 config = Config()
 
-cdir = path.dirname(__file__)
-cfgpath = path.join(cdir, 'tests.cfg')
 global_mssqlconn = None
 
 def mssqlconn(conn_properties=None):

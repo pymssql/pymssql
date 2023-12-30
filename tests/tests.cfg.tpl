@@ -24,3 +24,26 @@ password = somepass
 database = testdb
 port = 1435
 instance = testinst
+
+[DOCKER_2019]
+#
+# docker pull mcr.microsoft.com/mssql/server:2019-latest
+# docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=sqlServerPassw0rd" -p 1433:1433 --name sql2019 -hostname sql2 -d mcr.microsoft.com/mssql/server:2019-latest
+# docker start/stop sql2019
+#
+server = localhost
+username = sa
+password = sqlServerPassw0rd
+database = tempdb
+port = 1433
+ipaddress = 127.0.0.1
+encryption = require
+
+[AZURE]
+server = pymssqlserver.database.windows.net
+username = azureuser
+password = PyMSSQLSERVERpassword!
+port = 1433
+database = mySampleDatabase
+#database = testdb
+ipaddress = 40.78.225.32
