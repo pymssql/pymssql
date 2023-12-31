@@ -31,35 +31,36 @@ class Test_DATETIME2(TestCaseDATETIME2):
     def test_min_select(self):
         self.conn.execute_query("SELECT CAST ('0001-1-1 0:0:0' as DATETIME2)")
         res = tuple(self.conn)[0][0]
-        assert isinstance(res, (datetime.datetime, datetime2))
-        assert isinstance(res, datetime2)
+        assert isinstance(res, datetime.datetime)
         assert res == self.min_date
 
     def test_min_insert(self):
         res = self.insert_and_select('test', self.min_date)
         assert isinstance(res, datetime.datetime)
-        assert isinstance(res, datetime2)
         assert res == self.min_date
 
     def test_max_select(self):
         self.conn.execute_query("SELECT CAST ('9999-12-31 23:59:59.9999999' as DATETIME2)")
         res = tuple(self.conn)[0][0]
         assert isinstance(res, datetime.datetime)
-        assert isinstance(res, datetime2)
         assert res == self.max_date
 
     def test_max_insert(self):
         res = self.insert_and_select('test', self.max_date)
         assert isinstance(res, datetime.datetime)
-        assert isinstance(res, datetime2)
         assert res == self.max_date
 
     def test_datetime2(self):
         testval = datetime2(2013, 1, 2, 3, 4, 5, 6)
         res = self.insert_and_select('test', testval)
         assert isinstance(res, datetime.datetime)
-        assert isinstance(res, datetime2)
         assert testval == res
+
+    def test_truncate(self):
+        self.conn.execute_query("SELECT CAST ('2024-1-1 0:0:0.1234567' as DATETIME2)")
+        res = tuple(self.conn)[0][0]
+        assert isinstance(res, datetime.datetime)
+        assert res == datetime.datetime(2024, 1, 1, 0, 0, 0, 123456)
 
 
 class Test_695(TestCaseDATETIME2):
@@ -84,7 +85,6 @@ class Test_695(TestCaseDATETIME2):
         rows = tuple(self.conn)
         res = rows[0][1]
         assert isinstance(res, datetime.datetime)
-        assert isinstance(res, datetime2)
         #print(rows)
 
 

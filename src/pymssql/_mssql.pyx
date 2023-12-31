@@ -874,12 +874,7 @@ cdef class MSSQLConnection:
                 ctx.prec = precision if precision > 0 else 1
                 return decimal.Decimal(_remove_locale(buf, converted_length).decode(self._charset))
 
-        elif dbtype == SQLDATETIME2:
-            dbanydatecrack(self.dbproc, &di, dbtype, data)
-            return datetime2(di.year, di.month, di.day,
-                di.hour, di.minute, di.second, di.nanosecond // 1000)
-
-        elif dbtype in (SQLDATETIM4, SQLDATETIME):
+        elif dbtype in (SQLDATETIM4, SQLDATETIME, SQLDATETIME2):
             dbanydatecrack(self.dbproc, &di, dbtype, data)
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.nanosecond // 1000)
