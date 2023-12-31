@@ -116,7 +116,7 @@ jobs:
         docker run --rm --net="host" -w=/io -v `pwd`:/io -e MANYLINUX=${{ matrix.manylinux }} $DOCKER_IMAGE /io/dev/build_manylinux_wheels.sh
 
     - name: Archive wheels and sdist
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pymssql-${{ runner.os }}-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
         path: dist
