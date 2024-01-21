@@ -530,10 +530,11 @@ class TestStringTypeConversion(unittest.TestCase):
 
 @pytest.mark.mssql_server_required
 class TestFloatTypeConversion(unittest.TestCase):
+
     def setUp(self):
         self.mssql = mssqlconn()
         self.pymssql = pymssqlconn()
-        cursor = self.pymssql.cursor()
+        self.cursor = self.pymssql.cursor()
 
         self.mssql.execute_non_query("""
             CREATE PROCEDURE [dbo].[pymssqlRealTest]
@@ -556,30 +557,73 @@ class TestFloatTypeConversion(unittest.TestCase):
         )
 
     def tearDown(self):
-        cursor = self.pymssql.cursor()
         self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlRealTest]')
         self.mssql.execute_non_query('DROP PROCEDURE [dbo].[pymssqlFloatTest]')
+        self.mssql.close()
+        self.cursor.close()
         self.pymssql.close()
 
-    def testReal(self):
-        cursor = self.pymssql.cursor()
-        cursor.callproc(
-            'pymssqlRealTest',
-            (0.5,))
-
-        # TODO: Use the solution we implement once #134 gets fixed
-        a = next(cursor)
+    def test_real(self):
+        self.cursor.callproc('pymssqlRealTest', (0.5,))
+        a = next(self.cursor)
+        assert len(a) == 1
         assert abs(a[0] - 0.5) < 0.000001
 
-    def testFloat8(self):
-        cursor = self.pymssql.cursor()
-        cursor.callproc(
-            'pymssqlFloatTest',
-            (5.44451787074e+39,))
-
-        # TODO: Use the solution we implement once #134 gets fixed
-        a = next(cursor)
+    def test_float8(self):
+        self.cursor.callproc('pymssqlFloatTest', (5.44451787074e+39,))
+        a = next(self.cursor)
+        assert len(a) == 1
         assert abs(a[0] - 5.44451787074e+39) < 0.000001
+
+
+@pytest.mark.mssql_server_required
+class TestFetch(unittest.TestCase):
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        self.cursor = self.pymssql.cursor()
+
+        self.cursor.execute("""
+            CREATE PROCEDURE [dbo].[pymssqlTest]
+                @inparam real
+            AS
+            BEGIN
+                SELECT @inparam AS outparam
+            END
+            """
+        )
+
+    def tearDown(self):
+        self.cursor.execute('DROP PROCEDURE [dbo].[pymssqlTest]')
+        self.cursor.close()
+        self.pymssql.close()
+
+    def test_fetchall(self):
+        self.cursor.callproc('pymssqlTest', (0.5,))
+        a = self.cursor.fetchall()
+        assert len(a) == 1
+        assert len(a[0]) == 1
+        assert abs(a[0][0] - 0.5) < 0.000001
+
+    def test_fetchone(self):
+        self.cursor.callproc('pymssqlTest', (0.5,))
+        a = self.cursor.fetchone()
+        assert len(a) == 1
+        assert abs(a[0] - 0.5) < 0.000001
+
+    def test_fetchmany(self):
+        self.cursor.callproc('pymssqlTest', (0.5,))
+        a = self.cursor.fetchmany()
+        assert len(a) == 1
+        assert len(a[0]) == 1
+        assert abs(a[0][0] - 0.5) < 0.000001
+
+    def test_real_next(self):
+        self.cursor.callproc('pymssqlTest', (0.5,))
+        a = next(self.cursor)
+        assert len(a) == 1
+        assert abs(a[0] - 0.5) < 0.000001
+
 
 @pytest.mark.mssql_server_required
 class TestErrorInSP(unittest.TestCase):
