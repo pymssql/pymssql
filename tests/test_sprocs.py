@@ -349,10 +349,10 @@ class TestCallProcFancy(unittest.TestCase):
 
         sql = u"""
         CREATE PROCEDURE [dbo].[someProcWithOneParam]
-        	@some_arg NVARCHAR(64)
+            @some_arg NVARCHAR(64)
         AS
         BEGIN
-        	SELECT @some_arg + N'!',
+            SELECT @some_arg + N'!',
                    N'%(str1)s ' + @some_arg + N' %(str2)s'
         END
         """ % {
