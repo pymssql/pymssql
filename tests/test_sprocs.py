@@ -664,3 +664,49 @@ class TestSPWithQueryResult(unittest.TestCase):
 
         for row_dict in self.mssql:
             self.assertEqual(row_dict, {0: 'hello!', 1: 'hello!!'})
+
+
+@pytest.mark.mssql_server_required
+class TestMultipleDataSetsInResult(unittest.TestCase):
+    """
+    Test for https://github.com/pymssql/pymssql/pull/134
+    See also https://gist.github.com/msabramo/6747703
+    """
+    table_name = 'callproc_demo_tbl'
+    proc_name = 'callproc_get_2_resultsets'
+
+    def setUp(self):
+        self.pymssql = pymssqlconn()
+        self.cursor = self.pymssql.cursor()
+        self.cursor.execute(f"IF OBJECT_ID('{self.table_name}', 'U') IS NOT NULL DROP TABLE {self.table_name}")
+        self.cursor.execute(f"CREATE TABLE {self.table_name} (name VARCHAR(30))")
+        self.cursor.execute(f"INSERT INTO {self.table_name} VALUES ('Tom'), ('Dick'), ('Harry')")
+        self.cursor.execute(f"""
+        CREATE PROCEDURE [dbo].[{self.proc_name}] AS
+        BEGIN
+            SET NOCOUNT ON
+            SELECT * FROM {self.table_name} WHERE name = 'not here';
+            SELECT * FROM {self.table_name};
+        END
+        """)
+
+    def tearDown(self):
+        self.cursor.execute(f'DROP PROCEDURE [dbo].[{self.proc_name}]')
+        self.cursor.close()
+        self.pymssql.close()
+
+    def test_exec(self):
+        self.cursor.execute(f'EXEC {self.proc_name}')
+        res = self.cursor.fetchall()
+        self.assertEqual(res, [])
+        res = self.cursor.fetchall()
+        self.assertEqual(res, [('Tom',), ('Dick',), ('Harry',)])
+
+    @pytest.mark.xfail(strict=True)
+    def test_callproc(self):
+        self.cursor.callproc(self.proc_name)
+        res = self.cursor.fetchall()
+        self.assertEqual(res, [])
+        res = self.cursor.fetchall()
+        self.assertEqual(res, [('Tom',), ('Dick',), ('Harry',)])
+
