@@ -586,7 +586,7 @@ class TestErrorInSP(unittest.TestCase):
 
     def setUp(self):
         self.pymssql = pymssqlconn()
-        cursor = self.pymssql.cursor()
+        self.cursor = self.pymssql.cursor()
 
         sql = u"""
         CREATE PROCEDURE [dbo].[SPThatRaisesAnError]
@@ -599,27 +599,29 @@ class TestErrorInSP(unittest.TestCase):
             RETURN
         END
         """
-        cursor.execute(sql)
+        self.cursor.execute(sql)
 
     def tearDown(self):
-        cursor = self.pymssql.cursor()
-        cursor.execute('DROP PROCEDURE [dbo].[SPThatRaisesAnError]')
+        self.cursor.execute('DROP PROCEDURE [dbo].[SPThatRaisesAnError]')
+        self.cursor.close()
         self.pymssql.close()
 
     def test_tsql_to_python_exception_translation(self):
-        """An error raised by a SP is translated to a PEP-249-dictated, pymssql layer exception."""
-        # See https://github.com/pymssql/pymssql/issues/61
-        cursor = self.pymssql.cursor()
+        """
+        An error raised by a SP is translated to a PEP-249-dictated,
+        pymssql layer exception.
+        See https://github.com/pymssql/pymssql/issues/61
+        """
         # Must raise an exception
-        self.assertRaises(Exception, cursor.callproc, 'SPThatRaisesAnError')
+        self.assertRaises(Exception, self.cursor.callproc, 'SPThatRaisesAnError')
         # Must be a PEP-249 exception, not a _mssql-layer one
         try:
-            cursor.callproc('SPThatRaisesAnError')
+            self.cursor.callproc('SPThatRaisesAnError')
         except Exception as e:
             self.assertTrue(isinstance(e,  pymssql.Error))
         # Must be a DatabaseError exception
         try:
-            cursor.callproc('SPThatRaisesAnError')
+            self.cursor.callproc('SPThatRaisesAnError')
         except Exception as e:
             self.assertTrue(isinstance(e,  pymssql.DatabaseError))
 
@@ -647,7 +649,7 @@ class TestSPWithQueryResult(unittest.TestCase):
         self.pymssql.close()
         self.mssql.close()
 
-    def testPymssql(self):
+    def test_pymssql(self):
         cursor = self.pymssql.cursor()
         cursor.callproc(
             self.SP_NAME,
