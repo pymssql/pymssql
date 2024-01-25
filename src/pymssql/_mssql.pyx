@@ -964,14 +964,8 @@ cdef class MSSQLConnection:
 
         if dbtype[0] == SQLDATE:
             if not isinstance(value, datetime.date):
-                raise TypeError('value can only be a datetime.date')
+                raise TypeError('value can only be a datetime.date, got {type(value)}')
             value = value.strftime('%4Y-%m-%d').encode(self.charset)
-            dbtype[0] = SQLCHAR
-
-        if dbtype[0] == SQLDATETIME2:
-            if type(value) not in (datetime.date, datetime.datetime):
-                raise TypeError('value can only be a date or datetime')
-            value = value.strftime('%04Y-%m-%d %H:%M:%S.%f').encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] == SQLTIME:
@@ -981,9 +975,15 @@ cdef class MSSQLConnection:
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
 
-        if dbtype[0] in (SQLDATETIM4, SQLDATETIME, SQLDATETIME2):
-            if type(value) not in (datetime.date, datetime.datetime):
-                raise TypeError('value can only be a date or datetime')
+        if dbtype[0] == SQLDATETIME2:
+            if not isinstance(value, datetime.datetime):
+                raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
+            value = value.strftime('%04Y-%m-%d %H:%M:%S.%f').encode(self.charset)
+            dbtype[0] = SQLCHAR
+
+        if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
+            if not isinstance(value, datetime.datetime):
+                raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
             microseconds=0
             if type(value) in (datetime.datetime,):
                 microseconds=value.microsecond // 1000
