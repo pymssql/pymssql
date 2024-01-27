@@ -28,6 +28,8 @@ def stored_proc(mssqlcon, dbtype):
         identifier = 'numeric(6, 5)'
     elif dbtype == 'time':
         identifier = 'time(7)'
+    elif dbtype == 'datetimeoffset':
+        identifier = 'datetimeoffset(7)'
 
     name = f"pymssqlTest_{dbtype}"
 
@@ -268,7 +270,7 @@ class TestFixedTypeConversion(unittest.TestCase):
 
 
 @pytest.mark.mssql_server_required
-class TestDataTimeConversion:
+class TestDateTimeConversion:
 
     def test_date(self, mssql_conn, subtests):
         with stored_proc(mssql_conn, 'date') as proc_name:
@@ -336,12 +338,30 @@ class TestDataTimeConversion:
                     assert res == 0
                     assert input == proc.parameters['@out']
 
+    def test_datetimeoffset(self, mssql_conn, subtests):
+        with stored_proc(mssql_conn, 'datetimeoffset') as proc_name:
+            for h in range(-12,13,1):
+                for m in range(0, 61, 15):
+                    tz = datetime.timezone(datetime.timedelta(hours=h, minutes=m))
+                    for input in (
+                        datetime.datetime(10, 1, 2, tzinfo=tz), # min supported
+                        datetime.datetime(2999, 12, 31, 23, 59, 59, 999999, tzinfo=tz), # max supported
+                        ):
+                        with subtests.test(datetime=input):
+                            proc = mssql_conn.init_procedure(proc_name)
+                            proc.bind(input, _mssql.SQLDATETIMEOFFSET, '@inp')
+                            proc.bind(None, _mssql.SQLDATETIMEOFFSET, '@out', output=True)
+                            res = proc.execute()
+                            assert res == 0
+                            assert input == proc.parameters['@out']
 
 
 @pytest.mark.mssql_server_required
 class TestCallProcFancy(unittest.TestCase):
-    # "Fancy" because we test some exotic cases like passing None or Unicode
+    """
+    "Fancy" because we test some exotic cases like passing None or Unicode
     # strings to a called procedure
+    """
 
     def setUp(self):
         self.pymssql = pymssqlconn()

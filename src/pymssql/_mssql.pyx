@@ -111,9 +111,9 @@ SQLBINARY = SYBBINARY
 SQLBIT = SYBBIT
 SQLBITN = 104
 SQLCHAR = SYBCHAR
-SQLDATETIME = SYBDATETIME
-SQLDATETIM4 = SYBDATETIME4
-SQLDATETIMN = SYBDATETIMN
+SQLDATETIME = SYBDATETIME  # 61
+SQLDATETIM4 = SYBDATETIME4 # 58
+SQLDATETIMN = SYBDATETIMN  # 111
 SQLDECIMAL = SYBDECIMAL
 SQLFLT4 = SYBREAL
 SQLFLT8 = SYBFLT8
@@ -137,6 +137,7 @@ SQLUUID = 36
 SQLDATE = 40
 SQLTIME = 41
 SQLDATETIME2 = 42
+SQLDATETIMEOFFSET = SYBMSDATETIMEOFFSET # 43
 
 ####################
 ## TDS_ENCRYPTION_LEVEL ##
@@ -879,6 +880,12 @@ cdef class MSSQLConnection:
             return datetime.datetime(di.year, di.month, di.day,
                 di.hour, di.minute, di.second, di.nanosecond // 1000)
 
+        elif dbtype == SQLDATETIMEOFFSET:
+            dbanydatecrack(self.dbproc, &di, dbtype, data)
+            tz = datetime.timezone(datetime.timedelta(minutes=di.tzone))
+            return datetime.datetime(di.year, di.month, di.day,
+                di.hour, di.minute, di.second, di.nanosecond // 1000, tz)
+
         elif dbtype == SQLDATE:
             dbanydatecrack(self.dbproc, &di, dbtype, data)
             return datetime.date(di.year, di.month, di.day)
@@ -991,6 +998,17 @@ cdef class MSSQLConnection:
                 "%03d" % (microseconds)
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
+
+        if dbtype[0] == SQLDATETIMEOFFSET:
+            if not isinstance(value, datetime.datetime):
+                raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
+            t = value.strftime('%04Y-%m-%d %H:%M:%S.%f')
+            tz = value.strftime('%Z')
+            if tz:
+                t = f"{t} {tz[3:]}"
+            value = t.encode(self.charset)
+            dbtype[0] = SQLCHAR
+
 
         if dbtype[0] in (SQLNUMERIC, SQLDECIMAL):
             # There seems to be no harm in setting precision higher than
@@ -1808,6 +1826,7 @@ cdef class MSSQLStoredProcedure:
                     data = dbretdata(self.dbproc, i)
 
                 value = self.conn.convert_db_value(data, type, length)
+
                 if strlen(param_name_bytes):
                     param_name = param_name_bytes.decode('utf-8')
                     self.params[param_name] = value

@@ -153,6 +153,7 @@ cdef extern from "sqlfront.h":
         SYBTEXT
         SYBVARBINARY
         SYBVARCHAR
+        SYBMSDATETIMEOFFSET
 
     ## Primary functions ##
 
