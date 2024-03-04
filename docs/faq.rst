@@ -224,6 +224,52 @@ This is a solved FreeTDS problem but you need to be using FreeTDS 0.95 or newer,
 if you are stuck with 0.91 then keep in mind this limitation, even when you can
 get usernames, passwords longer than 30 to work on tsql.
 
+Error in stored procedure does not throw Python exception
+=========================================================
+
+Consider the stored procedure::
+
+    CREATE PROCEDURE my_sp
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+        SELECT 1;
+        SELECT 1/0;
+    END
+
+If we run that in SSMS with ``EXEC my_sp`` we see the following in the Messages tab::
+
+    Msg 8134, Level 16, State 1, Procedure my_sp, Line 6 [Batch Start Line 0]
+    Divide by zero error encountered.
+
+However, if we do the same thing in Python we don't get an exception::
+
+    >>> import pymssql
+    >>> cnxn = pymssql.connect("192.168.0.199", "scott", "tiger^5HHH", "test")
+    >>> crsr = cnxn.cursor()
+    >>> crsr.execute("EXEC my_sp")
+    >>>
+
+That's because when a stored procedure (or anonymous code block) returns multiple result sets, the first result set (from SELECT 1) is automatically made available for us to process, e.g., by using ``crsr.fetchall()``::
+
+    >>> crsr.fetchall()
+    [(1,)]
+    >>>
+
+but the second result set is queued until we call ``crsr.nextset()``. If that result contains an error code then a pymssql exception is thrown::
+
+    >>> crsr.nextset()
+    Traceback (most recent call last):
+      File "src\\pymssql\\_pymssql.pyx", line 494, in pymssql._pymssql.Cursor.nextset
+      File "src\\pymssql\\_mssql.pyx", line 1461, in pymssql._mssql.MSSQLConnection.nextresult
+      File "src\\pymssql\\_mssql.pyx", line 1343, in pymssql._mssql.MSSQLConnection.get_result
+      File "src\\pymssql\\_mssql.pyx", line 1817, in pymssql._mssql.check_cancel_and_raise
+      File "src\\pymssql\\_mssql.pyx", line 1844, in pymssql._mssql.maybe_raise_MSSQLDatabaseException
+      File "src\\pymssql\\_mssql.pyx", line 1861, in pymssql._mssql.raise_MSSQLDatabaseException
+    pymssql._mssql.MSSQLDatabaseException: (8134, b'Divide by zero error encountered.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+
+So, if your stored procedure is going to return multiple result sets you need to make sure that you call ``.nextset()`` enough times to process them all.
+
 More troubleshooting
 ====================
 
