@@ -55,7 +55,7 @@ jobs:
 
     - name: Install OpenSSL x64
       if: matrix.python-architecture == 'x64'
-      run: choco install openssl
+      run: choco install openssl --version=3.1.1
 
     - name: Install & build dependencies
       run: |
