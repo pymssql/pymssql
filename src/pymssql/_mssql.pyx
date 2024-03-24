@@ -2016,12 +2016,15 @@ cdef _quote_simple_value(value, charset='utf8'):
         if isinstance(value, str):
             return '0x' + value.encode('hex')
 
-    if isinstance(value, datetime2):
-        return  value.strftime("'%04Y-%m-%d %H:%M:%S.%f'")
-
     if isinstance(value, datetime.datetime):
-        return value.strftime("'%04Y-%m-%d %H:%M:%S.") + \
-                "%03d'" % (value.microsecond // 1000)
+        t = value.strftime('%04Y-%m-%d %H:%M:%S.')
+        tz = value.strftime('%Z')[3:]
+        if tz or isinstance(value, datetime2):
+            t += value.strftime('%f')
+        else:
+            t += f'{(value.microsecond // 1000):03d}'
+        t = f"'{t}{tz}'"
+        return t.encode(charset)
 
     if isinstance(value, datetime.date):
         return "'%04d-%02d-%02d'" % (

@@ -221,4 +221,51 @@ class Test_TIME(TestCaseDATETIME2):
         assert res == testval
 
 
+class Test_DATETIMEOFFSET(TestCaseDATETIME2):
 
+    table_name = "test_time"
+    ddl_create = f"""CREATE TABLE {table_name} (
+                        id INT default 1,
+                        DateCreated DATETIMEOFFSET default sysdatetimeoffset()
+                    )"""
+
+    def test_649(self):
+        """
+        Test #649
+        """
+        self.conn.execute_non_query(
+            f"INSERT INTO {self.table_name} (id) VALUES (%s)", (2, ))
+        self.conn.execute_query(
+            f'select DateCreated from {self.table_name} where id = 2')
+        res = tuple(self.conn)[0][0]
+        assert isinstance(res, datetime.datetime)
+        assert res.strftime('%z') != ''
+
+    def test_select_cast_0(self):
+        self.conn.execute_query(
+            "SELECT CAST ('2019-06-20 09:54:40.09550' as DATETIMEOFFSET)")
+        res = tuple(self.conn)[0][0]
+        assert isinstance(res, datetime.datetime)
+        assert res == datetime.datetime(2019, 6, 20, 9, 54, 40, 95500,
+                                        tzinfo=datetime.timezone.utc)
+
+    def test_select_cast(self):
+        self.conn.execute_query(
+            "SELECT CAST ('2019-06-20 09:54:40.09550 +04:00' as DATETIMEOFFSET)")
+        res = tuple(self.conn)[0][0]
+        assert isinstance(res, datetime.datetime)
+        assert res == datetime.datetime(2019, 6, 20, 9, 54, 40, 95500,
+                    tzinfo=datetime.timezone(datetime.timedelta(seconds=4*60*60)))
+
+    def test_insert_select(self):
+        testval = datetime.datetime(3, 4, 5, 3,
+                    tzinfo=datetime.timezone(datetime.timedelta(seconds=4*60*60)))
+        self.conn.execute_non_query(
+            f"INSERT INTO {self.table_name} (id, DateCreated) VALUES (%s, %s)",
+            (22, testval))
+        self.conn.execute_query(
+            f'select DateCreated from {self.table_name} where id = 22')
+        res = tuple(self.conn)[0][0]
+        assert isinstance(res, datetime.datetime)
+        assert res.strftime('%z') != ''
+        assert res == testval
