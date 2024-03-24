@@ -2027,12 +2027,10 @@ cdef _quote_simple_value(value, charset='utf8'):
         return t.encode(charset)
 
     if isinstance(value, datetime.date):
-        return "'%04d-%02d-%02d'" % (
-        value.year, value.month, value.day)
+        return value.strftime("'%04Y-%m-%d'").encode(charset)
 
     if isinstance(value, datetime.time):
-        return value.strftime("'%H:%M:%S.") + \
-                "%06d'" % (value.microsecond)
+        return value.strftime("'%H:%M:%S.%f'").encode(charset)
 
     return None
 
