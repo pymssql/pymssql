@@ -8,18 +8,27 @@ General
 -------
 
 - Add python 3.12 support (fix #851). Thanks to Raphael Jacob.
+- Update FreeTDS to 1.4.10.
 - Add read_only parameter for connection.
-- Use utf-8 for connection properties.
 - Add encryption parameter to connect.
-- Some documentation fixes. Thanks to Casey Korver and Quentin LEGAY.
-- Implement batching in executemany based on optional batch_size parameter
+- Use utf-8 for connection properties.
+- Implement batching in executemany based on optional batch_size parameter.
   with default equal arraysize cursor attribute (closes #332, #462).
 - Build aarch64 wheels. Thanks to Jun Tang.
 - Build musllinux wheels.
+- Some documentation fixes. Thanks to Casey Korver and Quentin LEGAY.
+- FAQ update: #877.
+- Add stubs  (closes #767).
+- Fix DBAPI-2.0 compliance - DataError must be a subclass of DatabaseError.
+- Fix DBAPI-2.0 compliance: rename `batchsize` cursor attribute to `arraysize`.
+- Implement DATETIMEOFFSET handling for stored procedures.
+- Implement DATETIMEOFFSET handling for insert queries.
+- Return instance of datetime.datetime on select from SQLDATETIM4, SQLDATETIME, SQLDATETIME2 columns.
 
 Bug fixes
 ---------
 
+- Fix SQLDATETIME2 handling in convert_python_value().
 - Use four digits for the year in SP args binding (fix #454).
 - Fix convert_python_value to work with datetime.date. Thanks to Testsr.
 - Check if C compiler is installed if check for clock_gettime fails (fix #825).
@@ -30,11 +39,18 @@ Bug fixes
 Internals
 ---------
 
-- Use OpenSSL-1.1.1.2100 for Windows x86 wheels. Thanks to PrimozGodec.
+- Add tests for fetchall(), fetchmany(), fetchone() and next() with SP.
+- Add test for #134.
+- Require Cython>3.0.7.
+- Use Cython 3 for compilation.
+- Use docker image for MSSQL2019 as a default for tests.
+- Take FreeTDS version for PyPI wheels from pyproject.toml.
+- Check sdist with twine.
+- Use OpenSSL-1.1.1.2100 for Windows x86 wheels. Thanks to PrimozGodec (fixes #839).
+- Use OpenSSL-3.1.1 for Windows x64 wheels (FreeTDS build fails with OpenSSL-3.2.1).
 - Add SQLTIME and SQLDATETIME2 to convert_python_value.
 - Use dbanydatecrack() function instead of dbdatecrack().
 - Replace DEF with cdef enum for buffer array size (compatibility with Cython 3).
-- Use Cython 3 for compilation.
 - Remove references to tox. Thanks to Christoph Wegener.
 - Update readthedocs configuration.
 - Add tests for timeout in wait callback (#305).
@@ -42,10 +58,10 @@ Internals
 - Add tests for tds_version parameter.
 - Move check for clock_gettime to dev/ccompiler.py.
 - Remove some Python2 remnants.
-- Fix DBAPI-2.0 compliance - DataError must be a subclass of DatabaseError.
-- Fix DBAPI-2.0 compliance: rename `batchsize` cursor attribute to `arraysize`.
 - Move FreeTDS version from workflow files to pyproject.toml.
 - Move exceptions into separate module.
+- Use strftime for date & time conversion.
+- Simplify parameters quoting.
 
 Version 2.2.11 - 2023-12-03  - Mikhail Terekhov
 ===============================================
