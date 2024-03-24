@@ -148,10 +148,3 @@ class GreenletTests(unittest.TestCase):
 
         exc = cm.exception
         self.assertTrue(isinstance(exc, gevent.socket.timeout))
-
-
-suite = unittest.TestSuite()
-suite.addTest(unittest.makeSuite(GreenletTests))
-
-if __name__ == '__main__':
-    unittest.main()

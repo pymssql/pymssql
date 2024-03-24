@@ -112,10 +112,3 @@ class ThreadedTests(unittest.TestCase):
         self.assertEqual(len(exceptions), 5)
         for exc in exceptions:
             self.assertEqual(type(exc), MSSQLDatabaseException)
-
-
-suite = unittest.TestSuite()
-suite.addTest(unittest.makeSuite(ThreadedTests))
-
-if __name__ == '__main__':
-    unittest.main()

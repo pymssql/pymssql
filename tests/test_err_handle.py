@@ -86,6 +86,3 @@ class ErrHandleTests(unittest.TestCase):
             connection, severity, dberr, oserr, dberrstr, oserrstr)
         self.assertEqual(values[0], 2)
         self.assertEqual(values[1], expect)
-
-if __name__ == "__main__":
-    unittest.main()
