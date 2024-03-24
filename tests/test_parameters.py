@@ -72,7 +72,6 @@ def test_unicode_params():
         '\u03A8'
     )
     eq_(res, b"SELECT * FROM \xce\x94 WHERE name = N'\xce\xa8'")
-
     res = substitute_params(u"testing ascii (\u0105\u010D\u0119) 1=%d 'one'=%s", (1, 'str'))
     eq_(res, b"testing ascii (\xc4\x85\xc4\x8d\xc4\x99) 1=1 'one'=N'str'")
 
@@ -89,6 +88,20 @@ def test_keyed_param_with_d():
         'SELECT * FROM employees WHERE id = %(emp_id)d',
         {'emp_id': 13})
     eq_(res, b'SELECT * FROM employees WHERE id = 13')
+
+def test_keyed_tuple_param():
+    res = substitute_params(
+        'SELECT * FROM employees WHERE id IN %(emp_ids)d',
+        {'emp_ids': (13, 31)})
+    eq_(res, b'SELECT * FROM employees WHERE id IN (13,31)')
+    res = substitute_params(
+        'SELECT * FROM employees WHERE id IN %(emp_ids)d',
+        {'emp_ids': (b'13', b'31')})
+    eq_(res, b"SELECT * FROM employees WHERE id IN ('13','31')")
+    res = substitute_params(
+        'SELECT * FROM employees WHERE id IN %(emp_ids)d',
+        {'emp_ids': ('13', '31')})
+    eq_(res, b"SELECT * FROM employees WHERE id IN (N'13',N'31')")
 
 
 def test_percent_not_touched_with_no_params():
