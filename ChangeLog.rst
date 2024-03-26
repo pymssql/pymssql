@@ -11,6 +11,7 @@ General
 - Update FreeTDS to 1.4.10.
 - Add read_only parameter for connection.
 - Add encryption parameter to connect.
+- Add use_datetime2 parameter to connect.
 - Use utf-8 for connection properties.
 - Implement batching in executemany based on optional batch_size parameter.
   with default equal arraysize cursor attribute (closes #332, #462).
@@ -22,7 +23,7 @@ General
 - Fix DBAPI-2.0 compliance - DataError must be a subclass of DatabaseError.
 - Fix DBAPI-2.0 compliance: rename `batchsize` cursor attribute to `arraysize`.
 - Implement DATETIMEOFFSET handling for stored procedures.
-- Implement DATETIMEOFFSET handling for insert queries.
+- Implement DATETIMEOFFSET handling for insert and select queries (fixes #649).
 - Return instance of datetime.datetime on select from SQLDATETIM4, SQLDATETIME, SQLDATETIME2 columns.
 
 Bug fixes
@@ -62,6 +63,7 @@ Internals
 - Move exceptions into separate module.
 - Use strftime for date & time conversion.
 - Simplify parameters quoting.
+- Add tests for _quote_simple_value.
 
 Version 2.2.11 - 2023-12-03  - Mikhail Terekhov
 ===============================================

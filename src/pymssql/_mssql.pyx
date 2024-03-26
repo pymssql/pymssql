@@ -598,6 +598,7 @@ cdef class MSSQLConnection:
         self._connected = 0
         self._charset = <char *>PyMem_Malloc(PYMSSQL_CHARSETBUFSIZE)
         self._charset[0] = <char>0
+        self.use_datetime2 = False
         self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
         self.last_msg_str[0] = <char>0
         self.last_msg_srv = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
@@ -610,11 +611,14 @@ cdef class MSSQLConnection:
     def __init__(self, server="localhost", user=None, password=None,
                         charset='UTF-8', database='', appname=None, port='1433',
                         tds_version=None, encryption=None, read_only=False,
+                        use_datetime2=False,
                         conn_properties=None):
         log("_mssql.MSSQLConnection.__init__()")
 
         cdef LOGINREC *login
         cdef RETCODE rtc
+
+        self.use_datetime2 = use_datetime2
 
         # support MS methods of connecting locally
         instance = ""
@@ -1288,7 +1292,7 @@ cdef class MSSQLConnection:
 
     cdef format_sql_command(self, format, params=NoParams):
         log("_mssql.MSSQLConnection.format_sql_command()")
-        return _substitute_params(format, params, self.charset)
+        return _substitute_params(format, params, self.use_datetime2, self.charset)
 
     def executemany(self, query_string, seq_of_parameters, batch_size):
         """
@@ -2034,7 +2038,7 @@ cdef _quote_simple_value(value, use_datetime2=False, charset='utf8'):
 
     raise ValueError(f"Unsupported parameter type: {type(value)}")
 
-cdef _quote_data(data, charset='utf8'):
+cdef _quote_data(data, use_datetime2=False, charset='utf8'):
     """
         This function is supposed to take a simple value, tuple or dictionary,
         passed in via the params argument in the execute_* methods.
@@ -2044,27 +2048,27 @@ cdef _quote_data(data, charset='utf8'):
         result = {}
         for k, v in data.items():
             if isinstance(v, (list, tuple)):
-                result[k] = b'(' + b','.join([ _quote_simple_value(_v, charset) for _v in v ]) + b')'
+                result[k] = b'(' + b','.join([ _quote_simple_value(_v, use_datetime2, charset) for _v in v ]) + b')'
             else:
-                result[k] = _quote_simple_value(v, charset)
+                result[k] = _quote_simple_value(v, use_datetime2, charset)
         return result
 
     if isinstance(data, (list, tuple)):
         result = []
         for v in data:
             if isinstance(v, (list, tuple)):
-                _v = b'(' + b','.join([ _quote_simple_value(_v, charset) for _v in v ]) + b')'
+                _v = b'(' + b','.join([ _quote_simple_value(_v, use_datetime2, charset) for _v in v ]) + b')'
             else:
-                _v = _quote_simple_value(v, charset)
+                _v = _quote_simple_value(v, use_datetime2, charset)
             result.append(_v)
         return tuple(result)
 
-    return ( _quote_simple_value(data), )
+    return ( _quote_simple_value(data, use_datetime2, charset), )
 
 _re_pos_param = re.compile(br'(%([sd]))')
 _re_name_param = re.compile(br'(%\(([^\)]+)\)(?:[sd]))')
 
-cdef _substitute_params(toformat, params=NoParams, charset='utf-8'):
+cdef _substitute_params(toformat, params=NoParams, use_datetime2=False, charset='utf-8'):
 
     if isinstance(toformat, str):
         toformat = toformat.encode(charset)
@@ -2074,7 +2078,7 @@ cdef _substitute_params(toformat, params=NoParams, charset='utf-8'):
     if params is NoParams:
         return toformat
 
-    quoted = _quote_data(params, charset)
+    quoted = _quote_data(params, use_datetime2, charset)
 
     if isinstance(params, dict):
         """ assume name based substitutions """
@@ -2135,14 +2139,14 @@ cdef _substitute_params(toformat, params=NoParams, charset='utf-8'):
 
 # We'll add these methods to the module to allow for unit testing of the
 # underlying C methods.
-def quote_simple_value(value):
-    return _quote_simple_value(value)
+def quote_simple_value(value, use_datetime2=False, charset='utf-8'):
+    return _quote_simple_value(value, use_datetime2, charset)
 
-def quote_data(data):
-    return _quote_data(data)
+def quote_data(data, use_datetime2=False, charset='utf-8'):
+    return _quote_data(data, use_datetime2, charset)
 
-def substitute_params(toformat, params=NoParams, charset='utf8'):
-    return _substitute_params(toformat, params, charset)
+def substitute_params(toformat, params=NoParams, use_datetime2=False, charset='utf-8'):
+    return _substitute_params(toformat, params, use_datetime2, charset)
 
 ###########################
 ## Compatibility Aliases ##

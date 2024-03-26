@@ -105,6 +105,7 @@ class MSSQLConnection:
         tds_version: str | None = None,
         encryption: str | None = None,
         read_only: bool = False,
+        use_datetime2=False,
         conn_properties: str | list[str] | None = None,
     ) -> None: ...
     def __dealloc__(self) -> None: ...

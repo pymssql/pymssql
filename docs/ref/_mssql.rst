@@ -110,6 +110,8 @@ Functions
 
     :param str tds_version: TDS protocol version to ask for. Default value: ``None``
 
+    :param bool use_datetime2: Whether to use datetime.datetime conversion compatible with DATETIME2. Default: False.
+
     :param conn_properties: SQL queries to send to the server upon connection
                             establishment. Can be a string or another kind
                             of iterable of strings. Default value:

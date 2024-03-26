@@ -14,6 +14,7 @@ cdef class MSSQLConnection:
     cdef int _rows_affected
     cdef int _query_timeout
     cdef char *_charset
+    cdef bool use_datetime2
 
     # class internal variables
     cdef DBPROCESS *dbproc

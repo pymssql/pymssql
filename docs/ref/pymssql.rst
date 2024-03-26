@@ -46,6 +46,7 @@ Functions
                       timeout=0, login_timeout=60, charset='UTF-8', \
                       as_dict=False, host='', appname=None, port='1433',\
                       conn_properties=None, autocommit=False, tds_version=None,\
+                      use_datetime2=False,
                       arraysize=1)
 
    Constructor for creating a connection to the database. Returns a
@@ -100,6 +101,7 @@ Functions
                              :class:`_mssql.connect() <_mssql.MSSQLConnection>`
    :keyword bool autocommit: Whether to use default autocommitting mode or not
    :keyword str tds_version: TDS protocol version to use
+   :param bool use_datetime2: Whether to use datetime.datetime conversion compatible with DATETIME2. Default: False.
    :keyword int arraysize: This read/write attribute specifies the number of rows to fetch at a time
         with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
         Default value: 1.

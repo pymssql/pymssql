@@ -207,6 +207,7 @@ def connect(
     conn_properties: str | list[str] | None = None,
     autocommit: bool = False,
     tds_version: str | None = None,
+    use_datetime2=False,
     arraysize: int = 1,
 ) -> Connection:
     """
@@ -240,6 +241,8 @@ def connect(
     :type autocommit: boolean
     :keyword tds_version: TDS protocol version to use.
     :type tds_version: string
+    :keyword use_datetime2: Whether to use datetime.datetime conversion compatible with DATETIME2. Default: False.
+    :type use_datetime2: bool
     :keyword arraysize:
         This read/write attribute specifies the number of rows to fetch at a time
         with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.

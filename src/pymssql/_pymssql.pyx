@@ -587,6 +587,7 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
         login_timeout=60, charset='UTF-8', as_dict=False,
         host='', appname=None, port='1433', encryption=None, read_only=False,
         conn_properties=None, autocommit=False, tds_version=None,
+        use_datetime2=False,
         arraysize=1):
     """
     Constructor for creating a connection to the database. Returns a
@@ -619,6 +620,8 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
     :type autocommit: boolean
     :keyword tds_version: TDS protocol version to use.
     :type tds_version: string
+    :keyword use_datetime2: Whether to use datetime.datetime conversion compatible with DATETIME2
+    :type use_datetime2: bool
     :keyword arraysize:
         This read/write attribute specifies the number of rows to fetch at a time
         with .fetchmany(). It defaults to 1 meaning to fetch a single row at a time.
@@ -649,6 +652,7 @@ def connect(server='.', user=None, password=None, database='', timeout=0,
                               charset=charset, database=database,
                               appname=appname, port=port, tds_version=tds_version,
                               read_only=read_only,
+                              use_datetime2=use_datetime2,
                               conn_properties=conn_properties)
 
     except _mssql.MSSQLDatabaseException, e:
