@@ -1974,13 +1974,13 @@ cdef int _tds_ver_str_to_constant(verstr) except -1:
 #######################
 ## Quoting Functions ##
 #######################
-cdef _quote_simple_value(value, charset='utf8'):
+cdef _quote_simple_value(value, use_datetime2=False, charset='utf8'):
 
     if value == None:
         return b'NULL'
 
     if isinstance(value, bool):
-        return '1' if value else '0'
+        return ('1' if value else '0').encode(charset)
 
     if isinstance(value, float):
         return repr(value).encode(charset)
@@ -1989,15 +1989,15 @@ cdef _quote_simple_value(value, charset='utf8'):
         return str(value).encode(charset)
 
     if isinstance(value, uuid.UUID):
-        return _quote_simple_value(str(value))
+        return (f"N'{value}'").encode(charset)
 
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         return ("N'" + value.replace("'", "''") + "'").encode(charset)
 
     if isinstance(value, bytearray):
         return b'0x' + binascii.hexlify(bytes(value))
 
-    if isinstance(value, (str, bytes)):
+    if isinstance(value, bytes):
         # see if it can be decoded as ascii if there are no null bytes
         if b'\0' not in value:
             try:
@@ -2019,7 +2019,7 @@ cdef _quote_simple_value(value, charset='utf8'):
     if isinstance(value, datetime.datetime):
         t = value.strftime('%04Y-%m-%d %H:%M:%S.')
         tz = value.strftime('%Z')[3:]
-        if tz or isinstance(value, datetime2):
+        if use_datetime2 or tz or isinstance(value, datetime2):
             t += value.strftime('%f')
         else:
             t += f'{(value.microsecond // 1000):03d}'
