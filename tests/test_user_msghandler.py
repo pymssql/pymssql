@@ -16,7 +16,7 @@ def user_msg_handler1(msgstate, severity, srvname, procname, line, msgtext):
     global msgs
     procname = procname.decode('ascii')
     msgtext = msgtext.decode('ascii')
-    entry = (u"msg_handler1: msgstate = %d, severity = %d, procname = '%s', "
+    entry = ("msg_handler1: msgstate = %d, severity = %d, procname = '%s', "
              "line = %d, msgtext = '%s'") % (msgstate, severity, procname, line, msgtext)
     msgs.append(entry)
 

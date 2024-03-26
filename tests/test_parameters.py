@@ -13,7 +13,6 @@ from pymssql._mssql import substitute_params
 def test_no_params():
     res = substitute_params(
         'SELECT * FROM employees')
-    print(res)
     eq_(res, b'SELECT * FROM employees')
 
 
@@ -21,7 +20,6 @@ def test_no_params():
 def test_single_int(val):
     res = substitute_params(
         'SELECT * FROM employees WHERE id = %s', val)
-    print(res)
     eq_(res, b'SELECT * FROM employees WHERE id = %d' % val)
 
 
@@ -29,7 +27,6 @@ def test_single_int(val):
 def test_single_bytes(val):
     res = substitute_params(
         'SELECT * FROM empl WHERE name = %s', val)
-    print("test_single_bytes:", res)
     eq_(res, b"SELECT * FROM empl WHERE name = '%s'" % val)
 
 
@@ -38,7 +35,6 @@ def test_single_str(val):
 
     res = substitute_params(
         'SELECT * FROM empl WHERE name = %s', val)
-    print(res)
     eq_(res, b"SELECT * FROM empl WHERE name = N'%s'" % val.encode('utf-8'))
 
 
@@ -47,7 +43,6 @@ def test_single_null(val):
 
     res = substitute_params(
         'INSERT INTO empl VALUES (%s)', val)
-    print(res)
     v = b"NULL"
     if val is not None:
         v =b"N'%s'" % val.encode('utf-8')

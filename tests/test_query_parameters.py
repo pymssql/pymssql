@@ -111,7 +111,7 @@ class Test_609:
 
         res = substitute_params('select %s;'.encode('utf-8'), tuple(["Фрязино ".encode('utf-16-le')]))
         assert res == b'select 0x240440044f04370438043d043e042000;'
-        u"Фрязино".encode('utf-16-le')
+        "Фрязино".encode('utf-16-le')
         '$\x04@\x04O\x047\x048\x04=\x04>\x04'
-        u"Фрязино ".encode('utf-16-le')
+        "Фрязино ".encode('utf-16-le')
         '$\x04@\x04O\x047\x048\x04=\x04>\x04 \x00'

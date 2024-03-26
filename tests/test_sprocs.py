@@ -367,7 +367,7 @@ class TestCallProcFancy(unittest.TestCase):
         self.pymssql = pymssqlconn()
         cursor = self.pymssql.cursor()
 
-        sql = u"""
+        sql = """
         CREATE PROCEDURE [dbo].[someProcWithOneParam]
             @some_arg NVARCHAR(64)
         AS
@@ -652,7 +652,7 @@ class TestErrorInSP(unittest.TestCase):
         self.pymssql = pymssqlconn()
         self.cursor = self.pymssql.cursor()
 
-        sql = u"""
+        sql = """
         CREATE PROCEDURE [dbo].[SPThatRaisesAnError]
         AS
         BEGIN
