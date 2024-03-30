@@ -118,8 +118,9 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v4
       with:
-        name: pymssql-${{ runner.os }}-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
+        name: pymssql-${{ matrix.runs-on }}-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
         path: dist
+        overwrite: true
 
     - name: Publish wheels and sdist
       if: github.repository_owner == 'pymssql' && startsWith(github.ref, 'refs/tags/v')
