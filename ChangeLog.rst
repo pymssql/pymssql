@@ -1,8 +1,8 @@
 Recent Changes
 ==============
 
-Version 2.3.0 -
-===============================================
+Version 2.3.0 - 2024-03-31 Mikhail Terekhov
+===========================================
 
 General
 -------
@@ -24,7 +24,7 @@ General
 - Fix DBAPI-2.0 compliance: rename `batchsize` cursor attribute to `arraysize`.
 - Implement DATETIMEOFFSET handling for stored procedures.
 - Implement DATETIMEOFFSET handling for insert and select queries (fixes #649).
-- Return instance of datetime.datetime on select from SQLDATETIM4, SQLDATETIME, SQLDATETIME2 columns.
+- Return instance of datetime.datetime on select from SQLDATETIM4, SQLDATETIME, SQLDATETIME2 columns (closes #662, #695, #792, #844).
 
 Bug fixes
 ---------
