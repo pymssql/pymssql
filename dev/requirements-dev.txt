@@ -1,4 +1,4 @@
-cython>=0.29.22
+cython>=3.0.7
 gevent
 psutil<5.9.9
 pytest

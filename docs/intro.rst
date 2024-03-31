@@ -82,8 +82,8 @@ Supported related software
 ==========================
 
 :Python: Python 3.x: 3.6 or newer.
-:FreeTDS: 1.2.18 or newer.
-:Cython: 0.29 or newer.
+:FreeTDS: 1.4.10 or newer.
+:Cython: 3.0.7 or newer.
 :Microsoft SQL Server: 2005 or newer.
 
 Project Discussion

@@ -1,8 +1,8 @@
 Recent Changes
 ==============
 
-Version 2.3.0 - 2024-03-31 Mikhail Terekhov
-===========================================
+Version 2.3.0 - Not yet released
+================================
 
 General
 -------
