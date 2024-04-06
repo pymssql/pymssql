@@ -62,17 +62,17 @@ def test_bytes(val):
                          datetime.date(2024, 3, 24)))
 def test_date(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%04Y-%m-%d'").encode()
-
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}'".encode()
 
 @pytest.mark.parametrize('val', (
-                         datetime.time(0, 0, 0),
+                         datetime.time(0, 0, 0, 1),
                          datetime.time(0, 0, 1),
                          datetime.time(1, 2, 59),
                          datetime.time(23, 3, 24)))
 def test_time(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%H:%M:%S.%f'").encode()
+    assert res == f"'{val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{val.microsecond:06}'".encode()
 
 
 @pytest.mark.parametrize('val', (
@@ -80,8 +80,9 @@ def test_time(val):
                          datetime.datetime(2024, 3, 24, 0, 0, 1)))
 def test_datetime(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%04Y-%m-%d %H:%M:%S.%%03d'").encode(
-                                ) % (val.microsecond // 1000)
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}" \
+                  f" {val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{(val.microsecond // 1000):03d}'".encode()
 
 
 @pytest.mark.parametrize('val', (
@@ -89,16 +90,18 @@ def test_datetime(val):
                          datetime.datetime(2024, 3, 24, 0, 0, 1)))
 def test_datetime_use_datetime2(val):
     res = quote_simple_value(val, use_datetime2=True)
-    assert res == val.strftime("'%04Y-%m-%d %H:%M:%S.%f'").encode()
-
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}" \
+                  f" {val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{val.microsecond:06}'".encode()
 
 @pytest.mark.parametrize('val', (
                          datetime2(1, 2, 3, 23, 3, 59),
                          datetime2(2024, 3, 24, 0, 0, 1)))
 def test_datetime2(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%04Y-%m-%d %H:%M:%S.%f'").encode()
-
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}" \
+                  f" {val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{val.microsecond:06}'".encode()
 
 @pytest.mark.parametrize('val', (
                          datetime.datetime(1, 2, 3, 23, 3, 59,
@@ -107,8 +110,9 @@ def test_datetime2(val):
                                            tzinfo=datetime.timezone.utc)))
 def test_datetime_utc(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%04Y-%m-%d %H:%M:%S.%%03d'").encode(
-                                ) % (val.microsecond // 1000)
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}" \
+                  f" {val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{(val.microsecond // 1000):03d}'".encode()
 
 
 @pytest.mark.parametrize('val', (
@@ -120,5 +124,6 @@ def test_datetime_utc(val):
                                                datetime.timedelta(hours=3)))))
 def test_datetime_tz(val):
     res = quote_simple_value(val)
-    assert res == val.strftime("'%04Y-%m-%d %H:%M:%S.%f%%b'").encode(
-                                ) % (val.strftime('%Z')[3:].encode())
+    assert res == f"'{val.year:04}-{val.month:02d}-{val.day:02d}" \
+                  f" {val.hour:02d}:{val.minute:02d}:{val.second:02d}" \
+                  f".{val.microsecond:06}{val.strftime('%Z')[3:]}'".encode()

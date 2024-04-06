@@ -976,7 +976,7 @@ cdef class MSSQLConnection:
         if dbtype[0] == SQLDATE:
             if not isinstance(value, datetime.date):
                 raise TypeError('value can only be a datetime.date, got {type(value)}')
-            value = value.strftime('%4Y-%m-%d').encode(self.charset)
+            value = value.strftime(f'{value.year:04}-%m-%d').encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] == SQLTIME:
@@ -989,7 +989,7 @@ cdef class MSSQLConnection:
         if dbtype[0] == SQLDATETIME2:
             if not isinstance(value, datetime.datetime):
                 raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
-            value = value.strftime('%04Y-%m-%d %H:%M:%S.%f').encode(self.charset)
+            value = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.%f').encode(self.charset)
             dbtype[0] = SQLCHAR
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
@@ -998,7 +998,7 @@ cdef class MSSQLConnection:
             microseconds=0
             if type(value) in (datetime.datetime,):
                 microseconds=value.microsecond // 1000
-            value = value.strftime('%4Y-%m-%d %H:%M:%S.') + \
+            value = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.') + \
                 "%03d" % (microseconds)
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
@@ -1006,7 +1006,7 @@ cdef class MSSQLConnection:
         if dbtype[0] == SQLDATETIMEOFFSET:
             if not isinstance(value, datetime.datetime):
                 raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
-            t = value.strftime('%04Y-%m-%d %H:%M:%S.%f')
+            t = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.%f')
             tz = value.strftime('%Z')
             if tz:
                 t = f"{t} {tz[3:]}"
@@ -2021,7 +2021,7 @@ cdef _quote_simple_value(value, use_datetime2=False, charset='utf8'):
             return '0x' + value.encode('hex')
 
     if isinstance(value, datetime.datetime):
-        t = value.strftime('%04Y-%m-%d %H:%M:%S.')
+        t = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.')
         tz = value.strftime('%Z')[3:]
         if use_datetime2 or tz or isinstance(value, datetime2):
             t += value.strftime('%f')
@@ -2031,7 +2031,7 @@ cdef _quote_simple_value(value, use_datetime2=False, charset='utf8'):
         return t.encode(charset)
 
     if isinstance(value, datetime.date):
-        return value.strftime("'%04Y-%m-%d'").encode(charset)
+        return value.strftime(f"'{value.year:04}-%m-%d'").encode(charset)
 
     if isinstance(value, datetime.time):
         return value.strftime("'%H:%M:%S.%f'").encode(charset)
