@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
             python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
-            os: [macos-latest]
+            os: [macos-12]
 
     steps:
 
@@ -50,6 +50,8 @@ jobs:
             LDFLAGS: -L/usr/local/opt/openssl@1.1/lib
             CPPFLAGS: -I/usr/local/opt/openssl@1.1/include
             PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig
+            _PYTHON_HOST_PLATFORM: macosx-12.0-universal2
+            ARCHFLAGS: "-arch arm64 -arch x86_64"
       run: |
             pip install --upgrade pip
             pip install -r dev/requirements-dev.txt
