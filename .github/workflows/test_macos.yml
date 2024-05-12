@@ -68,7 +68,7 @@ jobs:
             delocate-listdeps --all dist/*.whl
             delocate-wheel -v dist/*.whl
             delocate-listdeps --all dist/*.whl
-            pip install pymssql --no-index -f dist
+            pip install pymssql --no-index --only-binary :all: -f dist
             python -c "import pymssql; print(pymssql.version_info())"
 
     - name: Test with pytest
