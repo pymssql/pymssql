@@ -330,7 +330,7 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_scm[toml]>=5.0,<9.0', 'Cython>=3.0.7'],
-    tests_require=['psutil<5.9.9', 'pytest', 'pytest-timeout', 'pytest-subtests'],
+    tests_require=['psutil<6.0.1', 'pytest', 'pytest-timeout', 'pytest-subtests'],
     ext_modules = ext_modules(),
     packages = [ 'pymssql'],
     package_dir = {'': 'src'},
