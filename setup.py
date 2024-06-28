@@ -59,6 +59,7 @@ LINK_KRB5 = check_env('LINK_KRB5', 'YES')
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
 WINDOWS = platform.system() == 'Windows'
+MACOS = platform.system() == 'Darwin'
 
 include_dirs = []
 library_dirs = []
@@ -115,11 +116,11 @@ class build_ext(_build_ext):
     def build_extensions(self):
         global library_dirs, include_dirs, libraries
 
+        extra_cc_args = []
         if WINDOWS:
             # Detect the compiler so we can specify the correct command line switches
             # and libraries
             from distutils.cygwinccompiler import Mingw32CCompiler
-            extra_cc_args = []
             if isinstance(self.compiler, Mingw32CCompiler):
                 # Compiler is Mingw32
                 extra_cc_args = [
@@ -168,9 +169,13 @@ class build_ext(_build_ext):
                 libraries.extend([ 'gssapi_krb5', 'krb5'] )
             if LINK_OPENSSL and LINK_FREETDS_STATICALLY:
                 libraries.extend([ 'ssl', 'crypto' ])
-
+            if MACOS:
+                extra_cc_args = [
+                    '-Wno-unreachable-code-fallthrough',
+                ]
             for e in self.extensions:
                 e.libraries.extend(libraries)
+                e.extra_compile_args.extend(extra_cc_args)
 
         _build_ext.build_extensions(self)
 
