@@ -29,7 +29,6 @@ import struct
 import sys
 
 from setuptools import setup, Extension
-from setuptools.command.test import test as TestCommand
 
 from distutils import log
 from distutils.cmd import Command
