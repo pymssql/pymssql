@@ -26,6 +26,7 @@ from os.path import exists, join, splitext
 from pathlib import Path
 import platform
 import struct
+import subprocess
 import sys
 
 from setuptools import setup, Extension
@@ -40,7 +41,7 @@ if have_c_files:
 else:
     # Force `setup_requires` stuff like Cython to be installed before proceeding
     from setuptools.dist import Distribution
-    Distribution(dict(setup_requires='Cython>=0.29.21'))
+    Distribution(dict(setup_requires='Cython>=3.0'))
     from Cython.Distutils import build_ext as _build_ext
 
 def check_env(env_name, default):
@@ -65,7 +66,7 @@ include_dirs = []
 library_dirs = []
 libraries = ['sybdb']
 
-prefix = None
+prefix = "/usr/local"
 if os.getenv('PYMSSQL_FREETDS'):
     prefix = os.path.abspath(os.getenv('PYMSSQL_FREETDS').strip())
 elif exists("/usr/local/include/sqlfront.h"):
@@ -78,20 +79,26 @@ elif exists("/opt/local/include/sqlfront.h"): # MacPorts
     prefix = "/opt/local"
 elif exists("/sw/include/sqlfront.h"): # Fink
     prefix = "/sw"
+print(f"prefix='{prefix}'")
 
-if prefix:
-    print(f"prefix='{prefix}'")
+if os.getenv('PYMSSQL_FREETDS_INCLUDEDIR'):
+    include_dirs = [ os.getenv('PYMSSQL_FREETDS_INCLUDEDIR') ]
+else:
     include_dirs = [ join(prefix, "include") ]
+
+if os.getenv('PYMSSQL_FREETDS_LIBDIR'):
+    library_dirs = [ os.getenv('PYMSSQL_FREETDS_LIBDIR') ]
+else:
     if BITNESS == 64 and exists(join(prefix, "lib64")):
         library_dirs = [ join(prefix, "lib64") ]
     else:
         library_dirs = [ join(prefix, "lib") ]
 
-if os.getenv('PYMSSQL_FREETDS_INCLUDEDIR'):
-    include_dirs = [ os.getenv('PYMSSQL_FREETDS_INCLUDEDIR') ]
-
-if os.getenv('PYMSSQL_FREETDS_LIBDIR'):
-    library_dirs = [ os.getenv('PYMSSQL_FREETDS_LIBDIR') ]
+if MACOS:
+    pref = subprocess.getoutput('brew --prefix openssl')
+    print(f"PREFIX={pref}")
+    include_dirs.append(f"{pref}/include")
+    library_dirs.append(f"{pref}/lib")
 
 print("setup.py: platform.system() =>", platform.system())
 print("setup.py: platform.architecture() =>", platform.architecture())

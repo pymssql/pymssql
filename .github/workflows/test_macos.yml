@@ -46,16 +46,12 @@ jobs:
             python-version: ${{ matrix.python-version }}
 
     - name: build wheel and sdist
-      env:
-            LDFLAGS: -L/usr/local/opt/openssl@1.1/lib
-            CPPFLAGS: -I/usr/local/opt/openssl@1.1/include
-            PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig
       run: |
             pip install --upgrade pip
             pip install -r dev/requirements-dev.txt
             pip install delocate
             python setup.py sdist
-            brew install openssl@1.1
+            brew install openssl
             brew install libiconv
             python dev/build.py \
                 --ws-dir=./freetds \
