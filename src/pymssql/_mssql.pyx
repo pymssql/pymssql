@@ -1823,13 +1823,16 @@ cdef class MSSQLStoredProcedure:
         # set the values in the parameters dictionary.
         if output_count:
             for i in xrange(1, output_count + 1):
+                value = None
                 with nogil:
                     type = dbrettype(self.dbproc, i)
                     param_name_bytes = dbretname(self.dbproc, i)
                     length = dbretlen(self.dbproc, i)
-                    data = dbretdata(self.dbproc, i)
+                    if length:
+                        data = dbretdata(self.dbproc, i)
 
-                value = self.conn.convert_db_value(data, type, length)
+                if length:
+                    value = self.conn.convert_db_value(data, type, length)
 
                 if strlen(param_name_bytes):
                     param_name = param_name_bytes.decode('utf-8')

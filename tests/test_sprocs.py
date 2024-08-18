@@ -113,6 +113,13 @@ class TestFixedTypeConversion(unittest.TestCase):
         self.pymssql.close()
         self.mssql.close()
 
+    def testBigIntNullIn(self):
+        input = None
+        proc = self.mssql.init_procedure('pymssqlTestBigInt')
+        proc.bind(input, _mssql.SQLINT8, '@ibigint', null=True)
+        proc.bind(None, _mssql.SQLINT8, '@obigint', output=True)
+        proc.execute()
+        self.assertEqual(input, proc.parameters['@obigint'])
 
     def testBigInt(self):
         input = 123456789
@@ -775,4 +782,41 @@ class TestMultipleDataSetsInResult(unittest.TestCase):
         self.assertEqual(res, [])
         res = self.cursor.fetchall()
         self.assertEqual(res, [('Tom',), ('Dick',), ('Harry',)])
+
+
+@pytest.mark.mssql_server_required
+class TestSPWithNULLResult(unittest.TestCase):
+    """
+    GH: #441
+    """
+
+    SP_NAME = 'SPWithANullResult'
+
+    def setUp(self):
+        self.mssql = mssqlconn()
+        self.pymssql = pymssqlconn()
+
+        self.mssql.execute_non_query("""
+        CREATE PROCEDURE [dbo].[%(spname)s]
+                @int_arg int output,
+                @varchar_arg varchar output
+        AS
+        BEGIN
+                SET @int_arg = null
+                SET @varchar_arg = null
+        END
+        """ % {'spname': self.SP_NAME})
+
+    def tearDown(self):
+        self.mssql.execute_non_query('DROP PROCEDURE [dbo].[%(spname)s]' % {'spname': self.SP_NAME})
+        self.pymssql.close()
+        self.mssql.close()
+
+    def testNull(self):
+        proc = self.mssql.init_procedure(self.SP_NAME)
+        proc.bind(None, _mssql.SQLINT8, '@int_arg', output=True)
+        proc.bind(None, _mssql.SQLVARCHAR, '@varchar_arg', output=True)
+        proc.execute()
+        self.assertIsNone(proc.parameters['@int_arg'])
+        self.assertIsNone(proc.parameters['@varchar_arg'])
 
