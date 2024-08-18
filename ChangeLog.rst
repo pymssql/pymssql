@@ -1,6 +1,14 @@
 Recent Changes
 ==============
 
+Version 2.3.1 - 2024-      - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Update FreeTDS to 1.4.17.
+
 Version 2.3.0 - 2024-04-06 - Mikhail Terekhov
 =============================================
 
