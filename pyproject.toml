@@ -13,4 +13,4 @@ write_to_template = 'const char* PYMSSQL_VERSION = "{version}";'
 local_scheme = "no-local-version"
 
 [tool.freetds]
-version_for_pypi_wheels = "1.4.17"
+version_for_pypi_wheels = "1.4.22"

@@ -7,7 +7,7 @@ Version 2.3.1 - 2024-      - Mikhail Terekhov
 General
 -------
 
-- Update FreeTDS to 1.4.17.
+- Update FreeTDS to 1.4.22.
 - Require Cython>3.0.10.
 
 Version 2.3.0 - 2024-04-06 - Mikhail Terekhov
