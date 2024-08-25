@@ -10,6 +10,10 @@ General
 - Fix SP returning NULL (closes #441).
 - Update FreeTDS to 1.4.22 (closes #895).
 - Require Cython>3.0.10.
+- Add python 3.13 Linux wheels (closes #900).
+- Drop manylinux2010 wheels.
+- Drop 3.7 and 3.8 wheels on MacOS.
+- Drop 3.6 wheels on Linux.
 
 Version 2.3.0 - 2024-04-06 - Mikhail Terekhov
 =============================================
