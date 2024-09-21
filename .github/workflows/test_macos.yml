@@ -75,7 +75,7 @@ jobs:
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v4
       with:
-        name: pymssql-${{ matrix.runs-on }}-${{ matrix.python-version }}-${{ github.sha }}
+        name: pymssql-${{ matrix.os }}-${{ matrix.python-version }}-${{ github.sha }}
         path: dist
         overwrite: true
 
