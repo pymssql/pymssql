@@ -128,8 +128,8 @@ jobs:
         pip install twine --upgrade
         twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
 
-    - name: Publish wheels and sdist on test.pypi.org
-      if: github.repository_owner == 'pymssql' && github.ref == 'refs/heads/master'
-      run: |
-        pip install twine --upgrade
-        twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_TEST_PYPI_TOKEN}} --repository-url=https://test.pypi.org/legacy/ dist/*
+    #- name: Publish wheels and sdist on test.pypi.org
+      #if: github.repository_owner == 'pymssql' && github.ref == 'refs/heads/master'
+      #run: |
+        #pip install twine --upgrade
+        #twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_TEST_PYPI_TOKEN}} --repository-url=https://test.pypi.org/legacy/ dist/*
