@@ -49,7 +49,7 @@ else
     fi
 fi
 git config --global --add safe.directory /pymssql
-/opt/python/cp38-cp38/bin/python dev/build.py \
+/opt/python/cp39-cp39/bin/python dev/build.py \
     --ws-dir=./freetds \
     --dist-dir=. \
     --prefix=/usr/local \
@@ -58,7 +58,7 @@ git config --global --add safe.directory /pymssql
     --static-freetds
 
 # Install Python dependencies and compile wheels
-PYTHONS="cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313"
+PYTHONS="cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313 cp314-cp314"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     if  [ -d ${PYBIN} ] ; then
@@ -77,7 +77,7 @@ for wheel in ./*.whl; do
 done
 
 # Create .tar.gz dist.
-/opt/python/cp38-cp38/bin/python setup.py sdist
+/opt/python/cp39-cp39/bin/python setup.py sdist
 
 # Install the wheels that were built. Need to be able to connect to mssql and to run the pytest suite after install
 # psutil 5.9.2 had a bug preventing it from being imported on some platforms.
