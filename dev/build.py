@@ -98,7 +98,17 @@ def find_vcvarsall_env():
     from distutils import _msvccompiler as _msvcc
 
     plat_name = get_platform()
-    plat_spec = _msvcc.PLAT_TO_VCVARS[plat_name]
+    try:
+        plat_spec = _msvcc.PLAT_TO_VCVARS[plat_name]
+    except AttributeError:
+        # setuptools removed PLAT_TO_VCVARS in 74.0
+        PLAT_TO_VCVARS = {
+            'win32' : 'x86',
+            'win-amd64' : 'x86_amd64',
+            'win-arm32' : 'x86_arm',
+            'win-arm64' : 'x86_arm64'
+        }
+        plat_spec = PLAT_TO_VCVARS[plat_name]
     vcvarsall, _ = _msvcc._find_vcvarsall(plat_spec)
     cmd = f'(call "{vcvarsall}" {plat_spec}>nul)&&"{sys.executable}" -c "import os;print(repr(os.environ))"'
     env = check_output(cmd, shell=True)
