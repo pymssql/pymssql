@@ -10,3 +10,4 @@ sphinx-rtd-theme
 sphinx
 sqlalchemy
 wheel>=0.36.2
+standard-distutils>3.11 ; python_version>="3.12"
