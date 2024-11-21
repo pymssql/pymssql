@@ -1,7 +1,25 @@
 Recent Changes
 ==============
 
-Version 2.3.1 - 2024-      - Mikhail Terekhov
+Version 2.3.2 - 2024-11-20 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Update FreeTDS to 1.4.23.
+- Build wheels for Python-3.13 on Windows and MacOS.
+
+Internals
+---------
+
+- Fix build wheels for Python-3.13 on Windows.
+- Drop build in actions for Python 3.6, 3.7 and 3.8.
+- Add build in actions for Python-3.13.
+- Workaround setuptools-74.0 changes.
+
+
+Version 2.3.1 - 2024-08-25 - Mikhail Terekhov
 =============================================
 
 General
