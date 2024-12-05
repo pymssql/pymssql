@@ -256,6 +256,7 @@ The fastest way to insert data to a SQL Server table is often to use the bulk co
     cursor.close()
 
     conn.bulk_copy("example", [(1, 2)] * 1000000)
+    conn.commit()
 
 .. note:: ``bulk_copy`` does not verify columns data type.
 
