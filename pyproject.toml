@@ -8,12 +8,6 @@ requires = [
     "tomli",
     ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-"pymssql" = ["py.typed"]
-
 [tool.setuptools_scm]
 write_to = "src/pymssql/version.h"
 write_to_template = 'const char* PYMSSQL_VERSION = "{version}";'
