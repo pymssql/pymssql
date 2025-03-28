@@ -293,27 +293,14 @@ def mk_long_description(numrev=1):
 
 
 setup(
-    name  = 'pymssql',
     use_scm_version = {
         "write_to": "src/pymssql/version.h",
         "write_to_template": 'const char* PYMSSQL_VERSION = "{version}";',
         "local_scheme": "no-local-version",
     },
-    description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)',
     long_description = mk_long_description(2),
     long_description_content_type = 'text/x-rst',
-    author = 'Damien Churchill',
-    author_email = 'damoxc@gmail.com',
-    maintainer = 'Mikhail Terekhov',
-    maintainer_email = 'termim@gmail.com',
-    license = 'LGPL',
     platforms = 'any',
-    keywords = ['mssql', 'SQL Server', 'database', 'DB-API'],
-    project_urls={
-        "Documentation": "http://pymssql.readthedocs.io",
-        "Source": "https://github.com/pymssql/pymssql",
-        "Changelog": "https://github.com/pymssql/pymssql/blob/master/ChangeLog.rst",
-    },
     cmdclass = {
         'build_ext': build_ext,
         'clean': clean,
@@ -340,7 +327,6 @@ setup(
     ],
     zip_safe = False,
     setup_requires=['setuptools_scm[toml]>=5.0,<9.0', 'Cython>=3.0.7'],
-    tests_require=['psutil<5.9.9', 'pytest', 'pytest-timeout', 'pytest-subtests'],
     ext_modules = ext_modules(),
     packages = [ 'pymssql'],
     package_dir = {'': 'src'},
