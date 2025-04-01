@@ -121,13 +121,17 @@ jobs:
         name: pymssql-linux-${{ matrix.manylinux }}_${{ matrix.arch }}-${{ github.sha }}
         path: dist
         overwrite: true
+    - name: Install twine
+      run:
+        # upgrade packaging for PEP 639
+        pip install --upgrade twine packaging>=24.2
 
+    - name: Check wheels and dist
+      run:
+        twine check dist/*
     - name: Publish wheels and sdist
       if: github.repository_owner == 'pymssql' && startsWith(github.ref, 'refs/tags/v')
       run: |
-        # upgrade packaging for PEP 639
-        pip install packaging>=24.2 --upgrade 
-        pip install twine --upgrade
         twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
 
     #- name: Publish wheels and sdist on test.pypi.org
