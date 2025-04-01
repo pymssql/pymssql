@@ -1,6 +1,16 @@
 Recent Changes
 ==============
 
+Version 2.3.3 - 2025-03-31 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Update FreeTDS to 1.4.26.
+- Add py.typed which marks pymssql as suporting typechecks, thanks Niklas Mertsch (closes #925).
+
+
 Version 2.3.2 - 2024-11-20 - Mikhail Terekhov
 =============================================
 
