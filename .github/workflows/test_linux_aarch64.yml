@@ -122,6 +122,8 @@ jobs:
     - name: Publish wheels and sdist
       if: github.repository_owner == 'pymssql' && startsWith(github.ref, 'refs/tags/v')
       run: |
+        # upgrade packaging for PEP 639
+        pip install packaging>=24.2 --upgrade 
         pip install twine --upgrade
         twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
 
