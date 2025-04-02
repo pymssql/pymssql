@@ -1,6 +1,16 @@
 Recent Changes
 ==============
 
+
+Version 2.3.4 - 2025-04-01 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Update packaging to fix metadata, thanks to AbigailColwell.
+
+
 Version 2.3.3 - 2025-03-31 - Mikhail Terekhov
 =============================================
 
