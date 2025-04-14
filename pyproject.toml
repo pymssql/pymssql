@@ -56,3 +56,55 @@ repository = "https://github.com/pymssql/pymssql"
 documentation = "http://pymssql.readthedocs.io"
 "Bug Tracker" = "https://github.com/pymssql/pymssql/issues"
 "Changelog" =  "https://github.com/pymssql/pymssql/blob/master/ChangeLog.rst"
+
+[tool.cibuildwheel]
+build =  "cp39-* cp310-* cp311-* cp312-* cp313-*"
+build-verbosity = 1
+
+[tool.cibuildwheel.linux]
+environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib" }
+before-all = [
+            "yum install -y openssl-devel krb5-devel",
+            "python3 ./dev/build.py --prefix=./deps --enable-krb5 --static-freetds"
+            ]
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = [
+            "apk add openssl-dev krb5-dev",
+            "python3 ./dev/build.py --prefix=./deps --enable-krb5 --static-freetds"
+            ]
+
+[tool.cibuildwheel.macos]
+environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib" }
+before-all = [
+            "brew install openssl",
+            "brew install libiconv",
+            "python3 ./dev/build.py --prefix=./deps --static-freetds"
+            ]
+
+[[tool.cibuildwheel.overrides]]
+select = "*macosx_x86_64"
+inherit.environment = "append"
+environment.MACOSX_DEPLOYMENT_TARGET="13.0"
+
+[[tool.cibuildwheel.overrides]]
+select = "*macosx_arm64"
+inherit.environment = "append"
+environment.MACOSX_DEPLOYMENT_TARGET="14.0"
+
+[tool.cibuildwheel.windows]
+environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib" }
+before-all = [
+            "choco install gperf",
+            "choco install openssl --version=3.1.1",
+            "python3 ./dev/build.py --prefix=./deps",
+            ]
+
+[[tool.cibuildwheel.overrides]]
+select = "*-win_x86"
+before-all = [
+            "choco install gperf",
+            "choco install openssl --forcex86 --version=1.1.1.2100",
+            "python3 ./dev/build.py --prefix=./deps --wheel"
+            ]

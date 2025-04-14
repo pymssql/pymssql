@@ -1,0 +1,119 @@
+name: Build Wheels
+
+on:
+  push:
+    branches:
+        - '**'
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
+    tags:
+        - 'v[0-9]+.[0-9]+.[0-9]+'
+        - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+  pull_request:
+    branches:
+        - '**'
+    paths-ignore:
+        - docs/**
+        - ChangeLog*
+
+  workflow_dispatch:
+
+jobs:
+  build_win:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+            python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+            os: [windows-latest]
+            python-architecture: [x86, x64]
+
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+            python-version: ${{ matrix.python-version }}
+            architecture: ${{ matrix.python-architecture}}
+
+    - name: Install OpenSSL x86
+      if: matrix.python-architecture == 'x86'
+      run: choco install openssl --forcex86 --version=1.1.1.2100
+
+    - name: Install OpenSSL x64
+      if: matrix.python-architecture == 'x64'
+      run: choco install openssl --version=3.1.1
+
+    - name: Install & build dependencies
+      run: |
+        choco install gperf
+        python -m pip install --upgrade pip
+        pip install -r dev/requirements-dev.txt
+        python dev/build.py --ws-dir=freetds --dist-dir=wheelhouse --wheel --sdist
+        pip install pymssql --no-index -f wheelhouse
+        python -c "import pymssql; print(pymssql.version_info())"
+
+    - name: Archive wheels and sdist
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.python-architecture }}-${{ github.sha }}
+        path: wheelhouse
+
+  build_wheels:
+
+    name: Build wheels on ${{ matrix.os }} on Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-24.04-arm, macos-13, macos-14]
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: aarch64
+
+      - name: Build wheels
+        env:
+          CIBW_ARCHS_LINUX: ${{ runner.arch == 'X64' && 'auto' || 'auto' }}
+
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse
+
+  upload-wheels:
+    needs: [build_wheels, build_win]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: wheels
+          pattern: wheels-*
+          separate-directories: false
+          delete-merged: false
