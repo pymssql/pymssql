@@ -62,7 +62,7 @@ jobs:
         choco install gperf
         python -m pip install --upgrade pip
         pip install -r dev/requirements-dev.txt
-        python dev/build.py --ws-dir=freetds --dist-dir=dist --sdist
+        python dev/build.py --ws-dir=freetds --dist-dir=dist --wheel --sdist
         pip install pymssql --no-index -f dist
         python -c "import pymssql; print(pymssql.version_info())"
 

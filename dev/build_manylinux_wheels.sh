@@ -55,6 +55,7 @@ git config --global --add safe.directory /pymssql
     --prefix=/usr/local \
     --with-openssl=yes \
     --enable-krb5 \
+    --wheel \
     --static-freetds
 
 # Install Python dependencies and compile wheels
