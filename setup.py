@@ -307,7 +307,6 @@ setup(
         'release': release,
     },
     zip_safe = False,
-    setup_requires=['setuptools_scm[toml]>=5.0,<9.0', 'Cython>=3.0.7'],
     ext_modules = ext_modules(),
     packages = [ 'pymssql'],
     package_dir = {'': 'src'},
