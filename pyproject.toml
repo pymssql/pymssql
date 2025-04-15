@@ -60,6 +60,9 @@ documentation = "http://pymssql.readthedocs.io"
 [tool.cibuildwheel]
 build =  "cp39-* cp310-* cp311-* cp312-* cp313-*"
 build-verbosity = 1
+before-test = "pip install -r dev/requirements-dev.txt"
+test-requires = "pytest"
+test-command = "pytest {project}/tests"
 
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib" }

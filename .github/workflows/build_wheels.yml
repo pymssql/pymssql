@@ -60,6 +60,12 @@ jobs:
         pip install pymssql --no-index -f wheelhouse
         python -c "import pymssql; print(pymssql.version_info())"
 
+    - name: Test with pytest
+      run: |
+        pip install twine --upgrade
+        twine check dist/*
+        pytest -sv --durations=0
+
     - name: Archive wheels and sdist
       uses: actions/upload-artifact@v4
       with:
