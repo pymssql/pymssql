@@ -95,11 +95,15 @@ else:
     else:
         library_dirs = [ join(prefix, "lib") ]
 
-if MACOS:
-    pref = subprocess.getoutput('brew --prefix openssl')
-    print(f"setup.py: PREFIX={pref}")
-    include_dirs.append(f"{pref}/include")
-    library_dirs.append(f"{pref}/lib")
+openssl_prefix = None
+if os.getenv('PYMSSQL_OPENSSL'):
+    openssl_prefix = os.path.abspath(os.getenv('PYMSSQL_OPENSSL').strip())
+elif MACOS:
+    openssl_prefix = subprocess.getoutput('brew --prefix openssl')
+if openssl_prefix:
+    print(f"OPENSSL_PREFIX={openssl_prefix}")
+    include_dirs.append(f"{openssl_prefix}/include")
+    library_dirs.append(f"{openssl_prefix}/lib")
 
 print("setup.py: platform.system() =>", platform.system())
 print("setup.py: platform.architecture() =>", platform.architecture())
