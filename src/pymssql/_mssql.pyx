@@ -833,7 +833,7 @@ cdef class MSSQLConnection:
         log("_mssql.MSSQLConnection.convert_db_value()")
         cdef char buf[NUMERIC_BUF_SZ] # buffer in which we store text rep of bug nums
         cdef int converted_length
-        cdef long prevPrecision
+        cdef int prevPrecision
         cdef BYTE precision
         cdef DBDATEREC2 di
         cdef DBDATETIME dt
@@ -855,7 +855,7 @@ cdef class MSSQLConnection:
             return int(<int>(<DBINT *>data)[0])
 
         elif dbtype == SQLINT8:
-            return long(<PY_LONG_LONG>(<PY_LONG_LONG *>data)[0])
+            return int(<PY_LONG_LONG>(<PY_LONG_LONG *>data)[0])
 
         elif dbtype == SQLFLT4:
             return float(<float>(<DBREAL *>data)[0])
@@ -1048,7 +1048,7 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] in (SQLMONEY, SQLMONEY4, SQLNUMERIC, SQLDECIMAL):
-            if type(value) in (int, long, bytes):
+            if type(value) in (int, bytes):
                 value = decimal.Decimal(value)
 
             if type(value) not in (decimal.Decimal, float):
@@ -1992,7 +1992,7 @@ cdef _quote_simple_value(value, use_datetime2=False, charset='utf8'):
     if isinstance(value, float):
         return repr(value).encode(charset)
 
-    if isinstance(value, (int, long, decimal.Decimal)):
+    if isinstance(value, (int, decimal.Decimal)):
         return str(value).encode(charset)
 
     if isinstance(value, uuid.UUID):
