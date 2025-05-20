@@ -259,12 +259,12 @@ def ext_modules():
 
     ext_modules = [
         Extension('pymssql._mssql', [join('src', 'pymssql', '_mssql.%s' % source_extension)],
-            extra_compile_args = [ '-DMSDBLIB' ],
+            extra_compile_args = [ '-DMSDBLIB', '-std=c99' ],
             include_dirs = include_dirs,
             library_dirs = library_dirs,
         ),
         Extension('pymssql._pymssql', [join('src', 'pymssql', '_pymssql.%s' % source_extension)],
-            extra_compile_args = [ '-DMSDBLIB' ],
+            extra_compile_args = [ '-DMSDBLIB', '-std=c99' ],
             include_dirs = include_dirs,
             library_dirs = library_dirs,
         ),
