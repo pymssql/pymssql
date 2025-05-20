@@ -2,6 +2,17 @@ Recent Changes
 ==============
 
 
+Version 2.3.5
+=============================================
+
+Internals
+---------
+
+- Make mssql cython 3.1.0 compatible, thanks to Timotheus Bachinger.
+- Fix manylinux1 build for Cython-3.1.0.
+- Fix sqlalchemy.orm.exc.MappedAnnotationError in tests, thanks to Timotheus Bachinger.
+
+
 Version 2.3.4 - 2025-04-01 - Mikhail Terekhov
 =============================================
 
