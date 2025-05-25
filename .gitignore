@@ -9,6 +9,7 @@ tests/tests.cfg
 .tox
 dist
 wheelhouse
+*.whl
 *.egg
 *.egg-info
 docs/_build
@@ -22,6 +23,10 @@ venv/
 .eggs
 .eric?project
 *.e4p
+*.epj
+.spyproject
+.jedi
+.vscode
 cython_debug/*
 src/pymssql/version.h
 
