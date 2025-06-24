@@ -1,0 +1,6 @@
+gevent ; python_version>="3.9"
+psutil<5.9.9
+pytest
+pytest-subtests
+pytest-timeout
+sqlalchemy
