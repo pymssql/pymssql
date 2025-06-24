@@ -84,7 +84,7 @@ def build(args, freetds_archive):
         configure.extend(["--enable-shared", "--disable-static"])
     cmd = ' '.join(configure)
     env = os.environ.copy()
-    env.update(CFLAGS="-fPIC")
+    env.update(CFLAGS="-fPIC -Wno-incompatible-pointer-types")
     run(cmd, cwd=blddir, env=env)
     make = f"make -j {multiprocessing.cpu_count()}"
     run(make, cwd=blddir, env=env)
