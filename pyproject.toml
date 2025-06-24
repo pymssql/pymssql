@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "packaging>=24",
-    "setuptools>=54.0",
+    "packaging>=24.2",
+    "setuptools>80.0",
     "setuptools_scm[toml]>=8.0",
     "wheel>=0.36.2",
     "Cython>=3.1.0",
@@ -27,7 +27,7 @@ version_for_pypi_wheels = "1.4.27"
 name =  "pymssql"
 dynamic =  ["version", "readme"]
 description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)'
-license = { text = "LGPL" }
+license = "LGPL-2.1-or-later"
 authors = [{name = "Damien Churchill", email = "damoxc@gmail.com"}]
 maintainers = [{name = "Mikhail Terekhov", email = "termim@gmail.com"}]
 keywords = ['mssql', 'SQL Server', 'database', 'DB-API']
@@ -35,7 +35,6 @@ requires-python = ">=3.9"
 classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Lesser General Public License v2.1 only",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

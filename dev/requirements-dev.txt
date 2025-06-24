@@ -4,8 +4,8 @@ psutil<5.9.9
 pytest
 pytest-subtests
 pytest-timeout
-packaging>=24
-setuptools>=54.0,<70.3
+packaging>=24.2
+setuptools>=80.0
 setuptools_scm[toml]>=5.0,<9.0
 sphinx-rtd-theme
 sphinx
