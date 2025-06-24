@@ -58,7 +58,6 @@ documentation = "http://pymssql.readthedocs.io"
 "Changelog" =  "https://github.com/pymssql/pymssql/blob/master/ChangeLog.rst"
 
 [tool.cibuildwheel]
-build =  "cp39-* cp310-* cp311-* cp312-* cp313-*"
 build-verbosity = 1
 before-test = "pip install -r dev/requirements-test.txt"
 test-requires = "pytest"
