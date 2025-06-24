@@ -59,6 +59,7 @@ LINK_KRB5 = check_env('LINK_KRB5', 'YES')
 
 # 32 bit or 64 bit system?
 BITNESS = struct.calcsize("P") * 8
+print(f"setup.py: BITNESS='{BITNESS}'")
 WINDOWS = platform.system() == 'Windows'
 MACOS = platform.system() == 'Darwin'
 
@@ -79,7 +80,7 @@ elif exists("/opt/local/include/sqlfront.h"): # MacPorts
     prefix = "/opt/local"
 elif exists("/sw/include/sqlfront.h"): # Fink
     prefix = "/sw"
-print(f"prefix='{prefix}'")
+print(f"setup.py: prefix='{prefix}'")
 
 if os.getenv('PYMSSQL_FREETDS_INCLUDEDIR'):
     include_dirs = [ os.getenv('PYMSSQL_FREETDS_INCLUDEDIR') ]
@@ -96,7 +97,7 @@ else:
 
 if MACOS:
     pref = subprocess.getoutput('brew --prefix openssl')
-    print(f"PREFIX={pref}")
+    print(f"setup.py: PREFIX={pref}")
     include_dirs.append(f"{pref}/include")
     library_dirs.append(f"{pref}/lib")
 
