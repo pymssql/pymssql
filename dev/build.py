@@ -4,7 +4,6 @@ Download and build FreeTDS library and build pymssql.
 """
 
 import argparse
-from distutils.util import get_platform
 import multiprocessing
 import os
 from pathlib import Path
@@ -96,6 +95,7 @@ def build(args, freetds_archive):
 def find_vcvarsall_env():
 
     from distutils import _msvccompiler as _msvcc
+    from distutils.util import get_platform
 
     plat_name = get_platform()
     try:
