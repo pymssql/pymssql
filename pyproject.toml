@@ -99,15 +99,5 @@ environment.MACOSX_DEPLOYMENT_TARGET="14.0"
 [tool.cibuildwheel.windows]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib" }
 before-all = [
-            "choco install gperf",
-            "choco install openssl --version=3.1.1",
             "python3 ./dev/build.py --prefix=./deps",
-            ]
-
-[[tool.cibuildwheel.overrides]]
-select = "*-win_x86"
-before-all = [
-            "choco install gperf",
-            "choco install openssl --forcex86 --version=1.1.1.2100",
-            "python3 ./dev/build.py --prefix=./deps --wheel"
             ]

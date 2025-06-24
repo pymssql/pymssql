@@ -20,67 +20,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_win:
 
-    runs-on: ${{ matrix.os }}
+  build_sdist:
 
-    strategy:
-      fail-fast: false
-      matrix:
-            python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
-            os: [windows-latest]
-            python-architecture: [x64]
-
-    steps:
-
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-            python-version: ${{ matrix.python-version }}
-            architecture: ${{ matrix.python-architecture}}
-
-    - name: Install OpenSSL x86
-      if: matrix.python-architecture == 'x86'
-      run: choco install openssl --forcex86 --version=1.1.1.2100
-
-    - name: Install OpenSSL x64
-      if: matrix.python-architecture == 'x64'
-      run: choco install openssl --version=3.1.1
-
-    - name: Install & build dependencies
-      run: |
-        choco install gperf
-        python -m pip install --upgrade pip
-        pip install -r dev/requirements-dev.txt
-        python dev/build.py --ws-dir=freetds --dist-dir=wheelhouse --wheel --sdist
-        pip install pymssql --no-index -f wheelhouse
-        python -c "import pymssql; print(pymssql.version_info())"
-
-    - name: Test with pytest
-      run: |
-        pip install twine --upgrade
-        twine check dist/*
-        pytest -sv --durations=0
-
-    - name: Archive wheels and sdist
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheels-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.python-architecture }}-${{ github.sha }}
-        path: wheelhouse
-
-  build_wheels:
-
-    name: Build wheels on ${{ matrix.os }} on Python ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-13, macos-14]
+    name: SDist
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -88,38 +32,189 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.11
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
-
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: aarch64
-
-      - name: Build wheels
-        env:
-          CIBW_ARCHS_LINUX: ${{ runner.arch == 'X64' && 'auto' || 'auto' }}
-
-        run: python -m cibuildwheel --output-dir wheelhouse
+      - name: Build sdist
+        run: |
+            python -m pip install build
+            python -m build --sdist --outdir wheelhouse
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: pymssql-sdist-${{ github.sha }}
           path: wheelhouse
 
-  upload-wheels:
-    needs: [build_wheels, build_win]
+  build-wheels-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set-matrix.outputs.include }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: pip install cibuildwheel==3.0.0
+      - id: set-matrix
+        run: |
+          MATRIX_INCLUDE=$(
+            {
+              cibuildwheel --print-build-identifiers --platform linux --archs x86_64 | grep cp |  jq -nRc '{"only": inputs, "os": "ubuntu-latest"}'
+            } | jq -sc
+          )
+          echo "include=$MATRIX_INCLUDE" >> $GITHUB_OUTPUT
+
+  build_wheels:
+
+    needs: build-wheels-matrix
+    name: ${{ matrix.only }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.build-wheels-matrix.outputs.include) }}
+
+    services:
+      SQLServer:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: sqlServerPassw0rd
+        ports:
+          - 1433:1433
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pypa/cibuildwheel@v3.0.0  # v2.21.3
+        with:
+          only: ${{ matrix.only }}
+        #env:
+          #CIBW_BUILD_VERBOSITY: 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.only }}
+          path: wheelhouse
+
+  build_wheels_2:
+
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04-arm, macos-13, macos-14]
+        arch: [auto]
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.0.0
+        env:
+          CIBW_ARCHS_LINUX: ${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.arch }}
+          path: wheelhouse
+
+  build_wheels_windows:
+
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        arch: [AMD64, x86]
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install OpenSSL x86
+        if: matrix.arch == 'x86'
+        run: choco install openssl --forcex86 --version=1.1.1.2100
+
+      - name: Install OpenSSL AMD64
+        if: matrix.arch == 'AMD64'
+        run: choco install openssl --version=3.1.1
+
+      - name: Install gperf
+        run: choco install gperf
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.0.0
+        env:
+          CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.arch }}
+          path: wheelhouse
+
+  merge_wheels:
+    needs: [build_wheels, build_wheels_2, build_wheels_windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/upload-artifact/merge@v4
         with:
           name: wheels
-          pattern: wheels-*
           separate-directories: false
           delete-merged: false
+
+  check_wheels:
+    needs: [merge_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels
+          path: dist/
+
+      - name: Check wheels
+        run: |
+            # upgrade packaging for PEP 639
+            python -m pip install packaging>=24.2 --upgrade
+            python -m pip install twine --upgrade
+            python -m twine check --strict dist/*
+
+  upload-wheels:
+    needs: [check_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels
+          path: dist/
+
+      - name: Publish wheels and sdist
+        if: github.repository_owner == 'pymssql' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+            # upgrade packaging for PEP 639
+            python -m pip install packaging>=24.2 --upgrade
+            python -m pip install twine --upgrade
+            twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_PYPI_TOKEN}} dist/*
+
+      #- name: Publish wheels and sdist on test.pypi.org
+        #if: github.repository_owner == 'pymssql' && github.ref == 'refs/heads/master'
+        #run: |
+            ## upgrade packaging for PEP 639
+            #python -m pip install packaging>=24.2 --upgrade
+            #python -m pip install twine --upgrade
+            #twine upload --skip-existing -u __token__ -p ${{secrets.PYMSSQL_TEST_PYPI_TOKEN}} --repository-url=https://test.pypi.org/legacy/ dist/*

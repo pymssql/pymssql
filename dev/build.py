@@ -16,6 +16,7 @@ import tarfile
 
 def run(cmd, cwd=None, env=None, shell=True):
 
+    print(f"build.py: {cmd}")
     check_call(str(cmd), cwd=str(cwd) if cwd else cwd, env=env, shell=shell, stderr=STDOUT)
 
 
@@ -98,6 +99,10 @@ def find_vcvarsall_env():
     from distutils.util import get_platform
 
     plat_name = get_platform()
+    CIBW_ARCHS_WINDOWS = os.environ.get("CIBW_ARCHS_WINDOWS")
+    if CIBW_ARCHS_WINDOWS == 'x86':
+        plat_name = 'win32'
+
     try:
         plat_spec = _msvcc.PLAT_TO_VCVARS[plat_name]
     except AttributeError:
@@ -119,6 +124,7 @@ def find_vcvarsall_env():
 def build_windows(args, freetds_archive, iconv_archive):
 
     from zipfile import ZipFile
+
     wiconv = args.ws_dir / "win-iconv"
     if wiconv.exists():
         shutil.rmtree(wiconv)
