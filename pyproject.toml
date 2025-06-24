@@ -6,6 +6,7 @@ requires = [
     "wheel>=0.36.2",
     "Cython>=3.1.0",
     "tomli",
+    "standard-distutils ; python_version>='3.12'"
     ]
 
 [tool.setuptools.packages.find]
