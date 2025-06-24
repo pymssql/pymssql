@@ -63,6 +63,7 @@ build-verbosity = 1
 before-test = "pip install -r dev/requirements-dev.txt"
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
+container-engine = { name = "docker", create-args = ["--network", "host"] }
 
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib", CFLAGS = "-Wno-incompatible-pointer-types" }
