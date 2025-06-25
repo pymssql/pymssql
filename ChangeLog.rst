@@ -2,16 +2,22 @@ Recent Changes
 ==============
 
 
-Version 2.3.5
+Version 2.3.5 - 2025-06-24 - Mikhail Terekhov
 =============================================
+
+General
+-------
+
+- Build ARM wheels for MacOS (closes #612, #727, #731, #763, #768, #822, #882).
+- Fix Windows wheels build (closes #930, #931).
+- Make mssql cython 3.1.0 compatible, thanks to Timotheus Bachinger (closes #937, #939, #945, #946, #948).
+- Fix manylinux1 build for Cython-3.1.0.
+- Fix sqlalchemy.orm.exc.MappedAnnotationError in tests, thanks to Timotheus Bachinger.
 
 Internals
 ---------
 
-- Make mssql cython 3.1.0 compatible, thanks to Timotheus Bachinger.
-- Fix manylinux1 build for Cython-3.1.0.
-- Fix sqlalchemy.orm.exc.MappedAnnotationError in tests, thanks to Timotheus Bachinger.
-
+- Use cibuildwheel in GitHub Actions.
 
 Version 2.3.4 - 2025-04-01 - Mikhail Terekhov
 =============================================
