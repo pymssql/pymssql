@@ -95,8 +95,10 @@ jobs:
       - uses: pypa/cibuildwheel@v3.0.0  # v2.21.3
         with:
           only: ${{ matrix.only }}
-        #env:
+        env:
           #CIBW_BUILD_VERBOSITY: 1
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_MANYLINUX_I686_IMAGE: manylinux2014
 
       - uses: actions/upload-artifact@v4
         with:
@@ -124,6 +126,7 @@ jobs:
         uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
+          CIBW_MANYLINUX_I686_IMAGE: manylinux2014
 
       - uses: actions/upload-artifact@v4
         with:
