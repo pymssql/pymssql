@@ -2,6 +2,14 @@ Recent Changes
 ==============
 
 
+Version 2.3.6 - 2025-06-28 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Build manylinux wheels using manylinux2014 image.
+
 Version 2.3.5 - 2025-06-24 - Mikhail Terekhov
 =============================================
 
