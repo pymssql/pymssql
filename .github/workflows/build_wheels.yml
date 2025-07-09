@@ -127,6 +127,8 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+          CIBW_ENVIRONMENT_MACOS: |
+            MACOSX_DEPLOYMENT_TARGET=13.0
 
       - uses: actions/upload-artifact@v4
         with:
