@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.7 - 2025-07-10 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Allow to specify openssl dependency on macos, thanks to dwt (PR #934).
+
+
 Version 2.3.6 - 2025-06-28 - Mikhail Terekhov
 =============================================
 
