@@ -1,7 +1,7 @@
 name: Wheels
 
 env:
-  MACOSX_DEPLOYMENT_TARGET=13.0
+  MACOSX_DEPLOYMENT_TARGET: 13.0
 
 on:
   push:
