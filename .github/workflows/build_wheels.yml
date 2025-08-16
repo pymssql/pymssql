@@ -110,7 +110,7 @@ jobs:
 
   build_wheels_2:
 
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} (${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
 
     strategy:
