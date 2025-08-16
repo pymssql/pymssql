@@ -122,8 +122,8 @@ jobs:
           - os: macos-13
             arch: x86_64
 
-          # macOS 13 Apple Silicon
-          - os: macos-13
+          # macOS 14 Apple Silicon
+          - os: macos-14
             arch: arm64
 
     steps:
