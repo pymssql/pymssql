@@ -125,7 +125,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.0.0
         env:
-          PYMSSQL_FREETDS: /Users/runner/freetds/freetds-1.4.27
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
           CIBW_ENVIRONMENT_MACOS: |
