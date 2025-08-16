@@ -1,8 +1,5 @@
 name: Wheels
 
-env:
-  MACOSX_DEPLOYMENT_TARGET: 13.0
-
 on:
   push:
     branches:
@@ -119,7 +116,7 @@ jobs:
         include:
           # Ubuntu runner (arm only)
           - os: ubuntu-24.04-arm
-            arch: arm64
+            arch: aarch64
 
           # macOS 13 Intel
           - os: macos-13
