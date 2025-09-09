@@ -41,6 +41,7 @@ classifiers=[
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Database",
     "Topic :: Database :: Database Engines/Servers",
@@ -63,6 +64,7 @@ before-test = "pip install -r dev/requirements-test.txt"
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 container-engine = { name = "docker", create-args = ["--network", "host"] }
+skip = "cp31?t-*"
 
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib", CFLAGS = "-Wno-incompatible-pointer-types" }
