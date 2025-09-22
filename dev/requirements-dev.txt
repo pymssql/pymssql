@@ -1,6 +1,6 @@
 cython>=3.1.0
 gevent
-psutil<7.0.1
+psutil<7.1.1
 pytest
 pytest-subtests
 pytest-timeout
