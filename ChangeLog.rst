@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.8 - 2025-10-11 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Build Python 3.14 wheels, thanks to Edgar Ramírez Mondragón (PR #964).
+
+
 Version 2.3.7 - 2025-07-10 - Mikhail Terekhov
 =============================================
 
