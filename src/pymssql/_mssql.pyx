@@ -668,7 +668,7 @@ cdef class MSSQLConnection:
             if encryption in TDS_ENCRYPTION_LEVEL:
                 DBSETLENCRYPT(login, TDS_ENCRYPTION_LEVEL[encryption])
             else:
-                raise ValueError(f"'encryption' option should be {TDS_ENCRYPTION_LEVEL.keys())} or None.")
+                raise ValueError(f"'encryption' option should be {TDS_ENCRYPTION_LEVEL.keys()} or None.")
 
         cdef bytes charset_bytes
         cdef char *_charset
