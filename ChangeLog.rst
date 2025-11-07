@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.9 - 2025-11-06 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Fix build with Cython-3.2.0, thanks to mkeener (PR #977).
+
+
 Version 2.3.8 - 2025-10-11 - Mikhail Terekhov
 =============================================
 
