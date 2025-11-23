@@ -254,6 +254,15 @@ Functions
    Close the connection and free all memory used. It can be called more than one
    time in a row. No exception is raised in this case.
 
+.. method:: MSSQLConnection.cur_db_name()
+
+   .. versionadded:: 2.3.x
+
+   This function returns the name of the current database for the
+   connection. You can change the current database by calling the
+   :meth:`~MSSQLConnection.select_db()` method on the connection
+   :class:`MSSQLConnection` object.
+
 .. method:: MSSQLConnection.execute_query(query_string)
             MSSQLConnection.execute_query(query_string, params)
 
@@ -348,8 +357,10 @@ Functions
 
 .. method:: MSSQLConnection.select_db(dbname)
 
-   This function makes the given database the current one. An exception is raised on
-   failure.
+   This function makes the given database the current one. An exception is
+   raised on failure. You can check the current database by calling the
+   :meth:`~MSSQLConnection.cur_db_name()` method on the
+   :class:`MSSQLConnection` object.
 
 .. method:: MSSQLConnection.__iter__()
             MSSQLConnection.next()
