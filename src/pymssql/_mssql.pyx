@@ -1091,6 +1091,16 @@ cdef class MSSQLConnection:
         # No conversion was possible so raise an error
         raise MSSQLDriverException(f'Unable to convert value dbtype={dbtype[0]}')
 
+    def cur_db_name(self):
+        """
+        cur_db_name() -- Gets the current database name.
+
+        This function returns the name of the current database.
+        """
+        log("_mssql.MSSQLConnection.cur_db_name()")
+        cdef char* dn = dbname(self.dbproc)
+        return dn.decode('UTF-8', 'strict')
+
     cpdef execute_non_query(self, query_string, params=NoParams):
         """
         execute_non_query(query_string, params=NoParams)
