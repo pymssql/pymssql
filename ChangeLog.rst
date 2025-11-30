@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.10 - 2025-11-30 - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Add get_cur_db() method to MSSQLConnection, thanks to  jnahmias (PR #979).
+
+
 Version 2.3.9 - 2025-11-06 - Mikhail Terekhov
 =============================================
 
