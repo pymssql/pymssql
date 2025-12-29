@@ -1368,7 +1368,6 @@ cdef class MSSQLConnection:
 
     cdef get_result(self):
         cdef int coltype
-        cdef char log_message[200]
 
         log("_mssql.MSSQLConnection.get_result() BEGIN")
 
@@ -1397,9 +1396,8 @@ cdef class MSSQLConnection:
 
             self.num_columns = dbnumcols(self.dbproc)
 
-            snprintf(log_message, sizeof(log_message), "_mssql.MSSQLConnection.get_result(): num_columns = %d", self.num_columns)
-            log_message[ sizeof(log_message) - 1 ] = b'\0'
-            log(log_message)
+            if PYMSSQL_DEBUG == 1:
+                print(f"_mssql.MSSQLConnection.get_result(): {self.num_columns=}", file=sys.stderr)
 
             column_names = list()
             column_types = list()
