@@ -480,6 +480,7 @@ cdef class Cursor:
             self._rownumber = rownumber
         else:
             self._source._conn.executemany(operation, seq_of_parameters, batch_size)
+            self.description = self._source._conn.get_header()
 
     def nextset(self):
         try:

@@ -45,7 +45,6 @@ import binascii
 import datetime
 import re
 import uuid
-from itertools import zip_longest
 
 class datetime2(datetime.datetime): pass
 
@@ -538,6 +537,16 @@ cdef class MSSQLConnection:
             # if all is fine then set our attribute
             self._query_timeout = val
 
+    property max_query_size:
+        """
+        Maximum query size.
+        """
+        def __get__(self):
+            return self._max_query_size
+
+        def __set__(self, value):
+            self._max_query_size = value
+
     property rows_affected:
         """
         Number of rows affected by last query. For SELECT statements this
@@ -598,6 +607,7 @@ cdef class MSSQLConnection:
         self._connected = 0
         self._charset = <char *>PyMem_Malloc(PYMSSQL_CHARSETBUFSIZE)
         self._charset[0] = <char>0
+        self._max_query_size = 127*1024*1024
         self.use_datetime2 = False
         self.last_msg_str = <char *>PyMem_Malloc(PYMSSQL_MSGSIZE)
         self.last_msg_str[0] = <char>0
@@ -1310,23 +1320,36 @@ cdef class MSSQLConnection:
         cdef RETCODE rtc
         cdef bytes query_string_bytes
         cdef char *query_string_cstr
+        log("_mssql.MSSQLConnection.executemany()")
 
-        sentinel = object()
-        batches = ( [ entry for entry in _iterable if entry is not sentinel ]
-                    for _iterable in
-                        zip_longest(*(( iter(seq_of_parameters), ) * batch_size),
-                                    fillvalue=sentinel)
-                   )
-        for params_batch in batches:
-            sqls = ( ensure_bytes(self.format_sql_command(query_string, params),
-                                  self.charset)
-                     for params in params_batch
-                    )
+        sqls_size, sqls = 0, []
+        for n, params in enumerate(seq_of_parameters, start=1):
+            sql = self.format_sql_command(query_string, params)
+            sqls_size += len(sql) + 1
+            if len(sqls) < batch_size and sqls_size < self.max_query_size:
+                sqls.append(sql)
+                if n < len(seq_of_parameters) and len(sqls) < batch_size:
+                    continue
+                if PYMSSQL_DEBUG == 1:
+                    print(f"\n_mssql.MSSQLConnection.executemany(1) {n=} {batch_size=} {sqls_size=} {len(sqls)=}")
+                query_string_bytes = b";".join(sqls)
+                sqls_size, sqls = 0, []
+            else:
+                if PYMSSQL_DEBUG == 1:
+                    sqls_size -= len(sql) + 1
+                    print(f"\n_mssql.MSSQLConnection.executemany(2) {n=} {batch_size=} {sqls_size=} {len(sqls)=}")
+                query_string_bytes = b";".join(sqls)
+                sqls_size, sqls = len(sql) + 1, [ sql ]
+
+            self.format_and_run_query(query_string_bytes)
+            self.get_result()
+
+        if sqls:
+            if PYMSSQL_DEBUG == 1:
+                print(f"\n_mssql.MSSQLConnection.executemany(3) {n=} {batch_size=} {sqls_size=} {len(sqls)=}")
             query_string_bytes = b";".join(sqls)
-            query_string_cstr = query_string_bytes
-            dbcmd(self.dbproc, query_string_cstr)
-            rtc = db_sqlexec(self.dbproc)
-            check_cancel_and_raise(rtc, self)
+            self.format_and_run_query(query_string_bytes)
+            self.get_result()
 
     def get_header(self):
         """

@@ -363,7 +363,12 @@ Cursor object methods
    sequence. *batch_size* is the number of queries sent in one go. If it is left
    default then cursor attribute *arraysize* will be used instead. If it is set
    to *1* then *rowcount* cursor attribute will contain the affected row number,
-   otherwise it will contain *-1*.
+   otherwise it will contain *-1*. The actual number of queries sent at a time
+   may be less than the *batch_size* if the resulting total string size exceeds
+   127 MiB.
+
+   If the *operation* is a ``SELECT`` query, then all results except the result
+   for the last batch are discarded.
 
 .. method:: Cursor.fetchone()
 
