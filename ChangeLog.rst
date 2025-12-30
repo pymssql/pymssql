@@ -2,6 +2,22 @@ Recent Changes
 ==============
 
 
+Version 2.3.11 - 2025-12-30 - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Drop build of MacOS-13 wheels (The macOS-13 based runner images are now retired on GitHub).
+
+Internals
+---------
+
+- Bump actions/upload-artifacts and actions/download-artifacts.
+- Update psutil requirement to <7.2.2 for testing wheels.
+- Improve executemany to get every batch result and check for the total query size (for #952).
+
+
 Version 2.3.10 - 2025-11-30 - Mikhail Terekhov
 ==============================================
 
