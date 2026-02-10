@@ -95,6 +95,7 @@ def build(args, freetds_archive):
 
 def find_vcvarsall_env():
 
+    from setuptools import distutils
     from distutils import _msvccompiler as _msvcc
     from distutils.util import get_platform
 
@@ -136,7 +137,8 @@ def build_windows(args, freetds_archive, iconv_archive):
             if fn:
                 (wiconv / fn).write_bytes(zipf.read(m))
 
-    env = find_vcvarsall_env()
+    #env = find_vcvarsall_env()
+    env = os.environ
 
     cmd = f'"{args.cmake}" -G "NMake Makefiles" ' \
             '-DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=on -DBUILD_SHARED=off ' \

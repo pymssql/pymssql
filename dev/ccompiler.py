@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import contextlib
-from distutils import ccompiler
-from distutils.errors import *
 import os
 import sys
 import types
+
+from setuptools import distutils
+from distutils import ccompiler
+from distutils.errors import *
 
 
 def _has_function(self, funcname, includes=None, include_dirs=None,
