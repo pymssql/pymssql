@@ -29,7 +29,7 @@ import struct
 import subprocess
 import sys
 
-from setuptools import setup, Extension
+from setuptools import distutils, setup, Extension
 
 from distutils import log
 from distutils.cmd import Command
