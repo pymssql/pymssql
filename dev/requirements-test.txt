@@ -1,5 +1,5 @@
 gevent ; python_version>="3.9"
-psutil<7.2.2
+psutil<7.2.3
 pytest
 pytest-subtests
 pytest-timeout
