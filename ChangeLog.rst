@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.12 - 2026-02-10 - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Update manylinux base image to manylinux_2_28 to fix CVE-2023-0464, thanks to grgalex@ba.uoa.gr.
+
+
 Version 2.3.11 - 2025-12-30 - Mikhail Terekhov
 ==============================================
 
