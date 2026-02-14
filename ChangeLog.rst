@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.3.13 - 2026-02-13 - Mikhail Terekhov
+==============================================
+
+General
+-------
+
+- Fix type stubs with generics, overloads, and corrected types, thanks to jacks0n.
+
+
 Version 2.3.12 - 2026-02-10 - Mikhail Terekhov
 ==============================================
 
