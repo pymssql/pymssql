@@ -10,11 +10,9 @@ from typing import Generic, Literal, overload
 
 from typing_extensions import TypeVar
 
-from .types import QueryParams as QueryParams, SqlValue as SqlValue, TupleRow as TupleRow
+from .types import ColumnDescription as ColumnDescription, QueryParams as QueryParams, SqlValue as SqlValue, TupleRow as TupleRow
 
 DictRow = dict[int | str, SqlValue]
-
-ColumnDescription = tuple[str, int, None, None, None, None, None]
 
 _Row = TypeVar("_Row", default=TupleRow)
 

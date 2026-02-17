@@ -52,7 +52,6 @@ NoParams = _mssql.NoParams
 
 from pymssql._mssql import set_wait_callback
 from pymssql.exceptions import *
-from pymssql.types import SqlValue, TupleRow, DictRow, QueryParams
 
 # store a tuple of programming error codes
 cdef object prog_errors = (
