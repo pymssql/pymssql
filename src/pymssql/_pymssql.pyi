@@ -11,11 +11,9 @@ from typing import Generic, Literal, overload
 from typing_extensions import TypeVar, override
 
 from . import _mssql
-from ._mssql import QueryParams as QueryParams, SqlValue as SqlValue, set_wait_callback as set_wait_callback
+from ._mssql import set_wait_callback as set_wait_callback
 from .exceptions import *
-
-TupleRow = tuple[SqlValue, ...]
-DictRow = dict[str, SqlValue]
+from .types import DictRow as DictRow, QueryParams as QueryParams, SqlValue as SqlValue, TupleRow as TupleRow
 
 _Row = TypeVar("_Row", default=TupleRow)
 

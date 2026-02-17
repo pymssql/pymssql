@@ -6,3 +6,4 @@ from ._pymssql import *
 from ._pymssql import __full_version__, __version__
 from .exceptions import *
 from ._mssql import datetime2 as datetime2
+from .types import SqlValue as SqlValue, TupleRow as TupleRow, DictRow as DictRow, QueryParams as QueryParams
