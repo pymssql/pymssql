@@ -27,7 +27,8 @@ version_for_pypi_wheels = "1.4.27"
 name =  "pymssql"
 dynamic =  ["version", "readme"]
 description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)'
-license = {file = "LICENSE"}
+license = "LGPL-2.1-only"
+license-files = ["LICENSE"]
 authors = [{name = "Damien Churchill", email = "damoxc@gmail.com"}]
 maintainers = [{name = "Mikhail Terekhov", email = "termim@gmail.com"}]
 keywords = ['mssql', 'SQL Server', 'database', 'DB-API']
