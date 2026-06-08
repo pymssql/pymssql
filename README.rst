@@ -2,6 +2,10 @@
 pymssql - DB-API interface to Microsoft SQL Server
 ==================================================
 
+pymssql is no longer supported
+==================================================
+As per https://github.com/pymssql/pymssql/issues/668 (dated Nov 2019).   One possible alternative might be https://github.com/microsoft/mssql-python/wiki
+
 .. image:: https://github.com/pymssql/pymssql/workflows/Wheels/badge.svg
         :target: https://github.com/pymssql/pymssql/actions?query=workflow%3A%22Wheels%22
 
