@@ -243,7 +243,7 @@ def parse_args(argv):
     if platform.system() == 'Windows':
         a('-U', '--iconv-url', default="https://codeload.github.com/win-iconv/win-iconv/zip",
                 help="URL to download win-iconv.zip archive for build on Windows")
-        a('-V', '--iconv-version', default='0.0.8',
+        a('-V', '--iconv-version', default='0.0.10',
                 help="FreeTDS version to build")
         a('-m', '--msys', type=Path, default=Path("c:/tools/msys64/usr/bin"),
                 help="Msys binaries installation directory")
