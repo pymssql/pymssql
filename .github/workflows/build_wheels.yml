@@ -141,8 +141,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
-        arch: [AMD64]
+        include:
+          - os: windows-latest
+            arch: AMD64
+          # Native build (host and target both arm64) rather than
+          # cross-compiling from windows-latest, even though
+          # find_vcvarsall_env() in dev/build.py already has an unused
+          # 'win-arm64': 'x86_arm64' cross-compile mapping - matches the
+          # native-runner approach that worked for saltstack/relenv's own
+          # windows arm64 support.
+          - os: windows-11-arm
+            arch: ARM64
 
     steps:
 
@@ -151,10 +160,118 @@ jobs:
           fetch-depth: 0
 
       - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ matrix.arch == 'ARM64' && 'arm64' || 'amd64' }}
 
-      - name: Install OpenSSL AMD64
+      - name: Install OpenSSL (AMD64)
         if: matrix.arch == 'AMD64'
         run: choco install openssl --version=3.1.1
+
+      - name: Install OpenSSL (ARM64)
+        # chocolatey's openssl package wraps slproweb's Win32/Win64
+        # OpenSSL project, which has never published ARM64 builds -
+        # confirmed live: an initial attempt using it here left FreeTDS's
+        # HAVE_BIO_GET_DATA CMake check silently false (the check
+        # compiles+links a probe against the installed OpenSSL; an x64
+        # .lib can't link into an ARM64 probe, so it just reports "not
+        # found" rather than erroring), sending tls.c down a
+        # pre-OpenSSL-1.1.0 code path that then fails to compile against
+        # OpenSSL 3.x's opaque BIO struct. slproweb does publish genuine
+        # native ARM64 builds, just under a different name/page section
+        # (Win64ARMOpenSSL) that the chocolatey package doesn't wrap.
+        #
+        # slproweb's .msi for this is a thin WiX wrapper around an
+        # embedded Inno Setup installer (confirmed by inspecting it
+        # directly - RunWrapInstall_UILevel_2 shells out to
+        # "/VERYSILENT /SUPPRESSMSGBOXES ..."), not a normal MSI - an
+        # INSTALLDIR property does nothing (the real property is
+        # INSTALLLOCATION, and even that only controls the wrapper, not
+        # where Inno actually installs). Use the standalone Inno Setup
+        # .exe directly instead, with its standard silent-install
+        # switches, which is both simpler and actually controllable.
+        #
+        # Install to the same canonical path chocolatey uses for AMD64
+        # (c:/Program Files/OpenSSL) rather than a custom directory:
+        # setup.py's Windows link step hardcodes that exact path (it
+        # reads PYMSSQL_OPENSSL, not OPENSSL_ROOT_DIR, and only for the
+        # include/lib dirs appended at module level - the Windows-specific
+        # build_extensions() library_dirs.append is unconditional and
+        # hardcoded), and CMake's FindOpenSSL also defaults to searching
+        # this path on Windows. Confirmed live: pointing OPENSSL_ROOT_DIR
+        # at a custom C:\OpenSSL-ARM64 got FreeTDS's own CMake probe to
+        # find it (which does read OPENSSL_ROOT_DIR), but pymssql's own
+        # _mssql extension link step doesn't consult that variable at all
+        # and failed with LNK1181 hunting for libssl_static.lib in the
+        # hardcoded path. Installing to the canonical path instead makes
+        # both build steps find it with no env var needed - identical to
+        # how the AMD64/chocolatey leg already works.
+        if: matrix.arch == 'ARM64'
+        shell: pwsh
+        run: |
+          # NOT the "_Light" edition: confirmed live it installs bin\ only
+          # (runtime DLLs + the openssl.exe CLI, no include\ or lib\) -
+          # slproweb's "Light" naming means end-user runtime only, not a
+          # development package. Need the full edition for headers/import
+          # libs to actually compile against. ~253MB vs ~7MB for Light.
+          $url = "https://slproweb.com/download/Win64ARMOpenSSL-3_5_7.exe"
+          $expectedSha256 = "7E05F7E83F4C183664A7D2B7405524EDFCEEE790CB60F98BFE6307DAE36182CC"
+          $exePath = "$env:RUNNER_TEMP\Win64ARMOpenSSL-3_5_7.exe"
+          Invoke-WebRequest -Uri $url -OutFile $exePath
+          $actualSha256 = (Get-FileHash -Path $exePath -Algorithm SHA256).Hash
+          if ($actualSha256 -ne $expectedSha256) {
+            Write-Error "SHA256 mismatch: expected $expectedSha256, got $actualSha256"
+            exit 1
+          }
+          $installDir = "C:\Program Files\OpenSSL"
+          # Inno Setup's PrivilegesRequired=admin can re-launch itself as a
+          # separate elevated process; Start-Process -Wait only tracks the
+          # process it launched, not that child, so it can return almost
+          # immediately while the real install is still running (or never
+          # ran at all, depending on the elevation prompt behaviour in a
+          # non-interactive session). Confirmed live: the whole script -
+          # download, hash check, install, verify - completed in ~9
+          # seconds, too fast for a real OpenSSL install. Poll for the
+          # expected header instead of trusting -Wait alone.
+          $proc = Start-Process -FilePath $exePath -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$installDir`"" -Wait -PassThru
+          Write-Host "Installer process exit code: $($proc.ExitCode)"
+          $headerFile = "$installDir\include\openssl\ssl.h"
+          $found = $false
+          for ($i = 0; $i -lt 30; $i++) {
+            if (Test-Path $headerFile) {
+              $found = $true
+              break
+            }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $found) {
+            Write-Host "OpenSSL headers not found at $installDir after waiting."
+            Write-Host "Contents of C:\ (top level):"
+            Get-ChildItem "C:\" | ForEach-Object { Write-Host "  $($_.Name)" }
+            if (Test-Path $installDir) {
+              Write-Host "Contents of ${installDir}:"
+              Get-ChildItem $installDir -Recurse -Depth 2 | ForEach-Object { Write-Host "  $($_.FullName)" }
+            } else {
+              Write-Host "${installDir} does not exist at all."
+            }
+            Write-Host "Searching C:\Program Files and C:\Program Files (x86) for openssl (default-location fallback):"
+            Get-ChildItem "C:\Program Files","C:\Program Files (x86)" -Filter "*openssl*" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+            Write-Error "OpenSSL headers not found at $installDir after install"
+            exit 1
+          }
+          # setup.py's Windows link step hardcodes a flat "<installdir>\lib"
+          # LIBPATH with no nested VC\<arch>\<CRT> awareness. Confirmed live:
+          # chocolatey's Win64OpenSSL package (used for AMD64) ships a flat
+          # top-level copy of the static libs alongside the nested
+          # lib\VC\<arch>\<CRT>\ copies - the classic slproweb Win32/Win64
+          # convention - and that's what lets the AMD64 leg link successfully
+          # against the very same hardcoded flat path. The newer
+          # Win64ARMOpenSSL package doesn't carry that flat copy forward, only
+          # the nested one (confirmed via LNK1181: cannot open input file
+          # 'libssl_static.lib' even after installing to the identical
+          # canonical path). Replicate the missing flat copy by hand.
+          $nestedLibDir = "$installDir\lib\VC\arm64\MD"
+          Copy-Item "$nestedLibDir\libssl_static.lib" "$installDir\lib\libssl_static.lib"
+          Copy-Item "$nestedLibDir\libcrypto_static.lib" "$installDir\lib\libcrypto_static.lib"
 
       - name: Install gperf
         run: choco install gperf
@@ -163,6 +280,17 @@ jobs:
         uses: pypa/cibuildwheel@v4.1.1
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+          # No CIBW_ENVIRONMENT_WINDOWS override needed: it replaces (not
+          # merges with) pyproject.toml's [tool.cibuildwheel.windows]
+          # environment table wholesale - confirmed live, setting it even
+          # to an empty string on the AMD64 leg silently dropped
+          # PYMSSQL_FREETDS=./deps and LD_LIBRARY_PATH=./deps/lib, so
+          # setup.py couldn't find the sqlfront.h that dev/build.py had
+          # just built. Installing ARM64 OpenSSL to the same canonical
+          # path AMD64 already uses (see the OpenSSL install step above)
+          # means both build steps find it without any extra env var, so
+          # pyproject.toml's own environment table is left untouched for
+          # both legs.
 
       - uses: actions/upload-artifact@v7
         with:
