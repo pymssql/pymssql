@@ -988,6 +988,15 @@ cdef class MSSQLConnection:
                 raise TypeError('value can only be a datetime.date, got {type(value)}')
             value = value.strftime(f'{value.year:04}-%m-%d').encode(self.charset)
             dbtype[0] = SQLCHAR
+            
+            # Allocate memory and copy the string value
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            tmp = value
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = b'\0';
+            dbValue[0] = <BYTE *>strValue
+            length[0] = len(value)
+            return 0
 
         if dbtype[0] == SQLTIME:
             if not isinstance(value, datetime.time):
@@ -995,23 +1004,54 @@ cdef class MSSQLConnection:
             value = value.strftime('%H:%M:%S.%f')
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
+            
+            # Allocate memory and copy the string value
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            tmp = value
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = b'\0';
+            dbValue[0] = <BYTE *>strValue
+            length[0] = len(value)
+            return 0
 
         if dbtype[0] == SQLDATETIME2:
             if not isinstance(value, datetime.datetime):
                 raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
+            # For DATETIME2, convert to string representation
             value = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.%f').encode(self.charset)
             dbtype[0] = SQLCHAR
+            
+            # Allocate memory and copy the string value
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            tmp = value
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = b'\0';
+            dbValue[0] = <BYTE *>strValue
+            length[0] = len(value)
+            return 0
 
         if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
             if not isinstance(value, datetime.datetime):
                 raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
-            microseconds=0
+            
+            # For bulk copy, convert to string representation 
+            # BCP expects datetime as string format
+            microseconds = 0
             if type(value) in (datetime.datetime,):
-                microseconds=value.microsecond // 1000
+                microseconds = value.microsecond // 1000
             value = value.strftime(f'{value.year:04}-%m-%d %H:%M:%S.') + \
                 "%03d" % (microseconds)
             value = value.encode(self.charset)
             dbtype[0] = SQLCHAR
+            
+            # Allocate memory and copy the string value
+            strValue = <char *>PyMem_Malloc(len(value) + 1)
+            tmp = value
+            strncpy(strValue, tmp, len(value) + 1)
+            strValue[ len(value) ] = b'\0';
+            dbValue[0] = <BYTE *>strValue
+            length[0] = len(value)
+            return 0
 
         if dbtype[0] == SQLDATETIMEOFFSET:
             if not isinstance(value, datetime.datetime):
@@ -1079,6 +1119,7 @@ cdef class MSSQLConnection:
             strncpy(strValue, tmp, len(value) + 1)
             strValue[ len(value) ] = b'\0';
             dbValue[0] = <BYTE *>strValue
+            length[0] = len(value)
             return 0
 
         if dbtype[0] in (SQLBINARY, SQLVARBINARY, SQLIMAGE):
