@@ -118,6 +118,42 @@ if not WINDOWS and platform.libc_ver()[0] == 'glibc':
     ccompiler.check_clock_gettime(libraries)
 
 
+def find_openssl_lib_dir(bitness):
+    """
+    Find OpenSSL library directory on Windows.
+    Handles both flat and nested directory structures from different package managers.
+    """
+    if bitness == 32:
+        openssl_root = Path("C:/Program Files (x86)/OpenSSL-Win32")
+    else:
+        openssl_root = Path("C:/Program Files/OpenSSL")
+
+    openssl_lib = openssl_root / "lib"
+
+    # Try flat lib directory first (chocolatey standard)
+    if (openssl_lib / "libssl_static.lib").exists():
+        print(f"setup.py: Found OpenSSL libs in flat dir: {openssl_lib}")
+        return str(openssl_lib)
+
+    # Search for nested VC directory structure (lib/VC/x64/MD or lib/VC/arm64/MD)
+    try:
+        vc_dir = openssl_lib / "VC"
+        if vc_dir.exists():
+            for arch_dir in vc_dir.iterdir():
+                if arch_dir.is_dir():
+                    for crt_dir in arch_dir.iterdir():
+                        if crt_dir.is_dir() and (crt_dir / "libssl_static.lib").exists():
+                            print(f"setup.py: Found OpenSSL libs in nested dir: {crt_dir}")
+                            return str(crt_dir)
+    except (OSError, PermissionError) as e:
+        print(f"setup.py: Error searching nested OpenSSL dirs: {e}")
+
+    # Fallback: return the flat lib directory anyway
+    # (linker will fail with a clear error if libs are truly missing)
+    print(f"setup.py: OpenSSL libs not found, using default flat path: {openssl_lib}")
+    return str(openssl_lib)
+
+
 class build_ext(_build_ext):
     """
     Subclass the Cython build_ext command so it:
@@ -171,10 +207,8 @@ class build_ext(_build_ext):
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 if LINK_OPENSSL:
-                    if BITNESS == 32:
-                        e.library_dirs.append("c:/Program Files (x86)/OpenSSL-Win32/lib")
-                    else:
-                        e.library_dirs.append("c:/Program Files/OpenSSL/lib")
+                    openssl_lib_dir = find_openssl_lib_dir(BITNESS)
+                    e.library_dirs.append(openssl_lib_dir)
 
         else:
             if LINK_KRB5:
