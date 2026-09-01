@@ -823,21 +823,26 @@ cdef class MSSQLConnection:
         if self == None:
             return None
 
-        if not self._connected:
-            return None
-
         clr_err(self)
 
-        with nogil:
-            dbclose(self.dbproc)
+        # Close the database connection if we have a valid dbproc pointer
+        # This handles both successful connections and failed connections
+        # where dbproc was allocated but _connected was never set to 1
+        if self.dbproc != NULL:
+            with nogil:
+                dbclose(self.dbproc)
+            self.dbproc = NULL
 
-        self.mark_disconnected()
+        if self._connected:
+            self.mark_disconnected()
 
     def mark_disconnected(self):
         log("_mssql.MSSQLConnection.mark_disconnected()")
-        self.dbproc = NULL
+        # Do NOT set self.dbproc = NULL here - it's handled in close()
+        # after dbclose() is called
         self._connected = 0
-        connection_object_list.remove(self)
+        if self in connection_object_list:
+            connection_object_list.remove(self)
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")

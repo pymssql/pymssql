@@ -2,6 +2,14 @@ Recent Changes
 ==============
 
 
+Version 2.4.1 -
+=============================================
+
+General
+-------
+
+- Fix socket resource leak on failed connections (#1002), thanks to gintsmurans
+
 Version 2.4.0 - 2026-08-31 - Mikhail Terekhov
 =============================================
 
