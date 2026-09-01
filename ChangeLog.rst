@@ -9,6 +9,7 @@ General
 -------
 
 - Fix socket resource leak on failed connections (#1002), thanks to gintsmurans
+- Enable free-threaded Python 3.14 wheel builds (#1004)
 
 Version 2.4.0 - 2026-08-31 - Mikhail Terekhov
 =============================================
