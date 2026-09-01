@@ -137,3 +137,32 @@ class TestTypes(unittest.TestCase):
         ]
         with self.assertRaises(_mssql.MSSQLDatabaseException):
             self.conn.bulk_copy(tablename, rows, [3, 4, 5, 6, 7])
+
+
+@pytest.mark.mssql_server_required
+class Test_968(unittest.TestCase):
+    """
+    Test Issue #968
+    """
+    tablename = "test_968"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"CREATE TABLE {self.tablename} (a INT, b VARCHAR(50), d DOUBLE PRECISION)")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test(self):
+        rows = [(1, "foo", 1.2345)]
+        self.conn.bulk_copy(self.tablename, rows)
+        self.conn._conn.execute_query(f'select * from {self.tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == 1
+        assert res[0]['a'] == 1
+        assert res[0]['b'] == 'foo'
+        assert res[0]['d'] == 1.2345
+
