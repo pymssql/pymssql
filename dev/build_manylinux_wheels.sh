@@ -59,7 +59,7 @@ git config --global --add safe.directory /pymssql
     --static-freetds
 
 # Install Python dependencies and compile wheels
-PYTHONS="cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313 cp314-cp314"
+PYTHONS="cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313 cp314-cp314 cp315-cp315"
 for i in $PYTHONS; do
     PYBIN="/opt/python/$i/bin"
     if  [ -d ${PYBIN} ] ; then
