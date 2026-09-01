@@ -65,8 +65,6 @@ before-test = "pip install -r dev/requirements-test.txt"
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 container-engine = { name = "docker", create-args = ["--network", "host"] }
-# Skip EOL Python versions (3.8 and older) and PyPy, allow free-threaded builds for 3.14+
-skip = "pp3?-*"
 
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib", CFLAGS = "-Wno-incompatible-pointer-types" }
