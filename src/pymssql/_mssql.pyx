@@ -8,6 +8,15 @@ This is an effort to convert the pymssql low-level C module to Cython.
 #                 2008 Andrzej Kukula <akukula@gmail.com>
 #                 2009-2010 Damien Churchill <damoxc@gmail.com>
 #
+
+# cython: language_level=3
+# cython: gil_strict
+# cython: boundscheck=False
+# cython: wraparound=False
+# cython: cdivision=True
+
+from threading import Lock
+
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -81,6 +90,9 @@ cdef bytes HOSTNAME = socket.gethostname().encode('utf-8')
 
 # List to store the connection objects in
 cdef list connection_object_list = list()
+
+# Lock for thread-safe access to connection_object_list (free-threaded support)
+cdef object connection_list_lock = Lock()
 
 # Store the 32bit int limit values
 cdef int MAX_INT = 2147483647
@@ -284,17 +296,19 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     mssql_lastmsgseverity = &_mssql_last_msg_severity
     mssql_lastmsgstate = &_mssql_last_msg_state
 
-    for conn in connection_object_list:
-        if dbproc != (<MSSQLConnection>conn).dbproc:
-            continue
-        mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
-        mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
-        mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
-        mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
-        if DBDEAD(dbproc):
-            log("+++ err_handler: dbproc is dead; killing conn...\n")
-            conn.mark_disconnected()
-        break
+    # Lock for thread-safe access to connection_object_list
+    with connection_list_lock:
+        for conn in connection_object_list:
+            if dbproc != (<MSSQLConnection>conn).dbproc:
+                continue
+            mssql_lastmsgstr = (<MSSQLConnection>conn).last_msg_str
+            mssql_lastmsgno = &(<MSSQLConnection>conn).last_msg_no
+            mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
+            mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
+            if DBDEAD(dbproc):
+                log("+++ err_handler: dbproc is dead; killing conn...\n")
+                conn.mark_disconnected()
+            break
 
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
@@ -347,14 +361,16 @@ cdef int msg_handler(DBPROCESS *dbproc, DBINT msgno, int msgstate,
             dbproc, msgno, msgstate, severity, msgtext, srvname,
             procname, line);
         fprintf(stderr, "+++ previous max severity = %d\n\n",
-            _mssql_last_msg_severity);
+            _mssql_last_msg_severity)
 
-    for cnx in connection_object_list:
-        if (<MSSQLConnection>cnx).dbproc != dbproc:
-            continue
+    # Lock for thread-safe access to connection_object_list
+    with connection_list_lock:
+        for cnx in connection_object_list:
+            if (<MSSQLConnection>cnx).dbproc != dbproc:
+                continue
 
-        conn = <MSSQLConnection>cnx
-        break
+            conn = <MSSQLConnection>cnx
+            break
 
     if conn is not None and conn.msghandler is not None:
         conn.msghandler(msgstate, severity, srvname, procname, line, msgtext)
@@ -702,7 +718,8 @@ cdef class MSSQLConnection:
             DBSETLREADONLY(login, 1)
 
         # Add ourselves to the global connection list
-        connection_object_list.append(self)
+        with connection_list_lock:
+            connection_object_list.append(self)
 
         # Set the login timeout
         # XXX: Currently this will set it application wide :-(
@@ -717,8 +734,9 @@ cdef class MSSQLConnection:
 
         if self.dbproc == NULL:
             log("_mssql.MSSQLConnection.__init__() -> dbopen() returned NULL")
-            if self in connection_object_list:
-                connection_object_list.remove(self)
+            with connection_list_lock:
+                if self in connection_object_list:
+                    connection_object_list.remove(self)
             maybe_raise_MSSQLDatabaseException(None)
             raise MSSQLDriverException("Connection to the database failed for an unknown reason.")
 
@@ -841,8 +859,9 @@ cdef class MSSQLConnection:
         # Do NOT set self.dbproc = NULL here - it's handled in close()
         # after dbclose() is called
         self._connected = 0
-        if self in connection_object_list:
-            connection_object_list.remove(self)
+        with connection_list_lock:
+            if self in connection_object_list:
+                connection_object_list.remove(self)
 
     cdef object convert_db_value(self, BYTE *data, int dbtype, int length):
         log("_mssql.MSSQLConnection.convert_db_value()")

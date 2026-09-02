@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test free-threaded Python support.
 
@@ -8,7 +7,6 @@ free-threaded Python builds (cp314t and later) where the GIL is removed.
 
 import sys
 import threading
-import time
 import unittest
 
 import pytest
@@ -25,13 +23,13 @@ def is_free_threaded():
 @pytest.mark.mssql_server_required
 class FreeThreadedTests(unittest.TestCase):
     """Test free-threaded specific behavior."""
-    
+
     def test_concurrent_connections(self):
         """Test multiple concurrent connections without GIL."""
         num_threads = 20
         results = []
         exceptions = []
-        
+
         def connect_and_query(thread_id):
             try:
                 with mssqlconn() as mssql:
@@ -41,25 +39,25 @@ class FreeThreadedTests(unittest.TestCase):
                     results.append(thread_id)
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=connect_and_query, args=(i,)) 
+
+        threads = [threading.Thread(target=connect_and_query, args=(i,))
                    for i in range(num_threads)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=30)
-        
+
         self.assertEqual(len(exceptions), 0)
         self.assertEqual(len(results), num_threads)
-    
+
     def test_concurrent_bulk_copy(self):
         """Test concurrent bulk copy operations."""
         num_threads = 10
         rows_per_thread = 100
         exceptions = []
-        
+
         def bulk_copy_thread(thread_id):
             try:
                 with pymssqlconn() as conn:
@@ -67,39 +65,39 @@ class FreeThreadedTests(unittest.TestCase):
                         f"CREATE TABLE free_threaded_test_{thread_id} "
                         f"(id INT, value VARCHAR(50))"
                     )
-                    
+
                     rows = [(i, f"value_{i}") for i in range(rows_per_thread)]
                     conn.bulk_copy(f"free_threaded_test_{thread_id}", rows)
-                    
+
                     conn._conn.execute_query(
                         f"SELECT COUNT(*) FROM free_threaded_test_{thread_id}"
                     )
                     count = tuple(conn._conn)[0][0]
                     assert count == rows_per_thread
-                    
+
                     conn._conn.execute_non_query(
                         f"DROP TABLE free_threaded_test_{thread_id}"
                     )
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=bulk_copy_thread, args=(i,)) 
+
+        threads = [threading.Thread(target=bulk_copy_thread, args=(i,))
                    for i in range(num_threads)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=60)
-        
+
         self.assertEqual(len(exceptions), 0)
-    
+
     def test_concurrent_queries(self):
         """Test concurrent query execution."""
         num_threads = 15
         queries_per_thread = 50
         exceptions = []
-        
+
         def query_thread(thread_id):
             try:
                 with mssqlconn() as mssql:
@@ -111,27 +109,27 @@ class FreeThreadedTests(unittest.TestCase):
                         assert result == expected
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=query_thread, args=(i,)) 
+
+        threads = [threading.Thread(target=query_thread, args=(i,))
                    for i in range(num_threads)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=30)
-        
+
         self.assertEqual(len(exceptions), 0)
-    
+
     def test_connection_pool_simulation(self):
         """Simulate connection pool usage without GIL."""
         pool_size = 5
         num_operations = 100
         exceptions = []
-        
+
         # Create connection pool
         connections = [mssqlconn() for _ in range(pool_size)]
-        
+
         def pool_operation(op_id):
             try:
                 # Simulate getting connection from pool
@@ -140,27 +138,27 @@ class FreeThreadedTests(unittest.TestCase):
                 assert result == op_id
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=pool_operation, args=(i,)) 
+
+        threads = [threading.Thread(target=pool_operation, args=(i,))
                    for i in range(num_operations)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=30)
-        
+
         for conn in connections:
             conn.close()
-        
+
         self.assertEqual(len(exceptions), 0)
-    
+
     def test_shared_resource_safety(self):
         """Test that shared resources are accessed safely."""
         # This tests the connection_object_list thread safety
         num_threads = 20
         exceptions = []
-        
+
         def connection_lifecycle(thread_id):
             try:
                 # Create and close connections rapidly
@@ -171,16 +169,16 @@ class FreeThreadedTests(unittest.TestCase):
                     conn.close()
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=connection_lifecycle, args=(i,)) 
+
+        threads = [threading.Thread(target=connection_lifecycle, args=(i,))
                    for i in range(num_threads)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=30)
-        
+
         self.assertEqual(len(exceptions), 0)
 
 
@@ -188,14 +186,14 @@ class FreeThreadedTests(unittest.TestCase):
 @pytest.mark.mssql_server_required
 class FreeThreadedStressTests(unittest.TestCase):
     """Stress tests for free-threaded builds."""
-    
+
     @pytest.mark.slow
     def test_high_concurrency(self):
         """Test with very high concurrency."""
         num_threads = 50
         operations_per_thread = 20
         exceptions = []
-        
+
         def high_concurrency_op(thread_id):
             try:
                 with mssqlconn() as mssql:
@@ -206,16 +204,16 @@ class FreeThreadedStressTests(unittest.TestCase):
                         assert result == thread_id * i
             except Exception as exc:
                 exceptions.append(exc)
-        
-        threads = [threading.Thread(target=high_concurrency_op, args=(i,)) 
+
+        threads = [threading.Thread(target=high_concurrency_op, args=(i,))
                    for i in range(num_threads)]
-        
+
         for thread in threads:
             thread.start()
-        
+
         for thread in threads:
             thread.join(timeout=60)
-        
+
         self.assertEqual(len(exceptions), 0)
 
 
