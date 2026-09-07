@@ -2,14 +2,15 @@ Recent Changes
 ==============
 
 
-Version 2.4.1 -
+Version 2.4.1 - 2026-09-07 - Mikhail Terekhov
 =============================================
 
 General
 -------
 
-- Fix socket resource leak on failed connections (#1002), thanks to gintsmurans
-- Enable free-threaded Python 3.14 wheel builds (#1004)
+- Fix socket resource leak on failed connections (#1002), thanks to gintsmurans.
+- Enable free-threaded Python 3.14 wheel builds (#1004).
+- Add wheels for Python 3.15 (PR #1016), thanks to edgarrmondragon.
 
 Version 2.4.0 - 2026-08-31 - Mikhail Terekhov
 =============================================
