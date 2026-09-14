@@ -96,7 +96,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v4.2.0
+      - uses: pypa/cibuildwheel@v4.2.1
         with:
           only: ${{ matrix.only }}
         env:
@@ -127,7 +127,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
@@ -164,7 +164,7 @@ jobs:
         run: choco install gperf
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
 
