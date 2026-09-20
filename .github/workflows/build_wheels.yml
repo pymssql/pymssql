@@ -19,6 +19,10 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   build_sdist:
@@ -56,7 +60,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - run: pip install cibuildwheel==3.3.0
+      - run: pip install cibuildwheel==4.2.0
       - id: set-matrix
         run: |
           MATRIX_INCLUDE=$(
@@ -92,7 +96,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v4.1.1
+      - uses: pypa/cibuildwheel@v4.2.1
         with:
           only: ${{ matrix.only }}
         env:
@@ -123,7 +127,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.1.1
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
@@ -165,7 +169,7 @@ jobs:
 
       - name: Install OpenSSL (AMD64)
         if: matrix.arch == 'AMD64'
-        run: choco install openssl --version=3.1.1
+        run: choco install openssl
 
       - name: Install OpenSSL (ARM64)
         # chocolatey's openssl package wraps slproweb's Win32/Win64
@@ -277,7 +281,7 @@ jobs:
         run: choco install gperf
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.1.1
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
           # No CIBW_ENVIRONMENT_WINDOWS override needed: it replaces (not

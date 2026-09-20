@@ -2,6 +2,28 @@ Recent Changes
 ==============
 
 
+Version 2.4.1 - 2026-09-07 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Fix socket resource leak on failed connections (#1002), thanks to gintsmurans.
+- Enable free-threaded Python 3.14 wheel builds (#1004).
+- Add wheels for Python 3.15 (PR #1016), thanks to edgarrmondragon.
+
+Version 2.4.0 - 2026-08-31 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Update license information in pyproject.toml, thanks to ecederstrand (PR #1003).
+- Update win-iconv to 0.0.10.
+- Fix datetime conversion for BCP operations and build on Windows (PR #1015).
+- Update to latest OpenSSL version on Windows (currently 4.0.2).
+- Update FreeTDS to 1.5.19 for wheels.
+
 Version 2.3.13 - 2026-02-13 - Mikhail Terekhov
 ==============================================
 

@@ -21,14 +21,13 @@ write_to_template = 'const char* PYMSSQL_VERSION = "{version}";'
 local_scheme = "no-local-version"
 
 [tool.freetds]
-version_for_pypi_wheels = "1.4.27"
+version_for_pypi_wheels = "1.5.19"
 
 [project]
 name =  "pymssql"
 dynamic =  ["version", "readme"]
 description = 'DB-API interface to Microsoft SQL Server for Python. (new Cython-based version)'
-license = "LGPL-2.1-only"
-license-files = ["LICENSE"]
+license = {file = "LICENSE"}
 authors = [{name = "Damien Churchill", email = "damoxc@gmail.com"}]
 maintainers = [{name = "Mikhail Terekhov", email = "termim@gmail.com"}]
 keywords = ['mssql', 'SQL Server', 'database', 'DB-API']
@@ -43,6 +42,7 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Database",
     "Topic :: Database :: Database Engines/Servers",
@@ -65,7 +65,6 @@ before-test = "pip install -r dev/requirements-test.txt"
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 container-engine = { name = "docker", create-args = ["--network", "host"] }
-skip = "cp31?t-*"
 
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib", CFLAGS = "-Wno-incompatible-pointer-types" }

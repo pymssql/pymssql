@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 #
 # setup.py
@@ -22,7 +21,6 @@
 #
 
 import os
-from os.path import exists, join, splitext
 from pathlib import Path
 import platform
 import struct
@@ -35,7 +33,7 @@ from distutils import log
 from distutils.cmd import Command
 from distutils.command.clean import clean as _clean
 
-have_c_files = exists('pymssql/_mssql.c') and exists('pymssql/_pymssql.c')
+have_c_files = Path('pymssql/_mssql.c').exists() and Path('pymssql/_pymssql.c').exists()
 if have_c_files:
     from distutils.command.build_ext import build_ext as _build_ext
 else:
@@ -67,37 +65,38 @@ include_dirs = []
 library_dirs = []
 libraries = ['sybdb']
 
-prefix = "/usr/local"
+prefix = Path("/usr/local")
 if os.getenv('PYMSSQL_FREETDS'):
-    prefix = os.path.abspath(os.getenv('PYMSSQL_FREETDS').strip())
-elif exists("/usr/local/include/sqlfront.h"):
-    prefix = "/usr/local"
-elif exists("/usr/local/opt/freetds/include/sqlfront.h"): # brew macOS on Intel
-    prefix = "/usr/local/opt/freetds"
-elif exists("/opt/homebrew/opt/freetds/include/sqlfront.h"): # brew macOS on Apple Silicon/ARM
-    prefix = "/opt/homebrew/opt/freetds"
-elif exists("/opt/local/include/sqlfront.h"): # MacPorts
-    prefix = "/opt/local"
-elif exists("/sw/include/sqlfront.h"): # Fink
-    prefix = "/sw"
+    prefix = Path(os.getenv('PYMSSQL_FREETDS').strip()).resolve()
+elif (Path("/usr/local/include") / "sqlfront.h").exists():
+    prefix = Path("/usr/local")
+elif (Path("/usr/local/opt/freetds/include") / "sqlfront.h").exists():  # brew macOS on Intel
+    prefix = Path("/usr/local/opt/freetds")
+elif (Path("/opt/homebrew/opt/freetds/include") / "sqlfront.h").exists():  # brew macOS on Apple Silicon/ARM
+    prefix = Path("/opt/homebrew/opt/freetds")
+elif (Path("/opt/local/include") / "sqlfront.h").exists():  # MacPorts
+    prefix = Path("/opt/local")
+elif (Path("/sw/include") / "sqlfront.h").exists():  # Fink
+    prefix = Path("/sw")
 print(f"setup.py: prefix='{prefix}'")
 
 if os.getenv('PYMSSQL_FREETDS_INCLUDEDIR'):
-    include_dirs = [ os.getenv('PYMSSQL_FREETDS_INCLUDEDIR') ]
+    include_dirs = [os.getenv('PYMSSQL_FREETDS_INCLUDEDIR')]
 else:
-    include_dirs = [ join(prefix, "include") ]
+    include_dirs = [str(prefix / "include")]
 
 if os.getenv('PYMSSQL_FREETDS_LIBDIR'):
-    library_dirs = [ os.getenv('PYMSSQL_FREETDS_LIBDIR') ]
+    library_dirs = [os.getenv('PYMSSQL_FREETDS_LIBDIR')]
 else:
-    if BITNESS == 64 and exists(join(prefix, "lib64")):
-        library_dirs = [ join(prefix, "lib64") ]
+    lib64_dir = prefix / "lib64"
+    if BITNESS == 64 and lib64_dir.exists():
+        library_dirs = [str(lib64_dir)]
     else:
-        library_dirs = [ join(prefix, "lib") ]
+        library_dirs = [str(prefix / "lib")]
 
 openssl_prefix = None
 if os.getenv('PYMSSQL_OPENSSL'):
-    openssl_prefix = os.path.abspath(os.getenv('PYMSSQL_OPENSSL').strip())
+    openssl_prefix = str(Path(os.getenv('PYMSSQL_OPENSSL').strip()).resolve())
 elif MACOS:
     openssl_prefix = subprocess.getoutput('brew --prefix openssl')
 if openssl_prefix:
@@ -116,6 +115,42 @@ if not WINDOWS and platform.libc_ver()[0] == 'glibc':
     # check for clock_gettime, link with librt for glibc<2.17
     from dev import ccompiler
     ccompiler.check_clock_gettime(libraries)
+
+
+def find_openssl_lib_dir(bitness):
+    """
+    Find OpenSSL library directory on Windows.
+    Handles both flat and nested directory structures from different package managers.
+    """
+    if bitness == 32:
+        openssl_root = Path("C:/Program Files (x86)/OpenSSL-Win32")
+    else:
+        openssl_root = Path("C:/Program Files/OpenSSL")
+
+    openssl_lib = openssl_root / "lib"
+
+    # Try flat lib directory first (chocolatey standard)
+    if (openssl_lib / "libssl_static.lib").exists():
+        print(f"setup.py: Found OpenSSL libs in flat dir: {openssl_lib}")
+        return str(openssl_lib)
+
+    # Search for nested VC directory structure (lib/VC/x64/MD or lib/VC/arm64/MD)
+    try:
+        vc_dir = openssl_lib / "VC"
+        if vc_dir.exists():
+            for arch_dir in vc_dir.iterdir():
+                if arch_dir.is_dir():
+                    for crt_dir in arch_dir.iterdir():
+                        if crt_dir.is_dir() and (crt_dir / "libssl_static.lib").exists():
+                            print(f"setup.py: Found OpenSSL libs in nested dir: {crt_dir}")
+                            return str(crt_dir)
+    except (OSError, PermissionError) as e:
+        print(f"setup.py: Error searching nested OpenSSL dirs: {e}")
+
+    # Fallback: return the flat lib directory anyway
+    # (linker will fail with a clear error if libs are truly missing)
+    print(f"setup.py: OpenSSL libs not found, using default flat path: {openssl_lib}")
+    return str(openssl_lib)
 
 
 class build_ext(_build_ext):
@@ -171,16 +206,14 @@ class build_ext(_build_ext):
                 e.extra_compile_args.extend(extra_cc_args)
                 e.libraries.extend(libraries)
                 if LINK_OPENSSL:
-                    if BITNESS == 32:
-                        e.library_dirs.append("c:/Program Files (x86)/OpenSSL-Win32/lib")
-                    else:
-                        e.library_dirs.append("c:/Program Files/OpenSSL/lib")
+                    openssl_lib_dir = find_openssl_lib_dir(BITNESS)
+                    e.library_dirs.append(openssl_lib_dir)
 
         else:
             if LINK_KRB5:
-                libraries.extend([ 'gssapi_krb5', 'krb5'] )
+                libraries.extend(['gssapi_krb5', 'krb5'])
             if LINK_OPENSSL and LINK_FREETDS_STATICALLY:
-                libraries.extend([ 'ssl', 'crypto' ])
+                libraries.extend(['ssl', 'crypto'])
             if MACOS:
                 extra_cc_args = [
                     '-Wno-unreachable-code-fallthrough',
@@ -200,14 +233,14 @@ class clean(_clean):
     def run(self):
         _clean.run(self)
         for ext in self.distribution.ext_modules:
-            cy_sources = [splitext(s)[0] for s in ext.sources]
+            cy_sources = [Path(s).stem for s in ext.sources]
             for cy_source in cy_sources:
                 # .so/.pyd files are created in place when using 'develop'
                 for ext in ('.c', '.so', '.pyd'):
-                    generated = cy_source + ext
-                    if exists(generated):
+                    generated = Path(cy_source).with_suffix(ext)
+                    if generated.exists():
                         log.info('removing %s', generated)
-                        os.remove(generated)
+                        generated.unlink()
 
 
 class release(Command):
@@ -263,15 +296,15 @@ def ext_modules():
         source_extension = 'pyx'
 
     ext_modules = [
-        Extension('pymssql._mssql', [join('src', 'pymssql', '_mssql.%s' % source_extension)],
-            extra_compile_args = [ '-DMSDBLIB', '-std=c99' ],
-            include_dirs = include_dirs,
-            library_dirs = library_dirs,
+        Extension('pymssql._mssql', [str(Path('src') / 'pymssql' / f'_mssql.{source_extension}')],
+            extra_compile_args=['-DMSDBLIB', '-std=c99'],
+            include_dirs=include_dirs,
+            library_dirs=library_dirs,
         ),
-        Extension('pymssql._pymssql', [join('src', 'pymssql', '_pymssql.%s' % source_extension)],
-            extra_compile_args = [ '-DMSDBLIB', '-std=c99' ],
-            include_dirs = include_dirs,
-            library_dirs = library_dirs,
+        Extension('pymssql._pymssql', [str(Path('src') / 'pymssql' / f'_pymssql.{source_extension}')],
+            extra_compile_args=['-DMSDBLIB', '-std=c99'],
+            include_dirs=include_dirs,
+            library_dirs=library_dirs,
         ),
     ]
     for e in ext_modules:
@@ -280,9 +313,8 @@ def ext_modules():
 
 
 def mk_long_description(numrev=1):
-
-    readme = (Path('__file__').parent / 'README.rst').read_text()
-    chlog = Path('__file__').parent / 'ChangeLog.rst'
+    readme = (Path(__file__).parent / 'README.rst').read_text()
+    chlog = Path(__file__).parent / 'ChangeLog.rst'
     lines = []
     with chlog.open('r') as f:
         count = 0
@@ -298,21 +330,21 @@ def mk_long_description(numrev=1):
 
 
 setup(
-    use_scm_version = {
+    use_scm_version={
         "write_to": "src/pymssql/version.h",
         "write_to_template": 'const char* PYMSSQL_VERSION = "{version}";',
         "local_scheme": "no-local-version",
     },
-    long_description = mk_long_description(2),
-    long_description_content_type = 'text/x-rst',
-    platforms = 'any',
-    cmdclass = {
+    long_description=mk_long_description(2),
+    long_description_content_type='text/x-rst',
+    platforms='any',
+    cmdclass={
         'build_ext': build_ext,
         'clean': clean,
         'release': release,
     },
-    zip_safe = False,
-    ext_modules = ext_modules(),
-    packages = [ 'pymssql'],
-    package_dir = {'': 'src'},
+    zip_safe=False,
+    ext_modules=ext_modules(),
+    packages=['pymssql'],
+    package_dir={'': 'src'},
 )
