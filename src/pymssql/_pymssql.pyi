@@ -11,15 +11,11 @@ from typing import Generic, Literal, overload
 from typing_extensions import TypeVar, override
 
 from . import _mssql
-from ._mssql import QueryParams as QueryParams, SqlValue as SqlValue, set_wait_callback as set_wait_callback
+from ._mssql import set_wait_callback as set_wait_callback
 from .exceptions import *
-
-TupleRow = tuple[SqlValue, ...]
-DictRow = dict[str, SqlValue]
+from .types import ColumnDescription as ColumnDescription, DictRow as DictRow, QueryParams as QueryParams, SqlValue as SqlValue, TupleRow as TupleRow
 
 _Row = TypeVar("_Row", default=TupleRow)
-
-ColumnDescription = tuple[str, int, None, None, None, None, None]
 
 __author__: str
 __full_version__: str
@@ -108,7 +104,9 @@ class Connection(Generic[_Row]):
     @overload
     def cursor(self, as_dict: Literal[True], arraysize: int | None = None) -> Cursor[DictRow]: ...
     @overload
-    def cursor(self, as_dict: Literal[False], arraysize: int | None = None) -> Cursor[TupleRow]:
+    def cursor(self, as_dict: Literal[False], arraysize: int | None = None) -> Cursor[TupleRow]: ...
+    @overload
+    def cursor(self, as_dict: bool = ..., arraysize: int | None = None) -> Cursor[TupleRow] | Cursor[DictRow]:
         """
         Return cursor object that can be used to make queries and fetch
         results from the database.
@@ -139,7 +137,7 @@ class Cursor(Generic[_Row]):
     """
 
     @property
-    def connection(self) -> Connection[TupleRow | DictRow]: ...
+    def connection(self) -> Connection[TupleRow] | Connection[DictRow]: ...
     description: tuple[ColumnDescription, ...] | None
     @property
     def lastrowid(self) -> SqlValue: ...
@@ -150,11 +148,11 @@ class Cursor(Generic[_Row]):
     @property
     def rownumber(self) -> int: ...
     @property
-    def _source(self) -> Connection[TupleRow | DictRow]: ...
+    def _source(self) -> Connection[TupleRow] | Connection[DictRow]: ...
     arraysize: int
     def __init__(
         self,
-        conn: Connection[TupleRow | DictRow],
+        conn: Connection[TupleRow] | Connection[DictRow],
         as_dict: bool,
         arraysize: int = 1,
     ) -> None: ...
@@ -276,7 +274,28 @@ def connect(
     tds_version: str | None = ...,
     use_datetime2: bool = ...,
     arraysize: int = ...,
-) -> Connection[DictRow]:
+) -> Connection[DictRow]: ...
+@overload
+def connect(
+    server: str = ...,
+    user: str | None = ...,
+    password: str | None = ...,
+    database: str = ...,
+    timeout: int = ...,
+    login_timeout: int = ...,
+    charset: str = ...,
+    as_dict: bool = ...,
+    host: str = ...,
+    appname: str | None = ...,
+    port: str = ...,
+    encryption: str | None = ...,
+    read_only: bool = ...,
+    conn_properties: str | list[str] | None = ...,
+    autocommit: bool = ...,
+    tds_version: str | None = ...,
+    use_datetime2: bool = ...,
+    arraysize: int = ...,
+) -> Connection[TupleRow] | Connection[DictRow]:
     """
     Constructor for creating a connection to the database. Returns a
     Connection object.
