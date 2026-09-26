@@ -39,6 +39,30 @@ def test_decimal(val):
     assert res == f"{decimal.Decimal(val)}".encode('utf-8')
 
 
+@pytest.mark.parametrize('val, expected', (
+    ('-0.000000000000000001', b'-0.000000000000000001'),  # str() is '-1E-18'
+    ('1E-7', b'0.0000001'),
+    ('1E+2', b'100'),
+    ('1.5E+20', b'150000000000000000000'),
+    ('-0E-30', b'-0.000000000000000000000000000000'),
+    ('12345678901234567890.123456789012345678',
+     b'12345678901234567890.123456789012345678'),
+))
+def test_decimal_is_never_a_float_literal(val, expected):
+    res = quote_simple_value(decimal.Decimal(val))
+    assert res == expected
+    assert b'E' not in res
+    assert decimal.Decimal(res.decode()) == decimal.Decimal(val)
+
+
+@pytest.mark.parametrize('val', ('1E-40', '1E+40', 'NaN', 'Infinity'))
+def test_decimal_outside_sql_server_decimal_range_is_unchanged(val):
+    # 38 digits is the maximum DECIMAL precision; SQL Server rejects longer
+    # decimal literals, so these keep their previous spelling.
+    res = quote_simple_value(decimal.Decimal(val))
+    assert res == str(decimal.Decimal(val)).encode()
+
+
 def test_uuid():
     u = '3cde0c92-2674-481f-8fd4-feacf98d8504'
     res = quote_simple_value(u)
