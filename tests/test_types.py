@@ -275,3 +275,18 @@ class TestTypesPymssql(unittest.TestCase):
         colval = self.insert_and_select('uuid', origval, 's')
         typeeq(origval, colval)
         eq_(origval, colval)
+
+    def test_small_decimal_in_multirow_values_stays_exact(self):
+        """
+        str(Decimal('-0.000000000000000001')) is '-1E-18', a float literal in
+        SQL Server. In a multi-row VALUES list that float type is applied to the
+        whole column and rounds the exact neighbouring value.
+        """
+        big = D('12345678901234567890.123456789012345678')
+        small = D('-0.000000000000000001')
+        with self.conn.cursor() as c:
+            c.execute(
+                'SELECT v FROM (VALUES (%s), (%s)) AS t(v)', (big, small)
+            )
+            rows = [r[0] for r in c.fetchall()]
+        eq_(rows, [big, small])
