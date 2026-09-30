@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.4.2 - 2026-09-26 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Fix deadlock in err_handler (#1002), thanks to sergiopmscope.
+
+
 Version 2.4.1 - 2026-09-07 - Mikhail Terekhov
 =============================================
 

@@ -273,6 +273,8 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
     cdef int *mssql_lastmsgseverity
     cdef int *mssql_lastmsgstate
     cdef int _min_error_severity = min_error_severity
+    cdef object conn = None
+    cdef bint dbproc_dead = False
     cdef char mssql_message[PYMSSQL_MSGSIZE]
 
     if severity < _min_error_severity:
@@ -306,9 +308,12 @@ cdef int err_handler(DBPROCESS *dbproc, int severity, int dberr, int oserr,
             mssql_lastmsgseverity = &(<MSSQLConnection>conn).last_msg_severity
             mssql_lastmsgstate = &(<MSSQLConnection>conn).last_msg_state
             if DBDEAD(dbproc):
-                log("+++ err_handler: dbproc is dead; killing conn...\n")
-                conn.mark_disconnected()
+                dbproc_dead = True
             break
+
+    if dbproc_dead:
+        log("+++ [FIX:1018] err_handler: dbproc is dead; killing conn...\n")
+        conn.mark_disconnected()
 
     if severity > mssql_lastmsgseverity[0]:
         mssql_lastmsgseverity[0] = severity
