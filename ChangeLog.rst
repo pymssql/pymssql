@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.4.3 - 2026-10-05 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Render Decimal parameters without scientific notation PR #1019·thanks to aminghadersohi
+- Apply FreeTDS encryption level per connection (closes #924)
+
 Version 2.4.2 - 2026-09-26 - Mikhail Terekhov
 =============================================
 
