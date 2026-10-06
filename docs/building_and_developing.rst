@@ -18,7 +18,7 @@ To build ``pymssql`` you should have:
   for extracting version information from ``git``.
 * `wheel <https://pypi.org/project/wheel/>`_ -
   for building python wheels.
-* `FreeTDS <https://freetds.org>`_ >= 1.2 including development files.
+* `FreeTDS <https://freetds.org>`_ >= 1.5.19 including development files.
   Please research your OS usual software distribution channels,
   e.g, ``freetds-dev`` or ``freetds-devel`` packages on Linux.
 * `GNU gperf <https://www.gnu.org/software/gperf/>`_ -

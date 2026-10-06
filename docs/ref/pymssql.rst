@@ -86,6 +86,8 @@ Functions
                            * ``'request'`` -- means use if available
                            * ``'require'`` -- means create and allow encrypted connections only
                         Default: ``'request'`` for tds version > 7.1, otherwise ``'off'``
+                        This setting is applied to the individual connection and
+                        does not require setting ``encryption`` in ``freetds.conf``.
 
                         .. versionadded:: 2.2.8
 

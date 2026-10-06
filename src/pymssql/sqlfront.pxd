@@ -766,6 +766,7 @@ cdef extern from "sqlfront.h":
     RETCODE DBSETLPWD(LOGINREC *x, char *y)
     RETCODE DBSETLUSER(LOGINREC *x, char *y)
     RETCODE DBSETLCHARSET(LOGINREC *x, char *y)
+    RETCODE DBSETLENCRYPTION(LOGINREC *login, const char *value)
     RETCODE DBSETLVERSION(LOGINREC *login, BYTE version)
     RETCODE DBSETLDBNAME(LOGINREC *x, char *y)
     RETCODE DBSETLENCRYPT(LOGINREC *login, int x)

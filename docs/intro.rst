@@ -82,7 +82,7 @@ Supported related software
 ==========================
 
 :Python: Python 3.x: 3.6 or newer.
-:FreeTDS: 1.4.10 or newer.
+:FreeTDS: 1.5.19 or newer.
 :Cython: 3.1.0 or newer.
 :Microsoft SQL Server: 2005 or newer.
 

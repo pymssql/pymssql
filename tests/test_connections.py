@@ -13,7 +13,7 @@ import pytest
 
 from pymssql import _mssql
 
-from .helpers import config, mssqlconn
+from .helpers import config, mssqlconn, pymssqlconn
 server = config.server
 username = config.user
 password = config.password
@@ -47,6 +47,10 @@ class TestCons(unittest.TestCase):
                 minor_version = re.search('minor_version = (\\S+)', cdump).groups()[0]
                 actual_version = f"{major_version}.{minor_version}"
                 self.assertEqual(tds_version, actual_version)
+
+    def test_connection_encryption_require(self):
+        conn = pymssqlconn(encryption='require')
+        conn.close()
 
     def test_connection_by_dns_name(self):
         cdump = self.connect(server=server, port=port, user=username, password=password)
