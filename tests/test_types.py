@@ -105,6 +105,33 @@ class TestTypes(unittest.TestCase):
         typeeq('foobär', colval)
         eq_('foobär', colval)
 
+    def test_varchar_single_byte_codepages(self):
+        """
+           Test for #854 & #1000
+        """
+        self.conn.execute_non_query("""
+            CREATE TABLE #pymssql_codepage (
+                th  varchar(20) COLLATE Thai_CI_AS,
+                ru  varchar(20) COLLATE Cyrillic_General_CI_AS,
+                nth nvarchar(20)
+            )
+        """)
+        try:
+            self.conn.execute_non_query("""
+                INSERT INTO #pymssql_codepage
+                VALUES (N'สวัสดีครับ', N'Привет', N'สวัสดีครับ')
+            """)
+            self.conn.execute_query(
+                'SELECT th, ru, nth FROM #pymssql_codepage'
+            )
+            rows = tuple(self.conn)
+            eq_(len(rows), 1)
+            eq_(rows[0]['th'], 'สวัสดีครับ')
+            eq_(rows[0]['ru'], 'Привет')
+            eq_(rows[0]['nth'], 'สวัสดีครับ')
+        finally:
+            self.conn.execute_non_query('DROP TABLE #pymssql_codepage')
+
     def test_nvarchar_unicode(self):
         testval = 'foobär'
         colval = self.insert_and_select('comment_nvch', testval, 's')

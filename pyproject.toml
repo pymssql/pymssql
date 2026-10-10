@@ -69,7 +69,7 @@ container-engine = { name = "docker", create-args = ["--network", "host"] }
 [tool.cibuildwheel.linux]
 environment = { PYMSSQL_FREETDS = "./deps", LD_LIBRARY_PATH = "./deps/lib", CFLAGS = "-Wno-incompatible-pointer-types" }
 before-all = [
-            "yum install -y openssl-devel krb5-devel",
+            "yum install -y openssl-devel krb5-devel glibc-gconv-extra",
             "python3 ./dev/build.py --prefix=./deps --enable-krb5 --static-freetds"
             ]
 
