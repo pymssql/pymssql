@@ -75,8 +75,12 @@ before-all = [
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
+inherit.environment = "append"
+environment.CPPFLAGS = "-I/usr/include/gnu-libiconv"
+environment.LIBS = "-liconv -lcharset"
+environment.LDFLAGS = "-Wl,--no-as-needed -L/usr/lib -liconv -lcharset"
 before-all = [
-            "apk add openssl-dev krb5-dev",
+            "apk add openssl-dev krb5-dev gnu-libiconv-dev",
             "python3 ./dev/build.py --prefix=./deps --enable-krb5 --static-freetds"
             ]
 
