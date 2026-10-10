@@ -145,8 +145,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
-        arch: [AMD64]
+        include:
+          - os: windows-latest
+            arch: AMD64
+          # Native build rather than cross-compiling from windows-latest.
+          - os: windows-11-arm
+            arch: ARM64
 
     steps:
 
@@ -155,10 +159,40 @@ jobs:
           fetch-depth: 0
 
       - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ matrix.arch == 'ARM64' && 'arm64' || 'amd64' }}
 
-      - name: Install OpenSSL AMD64
+      - name: Install OpenSSL (AMD64)
         if: matrix.arch == 'AMD64'
         run: choco install openssl
+
+      - name: Install OpenSSL (ARM64)
+        # chocolatey's openssl only ships x64; slproweb publishes native
+        # ARM64 builds separately (full edition - "Light" has no headers or
+        # libs). Installed to the same path as AMD64 so setup.py and
+        # FreeTDS's CMake find it without extra configuration.
+        if: matrix.arch == 'ARM64'
+        shell: pwsh
+        run: |
+          $url = "https://slproweb.com/download/Win64ARMOpenSSL-3_5_7.exe"
+          $expectedSha256 = "7E05F7E83F4C183664A7D2B7405524EDFCEEE790CB60F98BFE6307DAE36182CC"
+          $exePath = "$env:RUNNER_TEMP\Win64ARMOpenSSL-3_5_7.exe"
+          Invoke-WebRequest -Uri $url -OutFile $exePath
+          $actualSha256 = (Get-FileHash -Path $exePath -Algorithm SHA256).Hash
+          if ($actualSha256 -ne $expectedSha256) {
+            Write-Error "SHA256 mismatch: expected $expectedSha256, got $actualSha256"
+            exit 1
+          }
+          $installDir = "C:\Program Files\OpenSSL"
+          $proc = Start-Process -FilePath $exePath -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$installDir`"" -Wait -PassThru
+          if ($proc.ExitCode -ne 0) {
+            Write-Error "OpenSSL installer exited with code $($proc.ExitCode)"
+            exit 1
+          }
+          if (-not (Test-Path "$installDir\include\openssl\ssl.h")) {
+            Write-Error "OpenSSL headers not found at $installDir after install"
+            exit 1
+          }
 
       - name: Install gperf
         run: choco install gperf
