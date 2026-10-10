@@ -2,6 +2,15 @@ Recent Changes
 ==============
 
 
+Version 2.4.4 - 2026-10-09 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Fixed unicode encoding problem #854 & #1000·thanks to maprangnaveya
+
+
 Version 2.4.3 - 2026-10-05 - Mikhail Terekhov
 =============================================
 
