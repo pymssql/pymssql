@@ -215,3 +215,34 @@ class Test_725(unittest.TestCase):
         for i, (name, plain_name) in enumerate(col_data):
             assert res[i]['name'] == name
             assert res[i]['plain_name'] == plain_name
+
+
+@pytest.mark.mssql_server_required
+class Test_814(unittest.TestCase):
+    """
+    Test Issue #814
+    """
+    tablename = "test_814"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                col1 INT IDENTITY NOT NULL,
+                col2 INT NOT NULL
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test(self):
+        col_data = [ (1000, 1), (1001, 2) ]
+        self.conn.bulk_copy(self.tablename, col_data, [1,2])
+        self.conn._conn.execute_query(f'select * from {self.tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (col1, col2) in enumerate(col_data):
+            assert res[i]['col1'] == col1
+            assert res[i]['col2'] == col2

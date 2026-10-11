@@ -52,6 +52,7 @@ cdef class MSSQLConnection:
 
     cdef bcp_init(self, object)
     cdef bcp_hint(self, BYTE * value, int valuelen)
+    cdef bcp_keep_identity(self)
     cdef bcp_bind(self, object value, int is_none, int column_db_type, int position, BYTE **data)
     cdef bcp_batch(self)
     cpdef bcp_sendrow(self, object element, object column_ids, object unicode_column_ids=?)

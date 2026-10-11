@@ -1644,6 +1644,16 @@ cdef class MSSQLConnection:
             rtc = bcp_options(dbproc, BCPHINTS, value, valuelen)
         check_cancel_and_raise(rtc, self)
 
+    cdef bcp_keep_identity(self):
+        cdef DBPROCESS *dbproc = self.dbproc
+        cdef RETCODE rtc
+
+        log("_mssql.MSSQLBCPContext.bcp_keep_identity() [FIX]")
+
+        with nogil:
+            rtc = bcp_control(dbproc, BCPKEEPIDENTITY, 1)
+        check_cancel_and_raise(rtc, self)
+
     cdef bcp_bind(self, object value, int is_none, int column_db_type, int position, BYTE **data):
         cdef DBPROCESS *dbproc = self.dbproc
         cdef RETCODE rtc

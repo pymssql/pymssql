@@ -119,6 +119,7 @@ cdef extern from "sqlfront.h":
     int DB_IN
     int DB_OUT
     int BCPHINTS
+    int BCPKEEPIDENTITY
 
     ## Version Constants ##
     int DBVERSION_42
@@ -704,6 +705,9 @@ cdef extern from "sqlfront.h":
     #     SUCCEED   normal
     #     FAIL      on error
     RETCODE bcp_bind (DBPROCESS *, BYTE *, int, DBINT, BYTE *, int, int, int) nogil
+
+    # Control a bulk-copy operation.
+    RETCODE bcp_control (DBPROCESS *, int, DBINT) nogil
 
     # Conclude the transfer of data from program variables.
     #
