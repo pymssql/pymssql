@@ -54,7 +54,7 @@ cdef class MSSQLConnection:
     cdef bcp_hint(self, BYTE * value, int valuelen)
     cdef bcp_bind(self, object value, int is_none, int column_db_type, int position, BYTE **data)
     cdef bcp_batch(self)
-    cpdef bcp_sendrow(self, object element, object column_ids)
+    cpdef bcp_sendrow(self, object element, object column_ids, object unicode_column_ids=?)
     cdef bcp_done(self)
 
 
@@ -71,4 +71,3 @@ cdef class MSSQLStoredProcedure:
     cdef list output_indexes
     cdef dict params
     cdef _mssql_parameter_node *params_list
-

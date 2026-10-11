@@ -166,3 +166,52 @@ class Test_968(unittest.TestCase):
         assert res[0]['b'] == 'foo'
         assert res[0]['d'] == 1.2345
 
+
+@pytest.mark.mssql_server_required
+class Test_725(unittest.TestCase):
+    """
+    Test Issue #725
+    """
+    tablename = "test_725"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                name nvarchar(50) not null,
+                plain_name varchar(50) not null
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test(self):
+        col_data = [("Gord", "Gord"),
+                    ("Renée", "Hello 1"),
+                    ("Привет", "Hello 2"),
+                    ("สวัสดีครับ", "Hello 3"),
+                    ]
+        self.conn.bulk_copy(self.tablename, col_data)
+        self.conn._conn.execute_query(f'select * from {self.tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (name, plain_name) in enumerate(col_data):
+            assert res[i]['name'] == name
+            assert res[i]['plain_name'] == plain_name
+
+    def test_unicode_column_ids(self):
+        col_data = [("Gord", "Gord"),
+                    ("Renée", "Hello"),
+                    ("Привет", "Hello"),
+                    ("สวัสดีครับ", "Hello"),
+                    ]
+        col_data_reversed = [ _[::-1] for _ in col_data ]
+        self.conn.bulk_copy(self.tablename, col_data_reversed, column_ids=[2, 1])
+        self.conn._conn.execute_query(f'select * from {self.tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (name, plain_name) in enumerate(col_data):
+            assert res[i]['name'] == name
+            assert res[i]['plain_name'] == plain_name

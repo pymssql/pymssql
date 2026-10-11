@@ -305,6 +305,18 @@ cdef class Connection:
                     fire_triggers=False):
         cdef int batch_counter = 0
         cdef _mssql.MSSQLConnection conn = self._conn
+        cdef object unicode_column_ids = set()
+
+        conn.execute_query(
+            "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name "
+            "FROM sys.columns "
+            "WHERE object_id = OBJECT_ID(%s)",
+            table_name
+        )
+        for column in conn:
+            if column['system_type_name'] in ('nchar', 'ntext', 'nvarchar', 'xml'):
+                unicode_column_ids.add(column['column_id'])
+
         conn.bcp_init(table_name)
 
         if tablock:
@@ -319,7 +331,7 @@ cdef class Connection:
                 conn.bcp_batch()
                 batch_counter = 0
 
-            self._conn.bcp_sendrow(element, column_ids)
+            conn.bcp_sendrow(element, column_ids, unicode_column_ids)
             batch_counter += 1
         conn.bcp_done()
 
