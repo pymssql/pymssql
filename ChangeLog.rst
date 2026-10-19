@@ -2,6 +2,17 @@ Recent Changes
 ==============
 
 
+Version 2.4.5 - 2026-10-19 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Add native Windows arm64 wheel builds, thanks to knightmare2600
+- bulk-copy(): preserve supplied identity values (fixes #814)
+- bulk_copy(): encode Unicode for nvarchar bulk copy (fix #725,#917)
+
+
 Version 2.4.4 - 2026-10-09 - Mikhail Terekhov
 =============================================
 
