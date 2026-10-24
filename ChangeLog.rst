@@ -2,6 +2,17 @@ Recent Changes
 ==============
 
 
+Unreleased
+==========
+
+General
+-------
+
+- bulk_copy(): look up nvarchar and identity columns for temp tables in
+  tempdb.sys.columns so UTF-16LE encoding and KEEPIDENTITY work on
+  ``#temp`` / ``##temp`` (fixes #1021; follow-up to #725, #814, #917)
+
+
 Version 2.4.5 - 2026-10-19 - Mikhail Terekhov
 =============================================
 

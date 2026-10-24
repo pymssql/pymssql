@@ -310,12 +310,23 @@ cdef class Connection:
         cdef object column_id
         cdef bint keep_identity = False
 
-        conn.execute_query(
-            "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-            "FROM sys.columns "
-            "WHERE object_id = OBJECT_ID(%s)",
-            table_name
-        )
+        # Temp tables live in tempdb. OBJECT_ID('#t') is NULL in the current
+        # database and sys.columns does not contain their columns, so nvarchar
+        # and identity lookups must use tempdb (see #725, #814, #917).
+        if isinstance(table_name, str) and table_name.startswith('#'):
+            conn.execute_query(
+                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
+                "FROM tempdb.sys.columns "
+                "WHERE object_id = OBJECT_ID(%s)",
+                "tempdb.." + table_name
+            )
+        else:
+            conn.execute_query(
+                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
+                "FROM sys.columns "
+                "WHERE object_id = OBJECT_ID(%s)",
+                table_name
+            )
         for column in conn:
             if column['system_type_name'] in ('nchar', 'ntext', 'nvarchar', 'xml'):
                 unicode_column_ids.add(column['column_id'])

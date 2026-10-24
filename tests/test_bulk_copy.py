@@ -218,6 +218,81 @@ class Test_725(unittest.TestCase):
 
 
 @pytest.mark.mssql_server_required
+class Test_725_temp(unittest.TestCase):
+    """
+    NVARCHAR bulk_copy into session and global temp tables.
+
+    The #725/#917 UTF-16LE path looks up column types via OBJECT_ID + sys.columns.
+    Temp tables are invisible that way unless tempdb.sys.columns is queried.
+    """
+    col_data = [
+        ("Gord", "Gord"),
+        ("Renée", "Hello 1"),
+        ("Привет", "Hello 2"),
+        ("สวัสดีครับ", "Hello 3"),
+    ]
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+
+    def tearDown(self):
+        try:
+            self.conn._conn.execute_non_query(
+                "IF OBJECT_ID('tempdb..##test_725') IS NOT NULL DROP TABLE ##test_725"
+            )
+        except Exception:
+            pass
+        self.conn.close()
+
+    def _roundtrip(self, tablename):
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {tablename} (
+                name nvarchar(50) not null,
+                plain_name varchar(50) not null
+            )""")
+        self.conn.bulk_copy(tablename, self.col_data)
+        self.conn._conn.execute_query(f'select * from {tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(self.col_data)
+        for i, (name, plain_name) in enumerate(self.col_data):
+            assert res[i]['name'] == name
+            assert res[i]['plain_name'] == plain_name
+
+    def test_local_temp(self):
+        self._roundtrip("#test_725")
+
+    def test_global_temp(self):
+        self._roundtrip("##test_725")
+
+
+@pytest.mark.mssql_server_required
+class Test_814_temp(unittest.TestCase):
+    """KEEPIDENTITY on a temp table identity column."""
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+
+    def tearDown(self):
+        self.conn.close()
+
+    def test_local_temp(self):
+        tablename = "#test_814"
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {tablename} (
+                col1 INT IDENTITY NOT NULL,
+                col2 INT NOT NULL
+            )""")
+        col_data = [(1000, 1), (1001, 2)]
+        self.conn.bulk_copy(tablename, col_data, [1, 2])
+        self.conn._conn.execute_query(f'select * from {tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (col1, col2) in enumerate(col_data):
+            assert res[i]['col1'] == col1
+            assert res[i]['col2'] == col2
+
+
+@pytest.mark.mssql_server_required
 class Test_814(unittest.TestCase):
     """
     Test Issue #814
