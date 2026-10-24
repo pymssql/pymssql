@@ -326,7 +326,7 @@ cdef class Connection:
 
         conn.execute_query(
             "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-            "FROM " + columns_view + " "
+            f"FROM {columns_view} "
             "WHERE object_id = OBJECT_ID(%s)",
             lookup_name
         )
