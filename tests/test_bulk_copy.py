@@ -5,6 +5,7 @@ Test bulk copy.
 
 import unittest
 import datetime
+import uuid
 
 import pytest
 
@@ -234,24 +235,20 @@ class Test_725_temp(unittest.TestCase):
 
     def setUp(self):
         self.conn = pymssqlconn()
+        # From tempdb, plain sys.columns already sees temp tables.
+        self.conn._conn.execute_non_query("USE master")
 
     def tearDown(self):
-        try:
-            self.conn._conn.execute_non_query(
-                "IF OBJECT_ID('tempdb..##test_725') IS NOT NULL DROP TABLE ##test_725"
-            )
-        except Exception:
-            pass
         self.conn.close()
 
-    def _roundtrip(self, tablename):
+    def _roundtrip(self, tablename, copy_name=None):
         self.conn._conn.execute_non_query(
             f"""CREATE TABLE {tablename} (
                 name nvarchar(50) not null,
                 plain_name varchar(50) not null
             )""")
-        self.conn.bulk_copy(tablename, self.col_data)
-        self.conn._conn.execute_query(f'select * from {tablename}')
+        self.conn.bulk_copy(copy_name or tablename, self.col_data)
+        self.conn._conn.execute_query(f'select * from {tablename} order by plain_name')
         res = list(self.conn._conn)
         assert len(res) == len(self.col_data)
         for i, (name, plain_name) in enumerate(self.col_data):
@@ -262,34 +259,16 @@ class Test_725_temp(unittest.TestCase):
         self._roundtrip("#test_725")
 
     def test_global_temp(self):
-        self._roundtrip("##test_725")
+        self._roundtrip(f"##test_725_{uuid.uuid4().hex[:8]}")
 
+    def test_bracketed_temp(self):
+        self._roundtrip("[#test_725]")
 
-@pytest.mark.mssql_server_required
-class Test_814_temp(unittest.TestCase):
-    """KEEPIDENTITY on a temp table identity column."""
+    def test_tempdb_qualified_temp(self):
+        self._roundtrip("#test_725", "tempdb..#test_725")
 
-    def setUp(self):
-        self.conn = pymssqlconn()
-
-    def tearDown(self):
-        self.conn.close()
-
-    def test_local_temp(self):
-        tablename = "#test_814"
-        self.conn._conn.execute_non_query(
-            f"""CREATE TABLE {tablename} (
-                col1 INT IDENTITY NOT NULL,
-                col2 INT NOT NULL
-            )""")
-        col_data = [(1000, 1), (1001, 2)]
-        self.conn.bulk_copy(tablename, col_data, [1, 2])
-        self.conn._conn.execute_query(f'select * from {tablename}')
-        res = list(self.conn._conn)
-        assert len(res) == len(col_data)
-        for i, (col1, col2) in enumerate(col_data):
-            assert res[i]['col1'] == col1
-            assert res[i]['col2'] == col2
+    def test_bytes_temp(self):
+        self._roundtrip("#test_725", b"#test_725")
 
 
 @pytest.mark.mssql_server_required
@@ -322,6 +301,40 @@ class Test_814(unittest.TestCase):
         for i, (col1, col2) in enumerate(col_data):
             assert res[i]['col1'] == col1
             assert res[i]['col2'] == col2
+
+
+@pytest.mark.mssql_server_required
+class Test_814_temp(unittest.TestCase):
+    """KEEPIDENTITY on session and global temp table identity columns."""
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        # From tempdb, plain sys.columns already sees temp tables.
+        self.conn._conn.execute_non_query("USE master")
+
+    def tearDown(self):
+        self.conn.close()
+
+    def _roundtrip(self, tablename):
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {tablename} (
+                col1 INT IDENTITY NOT NULL,
+                col2 INT NOT NULL
+            )""")
+        col_data = [(1000, 1), (1001, 2)]
+        self.conn.bulk_copy(tablename, col_data, [1, 2])
+        self.conn._conn.execute_query(f'select * from {tablename} order by col1')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (col1, col2) in enumerate(col_data):
+            assert res[i]['col1'] == col1
+            assert res[i]['col2'] == col2
+
+    def test_local_temp(self):
+        self._roundtrip("#test_814")
+
+    def test_global_temp(self):
+        self._roundtrip(f"##test_814_{uuid.uuid4().hex[:8]}")
 
 
 @pytest.mark.mssql_server_required
