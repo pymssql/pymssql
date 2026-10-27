@@ -2,6 +2,16 @@ Recent Changes
 ==============
 
 
+Version 2.4.6 - 2026-10-26 - Mikhail Terekhov
+=============================================
+
+General
+-------
+
+- Switch to MacOS-14 for building wheels
+- bulk-copy(): fix case of temp tables (fixes #1021), thanks amgcc
+
+
 Version 2.4.5 - 2026-10-19 - Mikhail Terekhov
 =============================================
 
