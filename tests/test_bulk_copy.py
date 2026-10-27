@@ -218,6 +218,32 @@ class Test_725(unittest.TestCase):
 
 
 @pytest.mark.mssql_server_required
+class Test_1021(unittest.TestCase):
+    """
+    Test Issue #1021
+    """
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+
+    def tearDown(self):
+        self.conn.close()
+
+    def assert_temp_table_contents(self, table_name, rows):
+        self.conn._conn.execute_non_query(f"CREATE TABLE {table_name} (name NVARCHAR(50) NOT NULL)")
+        self.conn.bulk_copy(table_name, rows)
+        self.conn._conn.execute_query(f"SELECT name FROM {table_name}")
+        res = list(self.conn._conn)
+        assert [(row['name'],) for row in res] == rows
+
+    def test_local_temp_table(self):
+        self.assert_temp_table_contents("#temp_1021_local", [("Gord",), ("Renée",), ("Ä",)])
+
+    def test_global_temp_table(self):
+        self.assert_temp_table_contents("##temp_1021_global", [("Gord",), ("Renée",), ("Ä",)])
+
+
+@pytest.mark.mssql_server_required
 class Test_814(unittest.TestCase):
     """
     Test Issue #814
