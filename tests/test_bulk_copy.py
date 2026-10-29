@@ -222,25 +222,37 @@ class Test_1021(unittest.TestCase):
     """
     Test Issue #1021
     """
+    rows = [("Gord",), ("Renée",), ("Ä",)]
 
     def setUp(self):
         self.conn = pymssqlconn()
+        # From tempdb, plain sys.columns already sees temp tables.
+        self.conn._conn.execute_non_query("USE master")
 
     def tearDown(self):
         self.conn.close()
 
-    def assert_temp_table_contents(self, table_name, rows):
+    def assert_temp_table_contents(self, table_name, rows, copy_name=None):
         self.conn._conn.execute_non_query(f"CREATE TABLE {table_name} (name NVARCHAR(50) NOT NULL)")
-        self.conn.bulk_copy(table_name, rows)
+        self.conn.bulk_copy(copy_name if copy_name is not None else table_name, rows)
         self.conn._conn.execute_query(f"SELECT name FROM {table_name}")
         res = list(self.conn._conn)
         assert [(row['name'],) for row in res] == rows
 
     def test_local_temp_table(self):
-        self.assert_temp_table_contents("#temp_1021_local", [("Gord",), ("Renée",), ("Ä",)])
+        self.assert_temp_table_contents("#temp_1021_local", self.rows)
 
     def test_global_temp_table(self):
-        self.assert_temp_table_contents("##temp_1021_global", [("Gord",), ("Renée",), ("Ä",)])
+        self.assert_temp_table_contents(f"##temp_1021_global_{uuid.uuid4().hex[:8]}", self.rows)
+
+    def test_bracketed_temp_table(self):
+        self.assert_temp_table_contents("[#temp_1021_bracketed]", self.rows)
+
+    def test_tempdb_qualified_temp_table(self):
+        self.assert_temp_table_contents("#temp_1021_qual", self.rows, "tempdb..#temp_1021_qual")
+
+    def test_bytes_temp_table(self):
+        self.assert_temp_table_contents("#temp_1021_bytes", self.rows, b"#temp_1021_bytes")
 
 
 @pytest.mark.mssql_server_required
@@ -273,6 +285,40 @@ class Test_814(unittest.TestCase):
         for i, (col1, col2) in enumerate(col_data):
             assert res[i]['col1'] == col1
             assert res[i]['col2'] == col2
+
+
+@pytest.mark.mssql_server_required
+class Test_814_temp(unittest.TestCase):
+    """KEEPIDENTITY on session and global temp table identity columns."""
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        # From tempdb, plain sys.columns already sees temp tables.
+        self.conn._conn.execute_non_query("USE master")
+
+    def tearDown(self):
+        self.conn.close()
+
+    def _roundtrip(self, tablename):
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {tablename} (
+                col1 INT IDENTITY NOT NULL,
+                col2 INT NOT NULL
+            )""")
+        col_data = [(1000, 1), (1001, 2)]
+        self.conn.bulk_copy(tablename, col_data, [1, 2])
+        self.conn._conn.execute_query(f'select * from {tablename} order by col1')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (col1, col2) in enumerate(col_data):
+            assert res[i]['col1'] == col1
+            assert res[i]['col2'] == col2
+
+    def test_local_temp(self):
+        self._roundtrip("#test_814")
+
+    def test_global_temp(self):
+        self._roundtrip(f"##test_814_{uuid.uuid4().hex[:8]}")
 
 
 @pytest.mark.mssql_server_required
