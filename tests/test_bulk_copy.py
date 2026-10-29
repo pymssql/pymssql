@@ -306,3 +306,34 @@ class Test_912(unittest.TestCase):
             assert res[i]['id'] == i + 1
             assert res[i]['col0'] == col0
             assert res[i]['col1'] == 1
+
+
+@pytest.mark.mssql_server_required
+class TestDate(unittest.TestCase):
+    """datetime.date must bulk-copy into DATE, DATETIME, and DATETIME2."""
+
+    tablename = "test_bulk_copy_date"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                d DATE NULL,
+                dt DATETIME NULL,
+                dt2 DATETIME2 NULL
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test_datetime_date(self):
+        value = datetime.date(2024, 6, 15)
+        self.conn.bulk_copy(self.tablename, [(value, value, value)])
+        self.conn._conn.execute_query(f"SELECT d, dt, dt2 FROM {self.tablename}")
+        res = list(self.conn._conn)
+        assert len(res) == 1
+        assert res[0]['d'] == value
+        assert res[0]['dt'] == datetime.datetime(2024, 6, 15)
+        assert res[0]['dt2'] == datetime.datetime(2024, 6, 15)

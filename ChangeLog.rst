@@ -2,6 +2,13 @@ Recent Changes
 ==============
 
 
+Unreleased
+==========
+
+- bulk_copy(): accept datetime.date for DATE, DATETIME, and DATETIME2 columns
+- Cursor.callproc(): accept datetime.date parameters
+
+
 Version 2.4.6 - 2026-10-26 - Mikhail Terekhov
 =============================================
 
