@@ -2,6 +2,12 @@ Recent Changes
 ==============
 
 
+Unreleased
+==========
+
+- bulk_copy(): apply server defaults for omitted NOT NULL columns (fixes #912)
+
+
 Version 2.4.6 - 2026-10-26 - Mikhail Terekhov
 =============================================
 

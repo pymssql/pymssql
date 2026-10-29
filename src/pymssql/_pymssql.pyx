@@ -21,7 +21,9 @@
 # MA  02110-1301  USA
 
 import datetime
+import itertools
 import time
+import uuid
 
 from pymssql import _mssql
 from pymssql cimport _mssql
@@ -49,6 +51,109 @@ paramstyle = 'pyformat'
 
 # Singleton for parameterless queries
 NoParams = _mssql.NoParams
+
+
+def _quote_ident(name):
+    """Quote a SQL identifier with brackets. An embedded ] is escaped as ]]."""
+    return '[' + name.replace(']', ']]') + ']'
+
+
+def _bcp_column_ddl(column):
+    """DDL for one column of the staging table. Nullable so FreeTDS can bulk-copy it."""
+    name = column['system_type_name'].lower()
+    max_length = column['max_length']
+    precision = column['precision']
+    scale = column['scale']
+    if name in ('varchar', 'char', 'varbinary', 'binary'):
+        size = 'max' if max_length < 0 else str(max_length)
+        type_sql = f'{name}({size})'
+    elif name in ('nvarchar', 'nchar'):
+        size = 'max' if max_length < 0 else str(max_length // 2)
+        type_sql = f'{name}({size})'
+    elif name in ('decimal', 'numeric'):
+        type_sql = f'{name}({precision},{scale})'
+    elif name in ('datetime2', 'datetimeoffset', 'time'):
+        type_sql = f'{name}({scale})'
+    else:
+        type_sql = name
+    return f'{_quote_ident(column["name"])} {type_sql} NULL'
+
+
+_NO_ROW = object()
+
+
+def _peek(iterable):
+    """
+    Return the first item and an iterator that still yields it.
+
+    The caller must consume the returned iterator. next() has already
+    removed the first item, and the input may be a one-shot generator.
+    The first value is _NO_ROW when the iterable is empty.
+    """
+    iterator = iter(iterable)
+    try:
+        first = next(iterator)
+    except StopIteration:
+        return _NO_ROW, iterator
+    return first, itertools.chain((first,), iterator)
+
+
+def _needs_server_default_insert(columns, sent_ids):
+    """
+    True when every omitted NOT NULL column can take a server default.
+
+    columns: catalog rows from _fetch_bcp_columns. Each row is a dict of
+    sys.columns fields (column_id, name, is_nullable, has_default, ...).
+    sent_ids: column_id values the bulk-copy row binds. These are
+    sys.columns.column_id ordinals, not column names. A column whose
+    column_id is absent from this sequence is omitted.
+
+    FreeTDS rejects a bulk-copy row that leaves a NOT NULL column unbound,
+    even when that column has a DEFAULT. Nullable omitted columns already
+    receive their default from SQL Server, so those stay on the BCP path.
+    """
+    sent = set(sent_ids)
+    found = False
+    for column in columns:
+        has_data = column['column_id'] in sent
+        if has_data or column['is_nullable'] or column['is_identity'] or column['is_computed']:
+            continue
+        if not column['has_default']:
+            return False
+        found = True
+    return found
+
+
+def _fetch_bcp_columns(conn, table_name):
+    """
+    Return catalog rows for a bulk-copy target, ordered by column_id.
+
+    A name starting with '#' is a temp table, so the lookup uses
+    tempdb.sys.columns and tempdb.sys.default_constraints. Each row has the
+    type metadata for the staging table, plus nullability, identity, computed,
+    and default flags used to choose the bulk-copy path.
+    """
+    if table_name.startswith('#'):
+        catalog = 'tempdb'
+        object_name = f'tempdb..{table_name}'
+    else:
+        catalog = ''
+        object_name = table_name
+    prefix = f'{catalog}.' if catalog else ''
+    columns_view = f'{prefix}sys.columns'
+    defaults_view = f'{prefix}sys.default_constraints'
+    query = (
+        "SELECT c.column_id, c.name, TYPE_NAME(c.system_type_id) AS system_type_name, "
+        "c.max_length, c.precision, c.scale, c.is_identity, c.is_nullable, c.is_computed, "
+        "CASE WHEN dc.parent_column_id IS NULL THEN 0 ELSE 1 END AS has_default "
+        f"FROM {columns_view} c "
+        f"LEFT JOIN {defaults_view} dc "
+        "ON dc.parent_object_id = c.object_id AND dc.parent_column_id = c.column_id "
+        "WHERE c.object_id = OBJECT_ID(%s) "
+        "ORDER BY c.column_id"
+    )
+    conn.execute_query(query, object_name)
+    return list(conn)
 
 from pymssql._mssql import set_wait_callback
 from pymssql.exceptions import *
@@ -295,6 +400,44 @@ cdef class Connection:
         except Exception, e:
             raise OperationalError('Cannot begin transaction: ' + str(e.args[0]))
 
+    def _bulk_copy_with_server_defaults(self, table_name, elements, column_ids, columns_by_id,
+                                         batch_size, tablock):
+        """
+        Load supplied columns with BCP, then INSERT so SQL Server fills
+        omitted NOT NULL columns from their defaults.
+
+        FreeTDS will not send a row that leaves a NOT NULL column unbound.
+        """
+        ordered = []
+        for column_id in column_ids:
+            try:
+                ordered.append(columns_by_id[column_id])
+            except KeyError:
+                raise ValueError(f'Unknown bulk copy column id {column_id}')
+        stage = f'#pymssql_bcp_{uuid.uuid4().hex}'
+        column_ddl = ', '.join(_bcp_column_ddl(column) for column in ordered)
+        column_list = ', '.join(_quote_ident(column['name']) for column in ordered)
+        hint = ' WITH (TABLOCK)' if tablock else ''
+        identity_sent = any(column['is_identity'] for column in ordered)
+        cursor = self.cursor()
+        cursor.execute(f'CREATE TABLE {stage} ({column_ddl})')
+        try:
+            self.bulk_copy(stage, elements, column_ids=list(range(1, len(ordered) + 1)), batch_size=batch_size)
+            if identity_sent:
+                cursor.execute(f'SET IDENTITY_INSERT {table_name} ON')
+            q = f'INSERT INTO {table_name}{hint} ({column_list}) SELECT {column_list} FROM {stage}'
+            cursor.execute(q)
+        finally:
+            if identity_sent:
+                try:
+                    cursor.execute(f'SET IDENTITY_INSERT {table_name} OFF')
+                except Exception:
+                    pass
+            try:
+                cursor.execute(f'DROP TABLE {stage}')
+            except Exception:
+                pass
+
     cpdef bulk_copy(self,
                     table_name,
                     elements,
@@ -310,27 +453,28 @@ cdef class Connection:
         cdef object column_id
         cdef bint keep_identity = False
 
-        object_name = table_name
-        if table_name.startswith('#'):
-            object_name = 'tempdb..' + table_name
-            conn.execute_query(
-                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-                "FROM tempdb.sys.columns "
-                "WHERE object_id = OBJECT_ID(%s)",
-                object_name
-            )
-        else:
-            conn.execute_query(
-                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-                "FROM sys.columns "
-                "WHERE object_id = OBJECT_ID(%s)",
-                object_name
-            )
-        for column in conn:
+        columns = _fetch_bcp_columns(conn, table_name)
+        columns_by_id = {}
+        for column in columns:
+            columns_by_id[column['column_id']] = column
             if column['system_type_name'] in ('nchar', 'ntext', 'nvarchar', 'xml'):
                 unicode_column_ids.add(column['column_id'])
             if column['is_identity']:
                 identity_column_ids.add(column['column_id'])
+
+        if column_ids is None:
+            # Row width is unknown until a row is seen. Column ids are 1..len(row).
+            first, elements = _peek(elements)
+            if first is not _NO_ROW:
+                inferred_ids = list(range(1, len(first) + 1))
+                if _needs_server_default_insert(columns, inferred_ids):
+                    self._bulk_copy_with_server_defaults(
+                        table_name, elements, inferred_ids, columns_by_id, batch_size, tablock)
+                    return
+        elif _needs_server_default_insert(columns, column_ids):
+            self._bulk_copy_with_server_defaults(
+                table_name, elements, column_ids, columns_by_id, batch_size, tablock)
+            return
 
         conn.bcp_init(table_name)
 
