@@ -306,3 +306,84 @@ class Test_912(unittest.TestCase):
             assert res[i]['id'] == i + 1
             assert res[i]['col0'] == col0
             assert res[i]['col1'] == 1
+
+
+@pytest.mark.mssql_server_required
+class Test_912_not_null(unittest.TestCase):
+    """
+    Issue #912: omitting a NOT NULL column that has a DEFAULT.
+
+    The nullable form is covered by Test_912. FreeTDS rejects the NOT NULL
+    form during bcp_sendrow, so bulk_copy stages the supplied columns and
+    INSERT...SELECTs them to let SQL Server apply the default.
+    """
+    tablename = "test_912_not_null"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                id INT PRIMARY KEY IDENTITY(1, 1),
+                col0 INT NOT NULL,
+                col1 INT NOT NULL DEFAULT 1,
+                updated_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test_omitted_not_null_defaults(self):
+        col_data = [(1,), (2,), (3,)]
+        self.conn.bulk_copy(self.tablename, col_data, column_ids=[2])
+        self.conn._conn.execute_query(f'select * from {self.tablename}')
+        res = list(self.conn._conn)
+        assert len(res) == len(col_data)
+        for i, (col0,) in enumerate(col_data):
+            assert res[i]['id'] == i + 1
+            assert res[i]['col0'] == col0
+            assert res[i]['col1'] == 1
+            assert res[i]['updated_at'] is not None
+
+    def test_supplied_value_overrides_default(self):
+        self.conn.bulk_copy(self.tablename, [(4, 9)], column_ids=[2, 3])
+        self.conn._conn.execute_query(f'select col0, col1 from {self.tablename}')
+        res = [(row['col0'], row['col1']) for row in self.conn._conn]
+        assert res == [(4, 9)]
+
+
+@pytest.mark.mssql_server_required
+class TestQuoteInTableName(unittest.TestCase):
+    """
+    bulk_copy looks up the target table in the catalog by name. A name
+    containing a single quote must be passed as a parameter, not spliced
+    into the lookup query.
+    """
+    tablename = "[pymssql_o'brien]"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        self.drop()
+        self.conn._conn.execute_non_query(
+            f"CREATE TABLE {self.tablename} (a INT, b INT NOT NULL DEFAULT 7)")
+
+    def tearDown(self):
+        self.drop()
+        self.conn.close()
+
+    def drop(self):
+        self.conn._conn.execute_non_query(
+            f"IF OBJECT_ID(%s) IS NOT NULL DROP TABLE {self.tablename}", self.tablename)
+
+    def rows(self):
+        self.conn._conn.execute_query(f'select a, b from {self.tablename} order by a')
+        return [(row['a'], row['b']) for row in self.conn._conn]
+
+    def test_all_columns(self):
+        self.conn.bulk_copy(self.tablename, [(1, 2), (3, 4)])
+        assert self.rows() == [(1, 2), (3, 4)]
+
+    def test_omitted_not_null_default(self):
+        self.conn.bulk_copy(self.tablename, [(1,), (3,)], column_ids=[1])
+        assert self.rows() == [(1, 7), (3, 7)]
