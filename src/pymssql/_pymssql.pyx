@@ -309,23 +309,28 @@ cdef class Connection:
         cdef object identity_column_ids = set()
         cdef object column_id
         cdef bint keep_identity = False
+        cdef object lookup_name = table_name
+        cdef object name_head
+        cdef str columns_view = "sys.columns"
 
-        object_name = table_name
-        if table_name.startswith('#'):
-            object_name = 'tempdb..' + table_name
-            conn.execute_query(
-                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-                "FROM tempdb.sys.columns "
-                "WHERE object_id = OBJECT_ID(%s)",
-                object_name
-            )
-        else:
-            conn.execute_query(
-                "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
-                "FROM sys.columns "
-                "WHERE object_id = OBJECT_ID(%s)",
-                object_name
-            )
+        if isinstance(lookup_name, bytes):
+            lookup_name = lookup_name.decode(conn.charset or 'utf-8')
+        # sys.columns only covers the current database, and OBJECT_ID('#t') is
+        # NULL outside tempdb, so temp tables must be looked up in tempdb.
+        # Also handle [#t], tempdb..#t, and bytes names.
+        name_head = lookup_name.lstrip('[').lower()
+        if name_head.startswith('#'):
+            columns_view = "tempdb.sys.columns"
+            lookup_name = "tempdb.." + lookup_name
+        elif name_head.startswith(('tempdb.', 'tempdb]')):
+            columns_view = "tempdb.sys.columns"
+
+        conn.execute_query(
+            "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
+            f"FROM {columns_view} "
+            "WHERE object_id = OBJECT_ID(%s)",
+            lookup_name
+        )
         for column in conn:
             if column['system_type_name'] in ('nchar', 'ntext', 'nvarchar', 'xml'):
                 unicode_column_ids.add(column['column_id'])
