@@ -5,7 +5,12 @@ Recent Changes
 Unreleased
 ==========
 
+General
+-------
+
 - bulk_copy(): apply server defaults for omitted NOT NULL columns (fixes #912)
+- bulk_copy(): look up nvarchar and identity columns for bracketed,
+  ``tempdb..``-qualified and bytes temp table names (follow-up to #1021)
 
 
 Version 2.4.6 - 2026-10-26 - Mikhail Terekhov

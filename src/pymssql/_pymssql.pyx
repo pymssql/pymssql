@@ -128,14 +128,23 @@ def _fetch_bcp_columns(conn, table_name):
     """
     Return catalog rows for a bulk-copy target, ordered by column_id.
 
-    A name starting with '#' is a temp table, so the lookup uses
-    tempdb.sys.columns and tempdb.sys.default_constraints. Each row has the
-    type metadata for the staging table, plus nullability, identity, computed,
-    and default flags used to choose the bulk-copy path.
+    Temp tables live in tempdb, so the lookup uses tempdb.sys.columns and
+    tempdb.sys.default_constraints. Names may be bracketed (``[#t]``),
+    ``tempdb..``-qualified, or bytes. Each row has the type metadata for the
+    staging table, plus nullability, identity, computed, and default flags
+    used to choose the bulk-copy path.
     """
-    if table_name.startswith('#'):
+    if isinstance(table_name, bytes):
+        table_name = table_name.decode(conn.charset or 'utf-8')
+    # sys.columns only covers the current database, and OBJECT_ID('#t') is
+    # NULL outside tempdb, so temp tables must be looked up in tempdb.
+    name_head = table_name.lstrip('[').lower()
+    if name_head.startswith('#'):
         catalog = 'tempdb'
         object_name = f'tempdb..{table_name}'
+    elif name_head.startswith(('tempdb.', 'tempdb]')):
+        catalog = 'tempdb'
+        object_name = table_name
     else:
         catalog = ''
         object_name = table_name
