@@ -8,6 +8,8 @@ Unreleased
 General
 -------
 
+- bulk_copy(): accept datetime.date for DATE, DATETIME, and DATETIME2 columns
+- Cursor.callproc(): accept datetime.date parameters
 - bulk_copy(): look up nvarchar and identity columns for bracketed,
   ``tempdb..``-qualified and bytes temp table names (follow-up to #1021)
 

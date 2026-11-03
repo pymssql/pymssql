@@ -296,6 +296,17 @@ class TestDateTimeConversion:
                     assert res == 0
                     assert input == proc.parameters['@out']
 
+    def test_date_callproc(self, mssql_conn):
+        input = datetime.date(2009, 8, 27)
+        with stored_proc(mssql_conn, 'date') as proc_name:
+            conn = pymssqlconn()
+            try:
+                retval = conn.cursor().callproc(
+                    proc_name, (input, pymssql.output(datetime.date)))
+            finally:
+                conn.close()
+        assert retval[1] == input
+
     def test_time(self, mssql_conn, subtests):
         with stored_proc(mssql_conn, 'time') as proc_name:
             for input in (

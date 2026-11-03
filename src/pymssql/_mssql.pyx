@@ -166,7 +166,7 @@ cdef dict DBTYPES = {
     'unicode': SQLVARCHAR,
     'Decimal': SQLDECIMAL,
     'datetime': SQLDATETIME,
-    'date': SQLDATETIME,
+    'date': SQLDATE,
     'float': SQLFLT8,
     'bytes': SQLVARBINARY,
     'bytearray': SQLVARBINARY,
@@ -1016,7 +1016,7 @@ cdef class MSSQLConnection:
 
         if dbtype[0] == SQLDATE:
             if not isinstance(value, datetime.date):
-                raise TypeError('value can only be a datetime.date, got {type(value)}')
+                raise TypeError(f'value can only be a datetime.date, got {type(value)}')
             value = value.strftime(f'{value.year:04}-%m-%d').encode(self.charset)
             dbtype[0] = SQLCHAR
             
@@ -1044,6 +1044,11 @@ cdef class MSSQLConnection:
             dbValue[0] = <BYTE *>strValue
             length[0] = len(value)
             return 0
+
+        if (dbtype[0] in (SQLDATETIM4, SQLDATETIME, SQLDATETIME2)
+                and isinstance(value, datetime.date)
+                and not isinstance(value, datetime.datetime)):
+            value = datetime.datetime(value.year, value.month, value.day)
 
         if dbtype[0] == SQLDATETIME2:
             if not isinstance(value, datetime.datetime):
