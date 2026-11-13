@@ -10,6 +10,9 @@ General
 
 - bulk_copy(): look up nvarchar and identity columns for bracketed,
   ``tempdb..``-qualified and bytes temp table names (follow-up to #1021)
+- bulk_copy(): look up nvarchar and identity columns for schema-qualified
+  and quoted temp table names such as ``dbo.#t`` and ``"#t"``
+  (follow-up to #1021)
 
 
 Version 2.4.6 - 2026-10-26 - Mikhail Terekhov

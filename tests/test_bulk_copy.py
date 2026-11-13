@@ -229,6 +229,8 @@ class Test_1021(unittest.TestCase):
         self.conn = pymssqlconn()
         # From tempdb, plain sys.columns already sees temp tables.
         self.conn._conn.execute_non_query("USE master")
+        # Double-quoted identifiers are delimiters only while this is ON.
+        self.conn._conn.execute_non_query("SET QUOTED_IDENTIFIER ON")
 
     def tearDown(self):
         self.conn.close()
@@ -254,6 +256,35 @@ class Test_1021(unittest.TestCase):
 
     def test_bytes_temp_table(self):
         self.assert_temp_table_contents("#temp_1021_bytes", self.rows, b"#temp_1021_bytes")
+
+    def test_schema_qualified_temp_table(self):
+        self.assert_temp_table_contents("dbo.#temp_1021_schema", self.rows)
+
+    def test_quoted_temp_table(self):
+        self.assert_temp_table_contents('"#temp_1021_quoted"', self.rows)
+
+    def test_quoted_schema_qualified_temp_table(self):
+        self.assert_temp_table_contents('"dbo"."#temp_1021_quoted_schema"', self.rows)
+
+    def test_bracketed_schema_qualified_temp_table(self):
+        self.assert_temp_table_contents("[dbo].[#temp_1021_bracket_schema]", self.rows)
+
+    def test_schema_qualified_copy_name(self):
+        self.assert_temp_table_contents("#temp_1021_schema_copy", self.rows, "dbo.#temp_1021_schema_copy")
+
+    def test_quoted_copy_name(self):
+        self.assert_temp_table_contents("#temp_1021_quoted_copy", self.rows, '"#temp_1021_quoted_copy"')
+
+    def test_quoted_schema_copy_name(self):
+        self.assert_temp_table_contents("#temp_1021_both_copy", self.rows, '"dbo"."#temp_1021_both_copy"')
+
+    def test_schema_qualified_global_temp_table(self):
+        suffix = uuid.uuid4().hex[:8]
+        self.assert_temp_table_contents(f"dbo.##temp_1021_schema_{suffix}", self.rows)
+
+    def test_quoted_global_temp_table(self):
+        suffix = uuid.uuid4().hex[:8]
+        self.assert_temp_table_contents(f'"##temp_1021_quoted_{suffix}"', self.rows)
 
 
 @pytest.mark.mssql_server_required
@@ -320,6 +351,10 @@ class Test_814_temp(unittest.TestCase):
 
     def test_global_temp(self):
         self._roundtrip(f"##test_814_{uuid.uuid4().hex[:8]}")
+
+    def test_quoted_schema_qualified(self):
+        self.conn._conn.execute_non_query("SET QUOTED_IDENTIFIER ON")
+        self._roundtrip('"dbo"."#test_814_quoted"')
 
 
 @pytest.mark.mssql_server_required
