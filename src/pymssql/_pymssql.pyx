@@ -24,6 +24,7 @@ import datetime
 import time
 
 from pymssql import _mssql
+from pymssql._sql_name import bulk_copy_column_source
 from pymssql cimport _mssql
 from cpython cimport bool
 from libc.string cimport strlen
@@ -310,20 +311,14 @@ cdef class Connection:
         cdef object column_id
         cdef bint keep_identity = False
         cdef object lookup_name = table_name
-        cdef object name_head
-        cdef str columns_view = "sys.columns"
+        cdef object columns_view
 
         if isinstance(lookup_name, bytes):
             lookup_name = lookup_name.decode(conn.charset or 'utf-8')
         # sys.columns only covers the current database, and OBJECT_ID('#t') is
-        # NULL outside tempdb, so temp tables must be looked up in tempdb.
-        # Also handle [#t], tempdb..#t, and bytes names.
-        name_head = lookup_name.lstrip('[').lower()
-        if name_head.startswith('#'):
-            columns_view = "tempdb.sys.columns"
-            lookup_name = "tempdb.." + lookup_name
-        elif name_head.startswith(('tempdb.', 'tempdb]')):
-            columns_view = "tempdb.sys.columns"
+        # NULL outside tempdb. A schema (dbo.#t) or quotes ("#t", [dbo].[#t])
+        # still name a temp table, so those forms are looked up in tempdb too.
+        columns_view, lookup_name = bulk_copy_column_source(lookup_name)
 
         conn.execute_query(
             "SELECT column_id, TYPE_NAME(system_type_id) AS system_type_name, is_identity "
