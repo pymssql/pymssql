@@ -14,18 +14,18 @@ def bulk_copy_column_source(table_name: str) -> tuple[str, str]:
     ``"#t"``, or ``"dbo"."#t"``.
     """
     parts = _split_multipart_name(table_name)
-    object_name = _unquote_identifier(parts[-1]) if parts else ""
-    database_name = _database_name(parts)
-    in_tempdb = database_name is not None and database_name.lower() == "tempdb"
-    is_temp = object_name.startswith("#")
-    if is_temp or in_tempdb:
+    # A server-qualified name is not the local tempdb catalog, so only a
+    # 3-part tempdb name counts as already qualified.
+    local_tempdb = len(parts) == 3 and _unquote_identifier(parts[0]).lower() == "tempdb"
+    is_temp = _unquote_identifier(parts[-1]).startswith("#")
+    if is_temp or local_tempdb:
         columns_view = "tempdb.sys.columns"
     else:
         columns_view = "sys.columns"
-    lookup_name = table_name
-    if is_temp and not in_tempdb:
-        lookup_name = _prefix_tempdb(parts)
-    return columns_view, lookup_name
+    if is_temp and not local_tempdb:
+        schema = parts[-2] if len(parts) > 1 else ""
+        return columns_view, "tempdb." + schema + "." + parts[-1]
+    return columns_view, table_name
 
 
 def _split_multipart_name(name: str) -> list[str]:
@@ -68,22 +68,3 @@ def _unquote_identifier(part: str) -> str:
     if len(part) >= 2 and part[0] == '"' and part[-1] == '"':
         return part[1:-1].replace('""', '"')
     return part
-
-
-def _database_name(parts: list[str]) -> str | None:
-    # server.database.schema.object, or database.schema.object (schema may be empty).
-    if len(parts) >= 4:
-        return _unquote_identifier(parts[1])
-    if len(parts) == 3:
-        return _unquote_identifier(parts[0])
-    return None
-
-
-def _prefix_tempdb(parts: list[str]) -> str:
-    if len(parts) == 1:
-        return "tempdb.." + parts[0]
-    if len(parts) == 2:
-        return "tempdb." + parts[0] + "." + parts[1]
-    if len(parts) == 3:
-        return "tempdb." + parts[1] + "." + parts[2]
-    return parts[0] + ".tempdb." + ".".join(parts[2:])

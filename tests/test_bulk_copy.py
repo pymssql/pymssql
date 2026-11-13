@@ -352,6 +352,10 @@ class Test_814_temp(unittest.TestCase):
     def test_global_temp(self):
         self._roundtrip(f"##test_814_{uuid.uuid4().hex[:8]}")
 
+    def test_quoted_schema_qualified(self):
+        self.conn._conn.execute_non_query("SET QUOTED_IDENTIFIER ON")
+        self._roundtrip('"dbo"."#test_814_quoted"')
+
 
 @pytest.mark.mssql_server_required
 class Test_912(unittest.TestCase):
