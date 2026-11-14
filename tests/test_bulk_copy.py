@@ -353,3 +353,58 @@ class Test_912(unittest.TestCase):
             assert res[i]['id'] == i + 1
             assert res[i]['col0'] == col0
             assert res[i]['col1'] == 1
+
+
+@pytest.mark.mssql_server_required
+class TestDate(unittest.TestCase):
+    """date and datetime are bound as their own types."""
+
+    tablename = "test_bulk_copy_date"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                d DATE NULL,
+                dt DATETIME NULL,
+                dt2 DATETIME2 NULL
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def test_date_roundtrip(self):
+        for value in (
+            datetime.date(1, 1, 1),
+            datetime.date(1753, 1, 1),
+            datetime.date(2024, 6, 15),
+            datetime.date(9999, 12, 31),
+        ):
+            self.conn.bulk_copy(self.tablename, [(value, None, None)])
+        self.conn._conn.execute_query(f"SELECT d FROM {self.tablename} ORDER BY d")
+        got = [row['d'] for row in self.conn._conn]
+        assert got == [
+            datetime.date(1, 1, 1),
+            datetime.date(1753, 1, 1),
+            datetime.date(2024, 6, 15),
+            datetime.date(9999, 12, 31),
+        ]
+
+    def test_datetime_roundtrip(self):
+        value = datetime.datetime(2024, 6, 15, 13, 45, 30, 123000)
+        self.conn.bulk_copy(self.tablename, [(None, value, value)])
+        self.conn._conn.execute_query(f"SELECT dt, dt2 FROM {self.tablename}")
+        res = list(self.conn._conn)
+        assert res[0]['dt'] == value
+        assert res[0]['dt2'] == value
+
+    def test_date_rejected_for_datetime_columns(self):
+        value = datetime.date(2024, 6, 15)
+        with pytest.raises(TypeError):
+            self.conn.bulk_copy(self.tablename, [(None, value, None)])
+        with pytest.raises(TypeError):
+            self.conn.bulk_copy(self.tablename, [(None, None, value)])
+        self.conn._conn.execute_query(f"SELECT COUNT(*) AS n FROM {self.tablename}")
+        assert list(self.conn._conn)[0]['n'] == 0
