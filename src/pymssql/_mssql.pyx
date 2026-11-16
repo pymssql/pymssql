@@ -166,7 +166,7 @@ cdef dict DBTYPES = {
     'unicode': SQLVARCHAR,
     'Decimal': SQLDECIMAL,
     'datetime': SQLDATETIME,
-    'date': SQLDATETIME,
+    'date': SQLDATE,
     'float': SQLFLT8,
     'bytes': SQLVARBINARY,
     'bytearray': SQLVARBINARY,
