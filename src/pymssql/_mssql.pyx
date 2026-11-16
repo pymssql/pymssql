@@ -98,6 +98,27 @@ cdef object connection_list_lock = Lock()
 cdef int MAX_INT = 2147483647
 cdef int MIN_INT = -2147483648
 
+# Days since 1900-01-01 (date(1900, 1, 1).toordinal() == 693596).
+cdef int _days_since_1900(object value) except? -1:
+    return value.toordinal() - 693596
+
+# FreeTDS reads a bound SYBMSDATE as a DBDATETIMEALL.
+cdef BYTE *_pack_sqldate(int days) except NULL:
+    cdef DBDATETIMEALL *dta = <DBDATETIMEALL *>PyMem_Malloc(sizeof(DBDATETIMEALL))
+    if dta == NULL:
+        raise MSSQLDriverException('Out of memory')
+    memset(dta, 0, sizeof(DBDATETIMEALL))
+    dta.date = days
+    dta.has_date = 1
+    return <BYTE *>dta
+
+# DATETIME time as 1/300ths of a second since midnight, rounded the way
+# FreeTDS rounds a parsed datetime string.
+cdef int _datetime_ticks(int hour, int minute, int second, int microsecond) noexcept:
+    cdef int seconds = hour * 3600 + minute * 60 + second
+    cdef int millis = microsecond // 1000
+    return seconds * 300 + (millis * 300 + 150) // 1000
+
 # Store the module version
 __full_version__ = PYMSSQL_VERSION.decode('ascii')
 __version__ = '.'.join(__full_version__.split('.')[:3])
@@ -166,7 +187,7 @@ cdef dict DBTYPES = {
     'unicode': SQLVARCHAR,
     'Decimal': SQLDECIMAL,
     'datetime': SQLDATETIME,
-    'date': SQLDATETIME,
+    'date': SQLDATE,
     'float': SQLFLT8,
     'bytes': SQLVARBINARY,
     'bytearray': SQLVARBINARY,
@@ -961,6 +982,7 @@ cdef class MSSQLConnection:
         cdef char *strValue
         cdef char *tmp
         cdef BYTE *binValue
+        cdef DBDATETIME *dtValue
         cdef DBTYPEINFO decimal_type_info
 
         if (PYMSSQL_DEBUG == 1):
@@ -1015,12 +1037,11 @@ cdef class MSSQLConnection:
             return 0
 
         if dbtype[0] == SQLDATE:
-            if not isinstance(value, datetime.date):
-                raise TypeError('value can only be a datetime.date, got {type(value)}')
+            # datetime is a subclass of date; binding one here would drop the time.
+            if isinstance(value, datetime.datetime) or not isinstance(value, datetime.date):
+                raise TypeError(f'value can only be a datetime.date, got {type(value)}')
             value = value.strftime(f'{value.year:04}-%m-%d').encode(self.charset)
             dbtype[0] = SQLCHAR
-            
-            # Allocate memory and copy the string value
             strValue = <char *>PyMem_Malloc(len(value) + 1)
             tmp = value
             strncpy(strValue, tmp, len(value) + 1)
@@ -1061,11 +1082,24 @@ cdef class MSSQLConnection:
             length[0] = len(value)
             return 0
 
-        if dbtype[0] in (SQLDATETIM4, SQLDATETIME):
+        if dbtype[0] == SQLDATETIME:
             if not isinstance(value, datetime.datetime):
                 raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
-            
-            # For bulk copy, convert to string representation 
+            dtValue = <DBDATETIME *>PyMem_Malloc(sizeof(DBDATETIME))
+            if dtValue == NULL:
+                raise MSSQLDriverException('Out of memory')
+            dtValue.dtdays = _days_since_1900(value)
+            dtValue.dttime = _datetime_ticks(
+                value.hour, value.minute, value.second, value.microsecond)
+            dbValue[0] = <BYTE *>dtValue
+            length[0] = -1
+            return 0
+
+        if dbtype[0] == SQLDATETIM4:
+            if not isinstance(value, datetime.datetime):
+                raise TypeError(f'value can only be a datetime.datetime, got {type(value)}')
+
+            # For bulk copy, convert to string representation
             # BCP expects datetime as string format
             microseconds = 0
             if type(value) in (datetime.datetime,):
@@ -1661,7 +1695,12 @@ cdef class MSSQLConnection:
 
         log("_mssql.MSSQLBCPContext.bcp_bind()")
 
-        self.convert_python_value(value, data, &column_db_type, &length)
+        if not is_none and column_db_type == SQLDATE:
+            if isinstance(value, datetime.datetime) or not isinstance(value, datetime.date):
+                raise TypeError(f'value can only be a datetime.date, got {type(value)}')
+            data[0] = _pack_sqldate(_days_since_1900(value))
+        else:
+            self.convert_python_value(value, data, &column_db_type, &length)
         if is_none:
             # It doesn't matter which vartype we choose here since we are passing NULL.
             rtc = bcp_bind(

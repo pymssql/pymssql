@@ -32,6 +32,27 @@ from .sqlfront cimport BYTE
 cdef extern from "version.h":
     const char *PYMSSQL_VERSION
 
+_DATETIME_COLUMN_TYPES = ('datetime', 'datetime2', 'smalldatetime', 'datetimeoffset')
+
+
+def _reject_date_for_datetime_column(element, column_ids, datetime_column_ids):
+    """Refuse a date value for a column that stores a time of day.
+
+    Binding a date there would store midnight. Callers pass a datetime when
+    the column is datetime, datetime2, smalldatetime, or datetimeoffset.
+    """
+    for idx, value in enumerate(element):
+        if isinstance(value, datetime.datetime) or not isinstance(value, datetime.date):
+            continue
+        try:
+            column_id = (idx + 1) if column_ids is None else column_ids[idx]
+        except IndexError:
+            return
+        if column_id in datetime_column_ids:
+            raise TypeError(
+                'datetime.date cannot be written to a datetime column; pass a datetime.datetime')
+
+
 __author__ = 'Damien Churchill <damoxc@gmail.com>'
 __full_version__ = PYMSSQL_VERSION.decode('ascii')
 __version__ = '.'.join(__full_version__.split('.')[:3])
@@ -307,6 +328,7 @@ cdef class Connection:
         cdef _mssql.MSSQLConnection conn = self._conn
         cdef object unicode_column_ids = set()
         cdef object identity_column_ids = set()
+        cdef object datetime_column_ids = set()
         cdef object column_id
         cdef bint keep_identity = False
         cdef object lookup_name = table_name
@@ -334,6 +356,8 @@ cdef class Connection:
         for column in conn:
             if column['system_type_name'] in ('nchar', 'ntext', 'nvarchar', 'xml'):
                 unicode_column_ids.add(column['column_id'])
+            if column['system_type_name'] in _DATETIME_COLUMN_TYPES:
+                datetime_column_ids.add(column['column_id'])
             if column['is_identity']:
                 identity_column_ids.add(column['column_id'])
 
@@ -362,6 +386,8 @@ cdef class Connection:
                 conn.bcp_batch()
                 batch_counter = 0
 
+            if datetime_column_ids:
+                _reject_date_for_datetime_column(element, column_ids, datetime_column_ids)
             conn.bcp_sendrow(element, column_ids, unicode_column_ids)
             batch_counter += 1
         conn.bcp_done()

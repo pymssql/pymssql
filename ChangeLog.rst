@@ -8,6 +8,12 @@ Unreleased
 General
 -------
 
+- bulk_copy(): bind ``datetime.date`` as a native DATE and
+  ``datetime.datetime`` as a native DATETIME instead of formatting them as
+  strings. A date is not promoted to midnight; a date passed for a
+  datetime column raises ``TypeError``. callproc() accepts ``datetime.date``
+  and sends it as text, since FreeTDS cannot pass a native DATE as an RPC
+  parameter.
 - bulk_copy(): look up nvarchar and identity columns for bracketed,
   ``tempdb..``-qualified and bytes temp table names (follow-up to #1021)
 

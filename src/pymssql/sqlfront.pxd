@@ -44,6 +44,16 @@ cdef extern from "sqlfront.h":
     ctypedef struct        DBDATETIME4:
         DBUSMALLINT days
         DBUSMALLINT minutes
+    ctypedef unsigned long long DBUBIGINT
+    # time_prec, has_time, has_date and has_offset are bitfields in sybdb.h.
+    ctypedef struct        DBDATETIMEALL:
+        DBUBIGINT time
+        DBINT date
+        DBSMALLINT offset
+        DBUSMALLINT time_prec
+        DBUSMALLINT has_time
+        DBUSMALLINT has_date
+        DBUSMALLINT has_offset
 
     ctypedef struct        DBCOL:
         DBINT SizeOfStruct
