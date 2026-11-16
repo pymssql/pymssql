@@ -353,3 +353,71 @@ class Test_912(unittest.TestCase):
             assert res[i]['id'] == i + 1
             assert res[i]['col0'] == col0
             assert res[i]['col1'] == 1
+
+
+@pytest.mark.mssql_server_required
+class TestDate(unittest.TestCase):
+    """
+    datetime.date is bound as SQLDATE.
+
+    The server converts it for datetime-family and character columns, the
+    same way it converts a DATE value from any other client.
+    """
+
+    tablename = "test_bulk_copy_date"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+        self.conn._conn.execute_non_query(
+            f"""CREATE TABLE {self.tablename} (
+                d DATE NULL,
+                dt DATETIME NULL,
+                dt2 DATETIME2 NULL,
+                sdt SMALLDATETIME NULL,
+                s VARCHAR(30) NULL
+            )""")
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def fetch(self):
+        self.conn._conn.execute_query(
+            f"SELECT d, dt, dt2, sdt, s FROM {self.tablename}")
+        res = list(self.conn._conn)
+        assert len(res) == 1
+        return res[0]
+
+    def test_date_into_every_column(self):
+        value = datetime.date(2024, 6, 15)
+        self.conn.bulk_copy(self.tablename, [(value, value, value, value, value)])
+        row = self.fetch()
+        assert row['d'] == value
+        assert row['dt'] == datetime.datetime(2024, 6, 15)
+        assert row['dt2'] == datetime.datetime(2024, 6, 15)
+        assert row['sdt'] == datetime.datetime(2024, 6, 15)
+        assert row['s'] == '2024-06-15'
+
+    def test_date_range(self):
+        for value in (
+            datetime.date(1753, 1, 1),
+            datetime.date(1900, 1, 1),
+            datetime.date(2024, 2, 29),
+            datetime.date(9999, 12, 31),
+        ):
+            with self.subTest(date=value):
+                self.conn._conn.execute_non_query(f"TRUNCATE TABLE {self.tablename}")
+                self.conn.bulk_copy(self.tablename, [(value,)], column_ids=[1])
+                assert self.fetch()['d'] == value
+
+    def test_datetime_keeps_its_time(self):
+        value = datetime.datetime(2024, 6, 15, 3, 4, 5)
+        self.conn.bulk_copy(self.tablename, [(value, value)], column_ids=[2, 3])
+        row = self.fetch()
+        assert row['dt'] == value
+        assert row['dt2'] == value
+
+    def test_none(self):
+        self.conn.bulk_copy(self.tablename, [(None,)], column_ids=[1])
+        assert self.fetch()['d'] is None
