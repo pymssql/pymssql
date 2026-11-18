@@ -1157,8 +1157,10 @@ cdef class MSSQLConnection:
             if not isinstance(value, (bytes,bytearray)):
                 raise TypeError('value can only be bytes or bytearray')
 
-            binValue = <BYTE *>PyMem_Malloc(len(value))
+            # The extra NUL byte lets bcp_bind() pass an empty value to FreeTDS.
+            binValue = <BYTE *>PyMem_Malloc(len(value) + 1)
             memcpy(binValue, <char *>value, len(value))
+            binValue[ len(value) ] = 0
             length[0] = len(value)
             dbValue[0] = <BYTE *>binValue
             return 0
@@ -1675,6 +1677,10 @@ cdef class MSSQLConnection:
                 position         # table_column
             )
         else:
+            # FreeTDS stores varlen 0 as NULL. With -1 it takes the length of
+            # the NUL-terminated buffer, so an empty value stays empty.
+            if length == 0:
+                length = -1
             rtc = bcp_bind(
                 dbproc,          # dbproc
                 data[0],         # varaddr
