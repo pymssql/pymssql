@@ -10,6 +10,8 @@ General
 
 - bulk_copy(): look up nvarchar and identity columns for bracketed,
   ``tempdb..``-qualified and bytes temp table names (follow-up to #1021)
+- bulk_copy(): store empty strings and empty binary values as empty instead of
+  NULL
 
 
 Version 2.4.6 - 2026-10-26 - Mikhail Terekhov

@@ -353,3 +353,71 @@ class Test_912(unittest.TestCase):
             assert res[i]['id'] == i + 1
             assert res[i]['col0'] == col0
             assert res[i]['col1'] == 1
+
+
+@pytest.mark.mssql_server_required
+class TestEmptyValues(unittest.TestCase):
+    """Empty strings and binary values must not be stored as NULL."""
+
+    tablename = "test_bulk_copy_empty"
+
+    def setUp(self):
+        self.conn = pymssqlconn()
+        drop_table(self.conn._conn, self.tablename)
+
+    def tearDown(self):
+        drop_table(self.conn._conn, self.tablename)
+        self.conn.close()
+
+    def roundtrip(self, column, values, tablename=None):
+        tablename = tablename or self.tablename
+        self.conn._conn.execute_non_query(
+            f"CREATE TABLE {tablename} (id INT NOT NULL, v {column})")
+        rows = list(enumerate(values))
+        self.conn.bulk_copy(tablename, rows)
+        self.conn._conn.execute_query(f"SELECT v FROM {tablename} ORDER BY id")
+        return [row['v'] for row in self.conn._conn]
+
+    def test_varchar(self):
+        assert self.roundtrip("VARCHAR(10) NULL", [""]) == [""]
+
+    def test_nvarchar(self):
+        assert self.roundtrip("NVARCHAR(10) NULL", [""]) == [""]
+
+    def test_varchar_max(self):
+        assert self.roundtrip("VARCHAR(MAX) NULL", [""]) == [""]
+
+    def test_nvarchar_max(self):
+        assert self.roundtrip("NVARCHAR(MAX) NULL", [""]) == [""]
+
+    def test_nvarchar_temp_table(self):
+        assert self.roundtrip("NVARCHAR(10) NULL", [""], "#test_bulk_copy_empty") == [""]
+
+    def test_not_null_column(self):
+        assert self.roundtrip("VARCHAR(10) NOT NULL", [""]) == [""]
+
+    def test_column_default_not_applied(self):
+        assert self.roundtrip("VARCHAR(10) NULL DEFAULT 'dflt'", [""]) == [""]
+
+    def test_varbinary(self):
+        assert self.roundtrip("VARBINARY(10) NULL", [b""]) == [b""]
+
+    def test_varbinary_max(self):
+        assert self.roundtrip("VARBINARY(MAX) NULL", [b""]) == [b""]
+
+    def test_bytearray(self):
+        assert self.roundtrip("VARBINARY(10) NULL", [bytearray()]) == [b""]
+
+    def test_none_is_still_null(self):
+        assert self.roundtrip("VARCHAR(10) NULL", [None]) == [None]
+
+    def test_none_uses_column_default(self):
+        assert self.roundtrip("VARCHAR(10) NULL DEFAULT 'dflt'", [None]) == ["dflt"]
+
+    def test_mixed_strings(self):
+        values = ["a", "", None, " ", "abc", ""]
+        assert self.roundtrip("VARCHAR(10) NULL", values) == values
+
+    def test_mixed_binary(self):
+        values = [b"\x00\x01", b"", None, b"\x00", b""]
+        assert self.roundtrip("VARBINARY(10) NULL", values) == values
